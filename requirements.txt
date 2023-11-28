@@ -11,7 +11,7 @@ torch_audiomentations
 editdistance
 wandb
 pyctcdecode
-torchaudio~=0.11.0
+torchaudio~=2.11.1
 pillow
 
 pyloudnorm
