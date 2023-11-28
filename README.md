@@ -57,7 +57,7 @@ mkdir -p {{ROOT_PATH}}/dla2023-tts/waveglow/pretrained_model/
 mv waveglow_256channels_ljs_v2.pt {{ROOT_PATH}}/dla2023-tts/waveglow/pretrained_model/waveglow_256channels.pt
 ```
 
-You may now launch training / testing of the model, specifying the config file. The default model config is given as default_test_config.json. However, you may check for other examples in hw_nv/configs/tts directory.
+You may now launch training / testing of the model, specifying the config file. The default model config is given as default_test_config.json. However, you may check for other examples in src/configs/tts directory.
 
 
 Overall, to launch pretrained model you need to download the model-checkpoint and launch the test.py:
@@ -78,23 +78,23 @@ python test.py \
 
 ## Structure
 
-All written code is located in the hw_nv repository. Scripts launching training and testing are given as train.py and test.py in the root project directory. First one will call the trainer instance, which is the class used for training the model. For the convenience everything is getting logged using the wandb logger, you may also look audios and many interesting model-weights graphs out there.
+All written code is located in the src repository. Scripts launching training and testing are given as train.py and test.py in the root project directory. First one will call the trainer instance, which is the class used for training the model. For the convenience everything is getting logged using the wandb logger, you may also look audios and many interesting model-weights graphs out there.
 
 ## Training
 
 To train the model you need to specify the config path:
 ```shell
-python3 train.py -c hw_nv/configs/config_name.json
+python3 train.py -c src/configs/config_name.json
 ```
 If you want to proceed training process from the saved checkpoint, then:
 ```shell
-python3 train.py -c hw_nv/configs/config_name.json -r saved/checkpoint/path.pth
+python3 train.py -c src/configs/config_name.json -r saved/checkpoint/path.pth
 ```
 
 ## Testing
 
-Some basic tests are located in hw_nv/tests directory. Script to run them:
+Some basic tests are located in src/tests directory. Script to run them:
 
 ```shell
-python3 -m unittest discover hw_nv/tests
+python3 -m unittest discover src/tests
 ```

@@ -5,13 +5,12 @@ import warnings
 import numpy as np
 import torch
 
-import hw_nv.loss as module_loss
-import hw_nv.metric as module_metric
-import hw_nv.model as module_arch
-from hw_nv.trainer import Trainer
-from hw_nv.utils import prepare_device
-from hw_nv.utils.object_loading import get_dataloaders
-from hw_nv.utils.parse_config import ConfigParser
+import src.metric as module_metric
+import src.model as module_arch
+from src.trainer import Trainer
+from src.utils import prepare_device
+from src.utils.object_loading import get_dataloaders
+from src.utils.parse_config import ConfigParser
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -30,7 +29,7 @@ def main(config):
     dataloaders = get_dataloaders(config)
 
     # build model architecture, then print to console
-    model = module_arch.HiFiGANModel(config.config)
+    model = module_arch.DecoderModel(config.config)
     logger.info(model)
 
     # prepare for (multi-device) GPU training
@@ -40,16 +39,9 @@ def main(config):
         model = torch.nn.DataParallel(model, device_ids=device_ids)
 
     # get function handles of loss and metrics
-    criterion = {
-        "generator": config.init_obj(
-            config["generator_loss"],
-            module_loss
-        ).to(device),
-        "discriminator": config.init_obj(
-            config["discriminator_loss"],
-            module_loss
-        ).to(device)
-    }
+    pad_id = dataloaders["train"].dataset.pad_id
+    criterion = config.init_obj(torch.nn, config["loss"], ignore_index=pad_id).to(device)
+
     metrics = [
         config.init_obj(metric_dict, module_metric, text_encoder=None)
         for metric_dict in config["metrics"]
@@ -57,34 +49,23 @@ def main(config):
 
     # build optimizer, learning rate scheduler. delete every line containing lr_scheduler for
     # disabling scheduler
-    generator_params = model.generator.parameters()
-    discriminator_params = model.discriminator.parameters()
+    params = filter(lambda p: p.requires_grad, model.parameters())
+    optimizer = config.init_obj(config["optimizer"], torch.optim, params)
+    lr_scheduler = config.init_obj(config["lr_scheduler"], torch.optim.lr_scheduler, optimizer)
 
-    optimizer = {
-        "generator": config.init_obj(
-            config["optimizer"],
-            torch.optim,
-            generator_params
-        ),
-        "discriminator": config.init_obj(
-            config["optimizer"],
-            torch.optim,
-            discriminator_params
+    inference_on_evaluation = config["data"]["val"]["inference_on_evalutation"]
+    if inference_on_evaluation:
+        inference_indices = config["data"]["val"].get(
+            "inference_prefixes", None
         )
-    }
+        inference_temperatures = config["data"]["val"].get(
+            "inference_temperatures", None
+        )
 
-    lr_scheduler = {
-        "generator": config.init_obj(
-            config["lr_scheduler"],
-            torch.optim.lr_scheduler,
-            optimizer["generator"]
-        ),
-        "discriminator": config.init_obj(
-            config["lr_scheduler"],
-            torch.optim.lr_scheduler,
-            optimizer["discriminator"]
-        )
-    }
+        if inference_indices is None:
+            inference_indices = [24, 2, 22]
+        if inference_temperatures is None:
+            inference_temperatures = [1.0]
 
     trainer = Trainer(
         model,
@@ -95,7 +76,10 @@ def main(config):
         device=device,
         dataloaders=dataloaders,
         lr_scheduler=lr_scheduler,
-        len_epoch=config["trainer"].get("len_epoch", None)
+        len_epoch=config["trainer"].get("len_epoch", None),
+        inference_on_evalution = inference_on_evaluation,
+        inference_indices=inference_indices,
+        inference_temperatures=inference_temperatures
     )
 
     trainer.train()

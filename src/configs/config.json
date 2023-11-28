@@ -1,0 +1,100 @@
+{
+    "name": "decoder_on_tinystories",
+    "n_gpu": 1,
+    "preprocessing": {},
+    "augmentations": {
+      "wave": [],
+      "spectrogram": []
+    },
+    "model": {
+        "type": "DecoderModel",
+        "args": {
+            "num_layers": 3,
+            "num_heads": 4,
+            "embed_dim": 64,
+            "feedforward_dim": 256,
+            "dropout": 0.1
+        }
+    },
+    "data": {
+      "train": {
+        "batch_size": 64,
+        "num_workers": 5,
+        "datasets": [
+          {
+            "type": "TinyStoriesDataset",
+            "args": {
+              "raw_data_dir": "tinystories_dataset",
+              "data_dir": "tinystories_processed",
+              "val_size": 0.1,
+              "max_length": 128,
+              "max_index_length": 10000,
+              "tokenizer_config": {
+                "vocab_size": 10000,
+                "pad_id": 3,
+                "model_type": "word",
+                "model_prefix_name": "sentencepiece/sp_word",
+                "normalization_rule_name": "nmt_nfkc"
+              },
+              "train": true
+            }
+          }
+        ]
+      },
+      "val": {
+        "batch_size": 64,
+        "num_workers": 5,
+        "datasets": [
+          {
+            "type": "TinyStoriesDataset",
+            "args": {
+              "raw_data_dir": "tinystories_dataset",
+              "data_dir": "tinystories_processed",
+              "val_size": 0.1,
+              "max_length": 128,
+              "max_index_length": 10000,
+              "tokenizer_config": {
+                "vocab_size": 10000,
+                "pad_id": 3,
+                "model_type": "word",
+                "model_prefix_name": "sentencepiece/sp_word",
+                "normalization_rule_name": "nmt_nfkc"
+              },
+              "train": false
+            }
+          }
+        ]
+      }
+    },
+    "optimizer": {
+      "type": "Adam",
+      "args": {
+        "lr": 3e-4
+      }
+    },
+    "loss": {
+      "type": "CrossEntropyLoss",
+      "args": {}
+    },
+    "metrics": [],
+    "lr_scheduler": {
+      "type": "CosineAnnealingWarmRestarts",
+      "args": {
+        "eta_min": 3e-5,
+        "T_0": 2000
+      }
+    },
+    "trainer": {
+      "epochs": 50,
+      "save_dir": "saved/",
+      "save_period": 5,
+      "verbosity": 2,
+      "monitor": "min loss",
+      "early_stop": 100,
+      "visualize": "wandb",
+      "wandb_project": "dl-hse-bhw-Tiny-Stories",
+      "wandb_run_name": "6L-decoder, sp-word, 10000 samples",
+      "len_epoch": 100,
+      "grad_norm_clip": 10
+    }
+  }
