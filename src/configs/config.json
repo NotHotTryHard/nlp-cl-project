@@ -24,8 +24,8 @@
           {
             "type": "TinyStoriesDataset",
             "args": {
-              "raw_data_dir": "tinystories_dataset",
-              "data_dir": "tinystories_processed",
+              "raw_data_dir": "/home/jupyter/work/resources/tinystories_dataset",
+              "data_dir": "/home/jupyter/work/resources/tinystories_processed",
               "val_size": 0.1,
               "max_length": 128,
               "max_index_length": 10000,
@@ -33,7 +33,7 @@
                 "vocab_size": 10000,
                 "pad_id": 3,
                 "model_type": "word",
-                "model_prefix_name": "sentencepiece/sp_word",
+                "model_prefix_name": "/home/jupyter/work/resources/sentencepiece/sp_word",
                 "normalization_rule_name": "nmt_nfkc"
               },
               "train": true
@@ -48,8 +48,8 @@
           {
             "type": "TinyStoriesDataset",
             "args": {
-              "raw_data_dir": "tinystories_dataset",
-              "data_dir": "tinystories_processed",
+              "raw_data_dir": "/home/jupyter/work/resources/tinystories_dataset",
+              "data_dir": "/home/jupyter/work/resources/tinystories_processed",
               "val_size": 0.1,
               "max_length": 128,
               "max_index_length": 10000,
@@ -57,7 +57,7 @@
                 "vocab_size": 10000,
                 "pad_id": 3,
                 "model_type": "word",
-                "model_prefix_name": "sentencepiece/sp_word",
+                "model_prefix_name": "/home/jupyter/work/resources/sentencepiece/sp_word",
                 "normalization_rule_name": "nmt_nfkc"
               },
               "train": false

@@ -23,7 +23,9 @@ class TinyStoriesDataset(Dataset):
                  val_size = 0.1,
                  max_length = 512,
                  max_index_length=None,
-                 train = True):
+                 train = True,
+                 *args,
+                 **kwargs):
         """
         Class for dealing with TinyStories Dataset, applying sentencepiece tokenizer
         It processes all initial files, splitting them into train and val directories.
@@ -33,8 +35,10 @@ class TinyStoriesDataset(Dataset):
         """
         self.train = train
         
-        self.raw_data_dir = Path(ROOT_PATH / raw_data_dir)
-        self.data_dir = Path(ROOT_PATH / data_dir)
+        # self.raw_data_dir = Path(ROOT_PATH / raw_data_dir)
+        # self.data_dir = Path(ROOT_PATH / data_dir)
+        self.raw_data_dir = Path(raw_data_dir)
+        self.data_dir = Path(data_dir)
         if not self.data_dir.exists():
             self.data_dir.mkdir(exist_ok=True, parents=True)
         
@@ -51,7 +55,8 @@ class TinyStoriesDataset(Dataset):
         else:
             print(f"Found processed dataset files in {self.data_dir}")
         
-        model_prefix = ROOT_PATH / tokenizer_config["model_prefix_name"]
+        # model_prefix = ROOT_PATH / tokenizer_config["model_prefix_name"]
+        model_prefix = tokenizer_config["model_prefix_name"]
         if not os.path.isfile(model_prefix + '.model'):
             print(f"No pretrained SentencePiece tokenizer found, started training...")
             SentencePieceTrainer.train(
