@@ -30,6 +30,7 @@ class WanDBWriter:
         self.step = 0
         self.mode = ""
         self.timer = datetime.now()
+        self.tables = {}
 
     def set_step(self, step, mode="train"):
         self.mode = mode
@@ -85,9 +86,20 @@ class WanDBWriter:
             self._scalar_name(scalar_name): hist
         }, step=self.step)
 
-    def add_table(self, table_name, table: pd.DataFrame):
-        self.wandb.log({self._scalar_name(table_name): wandb.Table(dataframe=table)},
-                       step=self.step)
+    def add_table(self, table_name, data, columns):
+        if table_name not in self.tables:
+            self.tables[table_name] = self.wandb.Table(columns=columns)
+
+        self.tables[table_name].add_data(*data)
+        print(table_name)
+        for ndx, row in self.tables[table_name].iterrows():
+            print(ndx, row)
+
+    def log_tables(self):
+        for table_name, table in self.tables.items():
+            self.wandb.log({
+                self._scalar_name(table_name): table
+            }, step=self.step)
 
     def add_images(self, scalar_name, images):
         raise NotImplementedError()

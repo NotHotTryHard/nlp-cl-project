@@ -61,7 +61,7 @@ class Trainer(BaseTrainer):
         self.log_step = 50
 
         self.train_metrics = MetricTracker(
-            "loss", 
+            "loss", "grad norm",
             *[m.name for m in self.metrics if self._compute_on_train(m)],
             writer=self.writer
         )
@@ -73,6 +73,19 @@ class Trainer(BaseTrainer):
         self.inference_indices = inference_indices
         self.inference_temperatures = inference_temperatures
         self.val_dataset = self.val_dataloader.dataset
+
+        if self.inference_on_evaluation:
+            self.inference_texts = []
+            self.inference_prefixes = []
+
+            for ind in self.inference_indices:
+                prefix_ids = self.val_dataset.index[ind]
+                text = self.val_dataset.ids2text(prefix_ids)
+                # take first sentences of stories as prefixes
+                prefix = text.split('.')[0] + '.'
+
+                self.inference_texts.append(text)
+                self.inference_prefixes.append(prefix)
 
     @staticmethod
     def _compute_on_train(metric):
@@ -186,13 +199,16 @@ class Trainer(BaseTrainer):
             self._log_scalars(self.evaluation_metrics)
         
             if self.inference_on_evaluation:
-                for ind in self.inference_indices:
+                for ind, prefix, orig_text in zip(
+                    self.inference_indices,
+                    self.inference_prefixes,
+                    self.inference_texts
+                ):
                     for temp in self.inference_temperatures:
-                        prefix = self.val_dataset[ind]
                         text = self.model.inference(prefix=prefix, temp=temp)
-                        self._log_text(
-                            f"prefix: {prefix};\ttemperature: {temp};\ttext: {text}",
-                            name=f"generated_{ind}_temp_{temp}"
+                        self._log_inference_as_table(
+                            epoch, temp, prefix, orig_text, text,
+                            name=f"sample_{ind}"
                         )
 
         # add histogram of model parameters to the tensorboard
@@ -250,6 +266,13 @@ class Trainer(BaseTrainer):
     
     def _log_text(self, text, name="text"):
         self.writer.add_text(name, text)
+    
+    def _log_inference_as_table(self, epoch, temp, prefix, orig_text, text, name):
+        self.writer.add_table(
+            table_name=name,
+            data=[epoch, temp, prefix, orig_text, text],
+            columns=["epoch", "temp", "prefix", "original story", "generated story"]
+        )
 
     @torch.no_grad()
     def get_grad_norm(self, norm_type=2):

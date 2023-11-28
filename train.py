@@ -40,7 +40,7 @@ def main(config):
 
     # get function handles of loss and metrics
     pad_id = dataloaders["train"].dataset.pad_id
-    criterion = config.init_obj(torch.nn, config["loss"], ignore_index=pad_id).to(device)
+    criterion = config.init_obj(config["loss"], torch.nn, ignore_index=pad_id).to(device)
 
     metrics = [
         config.init_obj(metric_dict, module_metric, text_encoder=None)
@@ -53,10 +53,10 @@ def main(config):
     optimizer = config.init_obj(config["optimizer"], torch.optim, params)
     lr_scheduler = config.init_obj(config["lr_scheduler"], torch.optim.lr_scheduler, optimizer)
 
-    inference_on_evaluation = config["data"]["val"]["inference_on_evalutation"]
+    inference_on_evaluation = config["data"]["val"]["inference_on_evaluation"]
     if inference_on_evaluation:
         inference_indices = config["data"]["val"].get(
-            "inference_prefixes", None
+            "inference_indices", None
         )
         inference_temperatures = config["data"]["val"].get(
             "inference_temperatures", None
@@ -77,7 +77,7 @@ def main(config):
         dataloaders=dataloaders,
         lr_scheduler=lr_scheduler,
         len_epoch=config["trainer"].get("len_epoch", None),
-        inference_on_evalution = inference_on_evaluation,
+        inference_on_evaluation=inference_on_evaluation,
         inference_indices=inference_indices,
         inference_temperatures=inference_temperatures
     )

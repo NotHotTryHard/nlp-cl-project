@@ -137,6 +137,8 @@ class BaseTrainer:
 
             if epoch % self.save_period == 0 or best:
                 self._save_checkpoint(epoch, save_best=best, only_best=True)
+        
+        self.writer.log_tables()
 
     def _save_checkpoint(self, epoch, save_best=False, only_best=False):
         """
