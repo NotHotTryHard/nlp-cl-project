@@ -6,7 +6,6 @@ tensorboard
 matplotlib
 pandas
 
-speechbrain~=0.5.12
 datasets
 torch_audiomentations
 editdistance
