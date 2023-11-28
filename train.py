@@ -29,7 +29,7 @@ def main(config):
     dataloaders = get_dataloaders(config)
 
     # build model architecture, then print to console
-    model = module_arch.DecoderModel(config.config)
+    model = module_arch.DecoderModel(config.config, dataloaders["train"].dataset)
     logger.info(model)
 
     # prepare for (multi-device) GPU training
