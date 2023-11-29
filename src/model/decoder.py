@@ -51,7 +51,14 @@ class Decoder(nn.Module):
 
 
 class DecoderBlock(nn.Module):
-    def __init__(self, embed_dim, num_heads, feedforward_dim, max_length, dropout=0.1):
+    def __init__(self,
+                 embed_dim,
+                 num_heads,
+                 feedforward_dim,
+                 max_length,
+                 attn_dropout=0.1,
+                 ff_dropout=0.1,
+                 use_flash_attention=True):
         """
         Inputs:
             embed_dim - Dimensionality of the input
@@ -72,7 +79,8 @@ class DecoderBlock(nn.Module):
             n_head=num_heads,
             max_len=max_length,
             d_k=embed_dim // num_heads,
-            d_v=embed_dim // num_heads
+            d_v=embed_dim // num_heads,
+            use_flash_attention=use_flash_attention
         )
         self.FFN = nn.Sequential(
             nn.Linear(embed_dim, feedforward_dim),
@@ -82,19 +90,18 @@ class DecoderBlock(nn.Module):
 
         self.layer_norm_1 = nn.LayerNorm(self.embed_dim)
         self.layer_norm_2 = nn.LayerNorm(self.embed_dim)
-        self.dropout_1 = nn.Dropout(dropout)
-        self.dropout_2 = nn.Dropout(dropout)
+        self.dropout_1 = nn.Dropout(attn_dropout)
+        self.dropout_2 = nn.Dropout(ff_dropout)
 
-    def forward(self, x, mask=None, return_attention=False):
+    def forward(self, x, mask=None):
         """
         Args:
             x: torch.Tensor (B, L, D)
         Returns:
             outputs: torch.Tensor (B, L, D)
-            attention: Optional[torch.Tensor] (B, num_heads, L, L)
         """
 
-        outputs, attention = self.MultiHeadSelfAttention(
+        outputs = self.MultiHeadSelfAttention(
             q=x, k=x, v=x, mask=mask
         )
 
@@ -105,9 +112,4 @@ class DecoderBlock(nn.Module):
         outputs = self.dropout_2(outputs)
         outputs = self.layer_norm_2(outputs)
         
-        if return_attention:
-            return outputs, attention
-        else:
-            return outputs
-
-
+        return outputs

@@ -30,12 +30,12 @@ class ScaledDotProductSelfAttention(nn.Module):
 
         output = attn @ v
         # output: [ (batch_size * n_heads) x seq_len x hidden_size ]
-        return output, attn
+        return output
 
 
 class MultiHeadSelfAttention(nn.Module):
     ''' Multi-Head Attention module '''
-    def __init__(self, max_len, n_head, d_model, d_k, d_v):
+    def __init__(self, max_len, n_head, d_model, d_k, d_v, use_flash_attention=True):
         super().__init__()
 
         self.n_head = n_head
@@ -47,10 +47,14 @@ class MultiHeadSelfAttention(nn.Module):
         self.w_ks = nn.Linear(d_model, n_head * d_k)
         self.w_vs = nn.Linear(d_model, n_head * d_v)
 
-        self.attention = ScaledDotProductSelfAttention(
-            max_len=max_len,
-            temperature=d_k**0.5
-        )
+        self.use_flash_attention = use_flash_attention
+        if use_flash_attention:
+            self.attention = F.scaled_dot_product_attention
+        else:
+            self.attention = ScaledDotProductSelfAttention(
+                max_len=max_len,
+                temperature=d_k**0.5
+            )
 
         self.fc = nn.Linear(n_head * d_v, d_model)
         nn.init.xavier_normal_(self.fc.weight)
@@ -73,8 +77,6 @@ class MultiHeadSelfAttention(nn.Module):
         sz_b, len_k, _ = k.size()
         sz_b, len_v, _ = v.size()
 
-        residual = q
-
         q = self.w_qs(q).view(sz_b, len_q, n_head, d_k)
         k = self.w_ks(k).view(sz_b, len_k, n_head, d_k)
         v = self.w_vs(v).view(sz_b, len_v, n_head, d_v)
@@ -85,12 +87,20 @@ class MultiHeadSelfAttention(nn.Module):
         
         if mask is not None:
             mask = mask.repeat(n_head, 1, 1)  # (n*b) x .. x ..
-        output, attn = self.attention(q, k, v, mask=mask)
+        
+        if self.use_flash_attention:
+            with torch.backends.cuda.sdp_kernel(
+                enable_flash=True, 
+                enable_math=False, 
+                enable_mem_efficient=False
+            ):
+                output = self.attention(q, k, v, attn_mask=mask)
+        output = self.attention(q, k, v, mask=mask)
 
         output = output.view(n_head, sz_b, len_q, d_v)
         output = output.permute(1, 2, 0, 3).contiguous().view(sz_b, len_q, -1)  # b x lq x (n*dv)
         
-        return output, attn
+        return output
     
     
 class PositionalEncoding(nn.Module):
