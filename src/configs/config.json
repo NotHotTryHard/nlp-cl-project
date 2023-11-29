@@ -98,7 +98,7 @@
       "early_stop": 100,
       "visualize": "wandb",
       "wandb_project": "dl-hse-bhw-Tiny-Stories",
-      "wandb_run_name": "6L-decoder, sp-word, 10000 samples",
+      "wandb_run_name": "test 3L-decoder, sp-word, 10000 samples",
       "len_epoch": 100,
       "grad_norm_clip": 10
     }
