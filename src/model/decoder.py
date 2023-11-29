@@ -14,7 +14,9 @@ class Decoder(nn.Module):
         num_heads,
         embed_dim,
         feedforward_dim,
-        dropout,
+        attn_dropout,
+        ff_dropout,
+        use_flash_attention,
         vocab_size,
         max_length
     ):
@@ -31,7 +33,9 @@ class Decoder(nn.Module):
                 num_heads=num_heads,
                 feedforward_dim=feedforward_dim,
                 max_length=max_length,
-                dropout=dropout
+                attn_dropout=attn_dropout,
+                ff_dropout=ff_dropout,
+                use_flash_attention=use_flash_attention
             )
             for _ in range(num_layers)
         ])

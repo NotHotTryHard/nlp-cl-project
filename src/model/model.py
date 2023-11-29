@@ -19,7 +19,9 @@ class DecoderModel(nn.Module):
             num_heads=self.model_config["num_heads"],
             embed_dim=self.model_config["embed_dim"],
             feedforward_dim=self.model_config["feedforward_dim"],
-            dropout=self.model_config["dropout"],
+            attn_dropout=self.model_config["attn_dropout"],
+            ff_dropout=self.model_config["ff_dropout"],
+            use_flash_attention=self.model_config["use_flash_attention"],
             vocab_size=dataset.vocab_size,
             max_length=dataset.max_length
         )
