@@ -46,6 +46,9 @@
       "val": {
         "batch_size": 64,
         "num_workers": 5,
+        "inference_on_evaluation": true,
+        "inference_indices": [24, 2, 22],
+        "inference_temperatures": [0.5, 1.0, 2.0],
         "datasets": [
           {
             "type": "TinyStoriesDataset",
