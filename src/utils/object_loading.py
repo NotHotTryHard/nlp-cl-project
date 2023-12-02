@@ -17,8 +17,10 @@ def get_dataloaders(configs: ConfigParser):
         datasets = []
         for ds in params["datasets"]:
             datasets.append(configs.init_obj(
-                ds, src.datasets, config_parser=configs,
-                wave_augs=wave_augs, spec_augs=spec_augs, num_workers=num_workers))
+                ds, src.datasets,
+                config_parser=configs,
+                num_workers=num_workers
+            ))
         assert len(datasets)
         if len(datasets) > 1:
             dataset = ConcatDataset(datasets)
@@ -49,7 +51,7 @@ def get_dataloaders(configs: ConfigParser):
         dataloader = DataLoader(
             dataset, batch_size=bs, collate_fn=collate_obj,
             shuffle=shuffle, num_workers=num_workers,
-            batch_sampler=batch_sampler, drop_last=drop_last
+            batch_sampler=batch_sampler
         )
         dataloaders[split] = dataloader
     return dataloaders
