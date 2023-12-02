@@ -2,10 +2,6 @@
   "name": "decoder_on_tinystories",
   "n_gpu": 1,
   "preprocessing": {},
-  "augmentations": {
-    "wave": [],
-    "spectrogram": []
-  },
   "model": {
       "type": "DecoderModel",
       "args": {
