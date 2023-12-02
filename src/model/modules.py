@@ -35,17 +35,19 @@ class ScaledDotProductSelfAttention(nn.Module):
 
 class MultiHeadSelfAttention(nn.Module):
     ''' Multi-Head Attention module '''
-    def __init__(self, max_len, n_head, d_model, d_k, d_v, use_flash_attention=True):
+    def __init__(self, max_len, n_head, d_model, d_k, d_v, use_flash_attention=True, dtype=torch.bfloat16):
         super().__init__()
+        
+        self.dtype = dtype
 
         self.n_head = n_head
         self.d_k = d_k
         self.d_v = d_v
         self.d_model = d_model
 
-        self.w_qs = nn.Linear(d_model, n_head * d_k)
-        self.w_ks = nn.Linear(d_model, n_head * d_k)
-        self.w_vs = nn.Linear(d_model, n_head * d_v)
+        self.w_qs = nn.Linear(d_model, n_head * d_k).to(dtype=dtype)
+        self.w_ks = nn.Linear(d_model, n_head * d_k).to(dtype=dtype)
+        self.w_vs = nn.Linear(d_model, n_head * d_v).to(dtype=dtype)
 
         self.use_flash_attention = use_flash_attention
         if use_flash_attention:
@@ -89,13 +91,14 @@ class MultiHeadSelfAttention(nn.Module):
             mask = mask.repeat(n_head, 1, 1)  # (n*b) x .. x ..
         
         if self.use_flash_attention:
-            with torch.backends.cuda.sdp_kernel(
-                enable_flash=True, 
-                enable_math=False, 
-                enable_mem_efficient=False
-            ):
-                output = self.attention(q, k, v, attn_mask=mask)
-        output = self.attention(q, k, v, mask=mask)
+#             with torch.backends.cuda.sdp_kernel(
+#                 enable_flash=True, 
+#                 enable_math=False, 
+#                 enable_mem_efficient=False
+#             ):
+            output = self.attention(q, k, v, is_causal=True)
+        else:
+            output = self.attention(q, k, v, mask=mask)
 
         output = output.view(n_head, sz_b, len_q, d_v)
         output = output.permute(1, 2, 0, 3).contiguous().view(sz_b, len_q, -1)  # b x lq x (n*dv)
@@ -132,3 +135,48 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         # assert x.shape[-1] == self.pos_encodings.shape[-1], "Embedding dimension is not the same"
         return x + self.pe[:, :x.shape[1], :]
+
+    
+# from: https://github.com/bzhangGo/rmsnorm/tree/master
+class RMSNorm(nn.Module):
+    def __init__(self, d, p=-1., eps=1e-8, bias=False, dtype=torch.bfloat16):
+        """
+            Root Mean Square Layer Normalization
+        :param d: model size
+        :param p: partial RMSNorm, valid value [0, 1], default -1.0 (disabled)
+        :param eps:  epsilon value, default 1e-8
+        :param bias: whether use bias term for RMSNorm, disabled by
+            default because RMSNorm doesn't enforce re-centering invariance.
+        """
+        super(RMSNorm, self).__init__()
+
+        self.eps = eps
+        self.d = d
+        self.p = p
+        self.bias = bias
+
+        self.scale = nn.Parameter(torch.ones(d).to(dtype))
+        self.register_parameter("RMSNorm_scale", self.scale)
+
+        if self.bias:
+            self.offset = nn.Parameter(torch.zeros(d).to(dtype))
+            self.register_parameter("RMSNorm_offset", self.offset)
+
+    def forward(self, x):
+        if self.p < 0. or self.p > 1.:
+            norm_x = x.norm(2, dim=-1, keepdim=True)
+            d_x = self.d
+        else:
+            partial_size = int(self.d * self.p)
+            partial_x, _ = torch.split(x, [partial_size, self.d - partial_size], dim=-1)
+
+            norm_x = partial_x.norm(2, dim=-1, keepdim=True)
+            d_x = partial_size
+
+        rms_x = norm_x * d_x ** (-1. / 2)
+        x_normed = x / (rms_x + self.eps)
+
+        if self.bias:
+            return self.scale * x_normed + self.offset
+
+        return self.scale * x_normed

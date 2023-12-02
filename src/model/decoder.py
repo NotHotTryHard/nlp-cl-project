@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from torch import nn
 
-from src.model.modules import MultiHeadSelfAttention, PositionalEncoding
+from src.model.modules import MultiHeadSelfAttention, PositionalEncoding, RMSNorm
 
 
 class Decoder(nn.Module):
@@ -17,10 +17,14 @@ class Decoder(nn.Module):
         attn_dropout,
         ff_dropout,
         use_flash_attention,
+        use_rms_norm,
         vocab_size,
-        max_length
+        max_length,
+        dtype=torch.bfloat16
     ):
         super().__init__()
+        
+        self.dtype = dtype
         
         self.word_encoding = nn.Embedding(vocab_size, embed_dim)
         self.positional_encoding = PositionalEncoding(
@@ -35,17 +39,19 @@ class Decoder(nn.Module):
                 max_length=max_length,
                 attn_dropout=attn_dropout,
                 ff_dropout=ff_dropout,
-                use_flash_attention=use_flash_attention
+                use_flash_attention=use_flash_attention,
+                use_rms_norm=use_rms_norm,
+                dtype=dtype
             )
             for _ in range(num_layers)
         ])
 
-        self.linear = nn.Linear(embed_dim, vocab_size)
+        self.linear = nn.Linear(embed_dim, vocab_size).to(dtype=dtype)
 
 
     def forward(self, x):
-        x = self.word_encoding(x)
-        x = self.positional_encoding(x)
+        x = self.word_encoding(x).to(dtype=self.dtype)
+        x = self.positional_encoding(x).to(dtype=self.dtype)
 
         for layer in self.layers:
             x = layer(x)
@@ -62,7 +68,9 @@ class DecoderBlock(nn.Module):
                  max_length,
                  attn_dropout=0.1,
                  ff_dropout=0.1,
-                 use_flash_attention=True):
+                 use_flash_attention=True,
+                 use_rms_norm=False,
+                 dtype=torch.bfloat16):
         """
         Inputs:
             embed_dim - Dimensionality of the input
@@ -72,6 +80,8 @@ class DecoderBlock(nn.Module):
             dropout - Dropout probability to use in the dropout layers
         """
         super().__init__()
+        
+        self.dtype = dtype
 
         self.embed_dim = embed_dim
         self.num_heads = num_heads
@@ -84,27 +94,33 @@ class DecoderBlock(nn.Module):
             max_len=max_length,
             d_k=embed_dim // num_heads,
             d_v=embed_dim // num_heads,
-            use_flash_attention=use_flash_attention
+            use_flash_attention=use_flash_attention,
+            dtype=dtype
         )
         self.FFN = nn.Sequential(
             nn.Linear(embed_dim, feedforward_dim),
             nn.ReLU(),
             nn.Linear(feedforward_dim, embed_dim)
-        )
+        ).to(dtype=dtype)
 
-        self.layer_norm_1 = nn.LayerNorm(self.embed_dim)
-        self.layer_norm_2 = nn.LayerNorm(self.embed_dim)
-        self.dropout_1 = nn.Dropout(attn_dropout)
-        self.dropout_2 = nn.Dropout(ff_dropout)
+        if use_rms_norm:
+            self.layer_norm_1 = RMSNorm(d=self.embed_dim, dtype=dtype)
+            self.layer_norm_2 = RMSNorm(d=self.embed_dim, dtype=dtype)
+        else:
+            self.layer_norm_1 = nn.LayerNorm(self.embed_dim).to(dtype=dtype)
+            self.layer_norm_2 = nn.LayerNorm(self.embed_dim).to(dtype=dtype)
+
+        self.dropout_1 = nn.Dropout(attn_dropout).to(dtype=dtype)
+        self.dropout_2 = nn.Dropout(ff_dropout).to(dtype=dtype)
 
     def forward(self, x, mask=None):
         """
         Args:
-            x: torch.Tensor (B, L, D)
+            x: torch.Tensor (B, L, D), in specified dtype
         Returns:
             outputs: torch.Tensor (B, L, D)
         """
-
+        
         outputs = self.MultiHeadSelfAttention(
             q=x, k=x, v=x, mask=mask
         )

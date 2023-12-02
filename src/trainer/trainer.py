@@ -79,8 +79,7 @@ class Trainer(BaseTrainer):
             self.inference_prefixes = []
 
             for ind in self.inference_indices:
-                prefix_ids = self.val_dataset.index[ind]
-                text = self.val_dataset.ids2text(prefix_ids)
+                text = self.val_dataset.files[ind]
                 # take first sentences of stories as prefixes
                 prefix = text.split('.')[0] + '.'
 
@@ -135,7 +134,7 @@ class Trainer(BaseTrainer):
                         if p.grad is not None:
                             del p.grad  # free some memory
                     torch.cuda.empty_cache()
-                    continue
+                    raise e
                 else:
                     raise e
             
@@ -211,9 +210,13 @@ class Trainer(BaseTrainer):
                             name=f"sample_{ind}"
                         )
 
+        if self.lr_scheduler is not None:
+            if not isinstance(self.lr_scheduler, ReduceLROnPlateau):
+                self.lr_scheduler.step()
+
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():
-            self.writer.add_histogram(name, p, bins="auto")
+            self.writer.add_histogram(name, p.float(), bins="auto")
         
         return self.evaluation_metrics.result()
 
@@ -223,6 +226,7 @@ class Trainer(BaseTrainer):
         if is_train:
             self.optimizer.zero_grad()
         
+#         with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
         batch["logits"] = self.model(batch["indices"][:, :-1])
         batch["loss"] = self.criterion(
             batch["logits"].transpose(1, 2),
@@ -232,12 +236,7 @@ class Trainer(BaseTrainer):
         if is_train:
             batch["loss"].backward()
             self._clip_grad_norm()
-
             self.optimizer.step()
-            self.optimizer.step()
-            if self.lr_scheduler is not None:
-                if not isinstance(self.lr_scheduler, ReduceLROnPlateau):
-                    self.lr_scheduler.step()
         
         metrics_tracker.update("loss", batch["loss"].item())
         for met in self.metrics:

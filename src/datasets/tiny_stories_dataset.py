@@ -69,14 +69,15 @@ class TinyStoriesDataset(Dataset):
         self.vocab_size = tokenizer_config["vocab_size"]
         
         self.max_index_length = max_index_length
-        self.create_index()
-
+        
         for token_id in ["pad_id", "unk_id", "bos_id", "eos_id"]:
             setattr(self, token_id, getattr(self.sp_model, token_id)())
         
         self.max_length = max_length
         self.vocab_size = self.sp_model.vocab_size()
-
+        
+        self.load_files()
+        
     def process_raw_files(self):
         for k, raw_files_list in self.raw_files_dict.items():
             with open(self.data_dir / k, 'a+', encoding='utf-8') as out_file:
@@ -96,21 +97,19 @@ class TinyStoriesDataset(Dataset):
             with open(self.data_dir / k, 'r', encoding='utf-8') as f:
                 self.raw_index[k] = f.readlines()
     
-    def create_index(self):
-        print(f"Creating index with SentencePiece...")
-        index_type = "train" if self.train else "val"
-        with open(self.data_dir / index_type, 'r', encoding='utf-8') as f:
-            if not self.max_index_length:
-                self.index = self.sp_model.encode(f.readlines())
-            else:
+    def load_files(self):
+        print(f"Loading files...")
+        files_type = "train" if self.train else "val"
+        with open(self.data_dir / files_type, 'r', encoding='utf-8') as f:
+            files = f.readlines()
+            if self.max_index_length:
                 print(f"Truncating to {self.max_index_length} samples")
-                files = f.readlines()
-                if len(files) > self.max_index_length:
-                    files = files[:self.max_index_length]
-                self.index = self.sp_model.encode(files)
+                files = files[:self.max_index_length]
+        print(f"Done!")
+        self.files = files
 
     def __len__(self):
-        return len(self.index)
+        return len(self.files)
 
     def text2ids(self, texts: Union[str, List[str]]) -> Union[List[int], List[List[int]]]:
         """
@@ -139,7 +138,7 @@ class TinyStoriesDataset(Dataset):
         :param train: use train indices
         :return: encoded text indices and its actual length (including BOS and EOS specials)
         """
-        indices = self.index[item]
+        indices = self.sp_model.encode(self.files[item])
 
         if len(indices) > self.max_length - 2:
             indices = indices[:self.max_length - 2]

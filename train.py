@@ -29,7 +29,10 @@ def main(config):
     dataloaders = get_dataloaders(config)
 
     # build model architecture, then print to console
-    model = module_arch.DecoderModel(config.config, dataloaders["train"].dataset)
+    model = module_arch.DecoderModel(
+        config=config.config,
+        dataset=dataloaders["train"].dataset
+    )
     logger.info(model)
 
     # prepare for (multi-device) GPU training
@@ -37,6 +40,8 @@ def main(config):
     model = model.to(device)
     if len(device_ids) > 1:
         model = torch.nn.DataParallel(model, device_ids=device_ids)
+    
+    print(f"\nNumber of model parameters: {model.get_number_of_parameters()}\n")
 
     # get function handles of loss and metrics
     pad_id = dataloaders["train"].dataset.pad_id

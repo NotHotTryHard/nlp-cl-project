@@ -1,105 +1,108 @@
 {
-    "name": "decoder_on_tinystories",
-    "n_gpu": 1,
-    "preprocessing": {},
-    "augmentations": {
-      "wave": [],
-      "spectrogram": []
-    },
-    "model": {
-        "type": "DecoderModel",
-        "args": {
-            "num_layers": 3,
-            "num_heads": 4,
-            "embed_dim": 64,
-            "feedforward_dim": 256,
-            "attn_dropout": 0.1,
-            "ff_dropout": 0.1,
-            "use_flash_attention": true
+  "name": "decoder_on_tinystories",
+  "n_gpu": 1,
+  "preprocessing": {},
+  "augmentations": {
+    "wave": [],
+    "spectrogram": []
+  },
+  "model": {
+      "type": "DecoderModel",
+      "args": {
+          "num_layers": 8,
+          "num_heads": 8,
+          "embed_dim": 512,
+          "feedforward_dim": 2048,
+          "attn_dropout": 0.1,
+          "ff_dropout": 0.1,
+          "use_flash_attention": true,
+          "use_rms_norm": false,
+          "dtype": "bfloat16"
+      }
+  },
+  "data": {
+    "train": {
+      "batch_size": 256,
+      "num_workers": 5,
+      "datasets": [
+        {
+          "type": "TinyStoriesDataset",
+          "args": {
+            "raw_data_dir": "/home/jupyter/work/resources/tinystories_dataset",
+            "data_dir": "/home/jupyter/work/resources/tinystories_processed",
+            "val_size": 0.1,
+            "max_length": 256,
+            "max_index_length": 100000000000000,
+            "tokenizer_config": {
+              "vocab_size": 5000,
+              "pad_id": 3,
+              "model_type": "word",
+              "model_prefix_name": "/home/jupyter/work/resources/sentencepiece/sp_word",
+              "normalization_rule_name": "nmt_nfkc"
+            },
+            "train": true
+          }
         }
+      ]
     },
-    "data": {
-      "train": {
-        "batch_size": 64,
-        "num_workers": 5,
-        "datasets": [
-          {
-            "type": "TinyStoriesDataset",
-            "args": {
-              "raw_data_dir": "/home/jupyter/work/resources/tinystories_dataset",
-              "data_dir": "/home/jupyter/work/resources/tinystories_processed",
-              "val_size": 0.1,
-              "max_length": 128,
-              "max_index_length": 10000,
-              "tokenizer_config": {
-                "vocab_size": 10000,
-                "pad_id": 3,
-                "model_type": "word",
-                "model_prefix_name": "/home/jupyter/work/resources/sentencepiece/sp_word",
-                "normalization_rule_name": "nmt_nfkc"
-              },
-              "train": true
-            }
+    "val": {
+      "batch_size": 256,
+      "num_workers": 5,
+      "inference_on_evaluation": true,
+      "inference_indices": [24, 2, 22],
+      "inference_temperatures": [0.5, 1.0, 2.0],
+      "datasets": [
+        {
+          "type": "TinyStoriesDataset",
+          "args": {
+            "raw_data_dir": "/home/jupyter/work/resources/tinystories_dataset",
+            "data_dir": "/home/jupyter/work/resources/tinystories_processed",
+            "val_size": 0.1,
+            "max_length": 256,
+            "max_index_length": 100000,
+            "tokenizer_config": {
+              "vocab_size": 5000,
+              "pad_id": 3,
+              "model_type": "word",
+              "model_prefix_name": "/home/jupyter/work/resources/sentencepiece/sp_word",
+              "normalization_rule_name": "nmt_nfkc"
+            },
+            "train": false
           }
-        ]
-      },
-      "val": {
-        "batch_size": 64,
-        "num_workers": 5,
-        "inference_on_evaluation": true,
-        "inference_indices": [24, 2, 22],
-        "inference_temperatures": [0.5, 1.0, 2.0],
-        "datasets": [
-          {
-            "type": "TinyStoriesDataset",
-            "args": {
-              "raw_data_dir": "/home/jupyter/work/resources/tinystories_dataset",
-              "data_dir": "/home/jupyter/work/resources/tinystories_processed",
-              "val_size": 0.1,
-              "max_length": 128,
-              "max_index_length": 10000,
-              "tokenizer_config": {
-                "vocab_size": 10000,
-                "pad_id": 3,
-                "model_type": "word",
-                "model_prefix_name": "/home/jupyter/work/resources/sentencepiece/sp_word",
-                "normalization_rule_name": "nmt_nfkc"
-              },
-              "train": false
-            }
-          }
-        ]
-      }
-    },
-    "optimizer": {
-      "type": "Adam",
-      "args": {
-        "lr": 3e-4
-      }
-    },
-    "loss": {
-      "type": "CrossEntropyLoss",
-      "args": {}
-    },
-    "metrics": [],
-    "lr_scheduler": {
-      "type": "CosineAnnealingWarmRestarts",
-      "args": {
-        "eta_min": 3e-5,
-        "T_0": 2000
-      }
-    },
-    "trainer": {
-      "epochs": 50,
-      "save_dir": "saved/",
-      "save_period": 5,
-      "verbosity": 2,
-      "monitor": "min loss",
-      "early_stop": 100,
-      "visualize": "wandb",
-      "wandb_project": "dl-hse-bhw-Tiny-Stories",
-      "wandb_run_name": "test 3L-decoder, sp-word, 10000 samples",
-      "len_epoch": 100,
-      "grad_norm_clip": 10
+        }
+      ]
     }
+  },
+  "optimizer": {
+    "type": "AdamW",
+    "args": {
+      "lr": 5e-4,
+      "betas": [0.9, 0.95],
+      "weight_decay": 0.1
+    }
+  },
+  "metrics": [],
+  "lr_scheduler": {
+    "type": "ExponentialLR",
+    "args": {
+      "gamma": 1.0
+    }
+  },
+  "loss": {
+    "type": "CrossEntropyLoss",
+    "args": {}
+  },
+  "trainer": {
+    "epochs": 1000,
+    "save_dir": "saved/",
+    "save_period": 5,
+    "verbosity": 2,
+    "monitor": "min loss",
+    "early_stop": 100,
+    "visualize": "wandb",
+    "wandb_project": "dl-hse-bhw-Tiny-Stories",
+    "wandb_run_name": "12L-8h-512-Decoder, sp-word",
+    "len_epoch": 1000,
+    "grad_norm_clip": 1.0
   }
+}

@@ -79,6 +79,7 @@ class BaseTrainer:
         except KeyboardInterrupt as e:
             self.logger.info("Saving model on keyboard interrupt")
             self._save_checkpoint(self._last_epoch, save_best=False)
+            self.writer.log_tables()
             raise e
 
     def _train_process(self):
