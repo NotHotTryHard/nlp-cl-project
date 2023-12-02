@@ -48,7 +48,7 @@ def main(config):
     criterion = config.init_obj(config["loss"], torch.nn, ignore_index=pad_id).to(device)
 
     metrics = [
-        config.init_obj(metric_dict, module_metric, text_encoder=None)
+        config.init_obj(metric_dict, module_metric)
         for metric_dict in config["metrics"]
     ]
 

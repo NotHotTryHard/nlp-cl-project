@@ -7,12 +7,8 @@ from functools import reduce, partial
 from operator import getitem
 from pathlib import Path
 
-from src import text_encoder as text_encoder_module
-from src.base.base_text_encoder import BaseTextEncoder
 from src.logger import setup_logging
-from src.text_encoder import CTCCharTextEncoder
 from src.utils import read_json, write_json, ROOT_PATH
-
 
 class ConfigParser:
     def __init__(self, config, resume=None, modification=None, run_id=None):
@@ -30,7 +26,6 @@ class ConfigParser:
         # load config file and apply modification
         self._config = _update_config(config, modification)
         self.resume = resume
-        self._text_encoder = None
 
         # set save_dir where trained model and log will be saved.
         save_dir = Path(self.config["trainer"]["save_dir"])
@@ -136,15 +131,6 @@ class ConfigParser:
         logger = logging.getLogger(name)
         logger.setLevel(self.log_levels[verbosity])
         return logger
-
-    def get_text_encoder(self) -> BaseTextEncoder:
-        if self._text_encoder is None:
-            if "text_encoder" not in self._config:
-                self._text_encoder = CTCCharTextEncoder()
-            else:
-                self._text_encoder = self.init_obj(self["text_encoder"],
-                                                   default_module=text_encoder_module)
-        return self._text_encoder
 
     # setting read-only attributes
     @property

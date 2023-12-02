@@ -31,7 +31,6 @@ class Trainer(BaseTrainer):
             config,
             device,
             dataloaders,
-            text_encoder=None,
             lr_scheduler=None,
             len_epoch=None,
             skip_oom=True,
@@ -44,7 +43,6 @@ class Trainer(BaseTrainer):
             optimizer, lr_scheduler, config, device
         )
         self.skip_oom = skip_oom
-        self.text_encoder = text_encoder
         self.config = config
         self.train_dataloader = dataloaders["train"]
         self.val_dataloader = dataloaders["val"]
