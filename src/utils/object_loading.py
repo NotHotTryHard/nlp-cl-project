@@ -2,7 +2,6 @@ from operator import xor
 
 from torch.utils.data import ConcatDataset, DataLoader
 
-import src.augmentations
 import src.datasets
 from src import batch_sampler as batch_sampler_module
 from src.collate_fn.collate import CollateClass
@@ -13,14 +12,6 @@ def get_dataloaders(configs: ConfigParser):
     dataloaders = {}
     for split, params in configs["data"].items():
         num_workers = params.get("num_workers", 1)
-
-        # set train augmentations
-        if split == 'train':
-            wave_augs, spec_augs = src.augmentations.from_configs(configs)
-            drop_last = True
-        else:
-            wave_augs, spec_augs = None, None
-            drop_last = False
 
         # create and join datasets
         datasets = []
