@@ -72,7 +72,7 @@ class MultiHeadSelfAttention(nn.Module):
         nn.init.normal_(self.w_vs.weight, mean=0,
                         std=math.sqrt(2.0 / (self.d_model + self.d_v))) 
         
-    def forward(self, q, k, v, mask=None):
+    def forward(self, q, k, v, mask=None, attn_dropout=None):
         d_k, d_v, n_head = self.d_k, self.d_v, self.n_head
 
         sz_b, len_q, _ = q.size()
@@ -96,7 +96,7 @@ class MultiHeadSelfAttention(nn.Module):
 #                 enable_math=False, 
 #                 enable_mem_efficient=False
 #             ):
-            output = self.attention(q, k, v, is_causal=True)
+            output = self.attention(q, k, v, is_causal=True, dropout=attn_dropout)
         else:
             output = self.attention(q, k, v, mask=mask)
 

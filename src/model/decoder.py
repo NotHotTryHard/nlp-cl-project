@@ -110,7 +110,9 @@ class DecoderBlock(nn.Module):
             self.layer_norm_1 = nn.LayerNorm(self.embed_dim).to(dtype=dtype)
             self.layer_norm_2 = nn.LayerNorm(self.embed_dim).to(dtype=dtype)
 
-        self.dropout_1 = nn.Dropout(attn_dropout).to(dtype=dtype)
+        self.attn_dropout = attn_dropout
+        if not self.use_flash_attention:
+            self.dropout_1 = nn.Dropout(attn_dropout).to(dtype=dtype)
         self.dropout_2 = nn.Dropout(ff_dropout).to(dtype=dtype)
 
     def forward(self, x, mask=None):
@@ -120,16 +122,15 @@ class DecoderBlock(nn.Module):
         Returns:
             outputs: torch.Tensor (B, L, D)
         """
-        
         outputs = self.MultiHeadSelfAttention(
-            q=x, k=x, v=x, mask=mask
+            q=x, k=x, v=x, mask=mask,
+            attn_dropout=self.attn_dropout
         )
-
-        outputs = self.dropout_1(outputs)
-        outputs = self.layer_norm_1(x + outputs)
+        if not self.use_flash_attention:
+            outputs = self.dropout_1(outputs)
+        outputs = outputs + self.layer_norm_1(x)
         
-        outputs = self.FFN(outputs)
+        outputs = self.FFN(outputs) + self.layer_norm_2(outputs)
         outputs = self.dropout_2(outputs)
-        outputs = self.layer_norm_2(outputs)
         
         return outputs
