@@ -87,6 +87,7 @@ class DecoderBlock(nn.Module):
         self.num_heads = num_heads
         self.ff_dim = feedforward_dim
         self.max_length = max_length
+        self.use_flash_attention = use_flash_attention
 
         self.MultiHeadSelfAttention = MultiHeadSelfAttention(
             d_model=embed_dim,
