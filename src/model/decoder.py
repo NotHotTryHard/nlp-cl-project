@@ -123,15 +123,15 @@ class DecoderBlock(nn.Module):
         Returns:
             outputs: torch.Tensor (B, L, D)
         """
-        outputs = self.MultiHeadSelfAttention(
-            q=x, k=x, v=x, mask=mask,
+        x_norm = self.layer_norm_1(x)
+        outputs = x + self.MultiHeadSelfAttention(
+            q=x_norm, k=x_norm, v=x_norm, mask=mask,
             attn_dropout=self.attn_dropout
         )
         if not self.use_flash_attention:
             outputs = self.dropout_1(outputs)
-        outputs = outputs + self.layer_norm_1(x)
         
-        outputs = self.FFN(outputs) + self.layer_norm_2(outputs)
+        outputs = outputs + self.FFN(self.layer_norm_2(outputs))
         outputs = self.dropout_2(outputs)
         
         return outputs
