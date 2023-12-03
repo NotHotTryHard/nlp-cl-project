@@ -48,9 +48,9 @@ class Decoder(nn.Module):
 
         self.use_rms_norm = use_rms_norm
         if self.use_rms_norm:
-            self.layer_norm = RMSNorm(d=self.embed_dim, dtype=dtype)
+            self.layer_norm = RMSNorm(d=embed_dim, dtype=dtype)
         else:
-            self.layer_norm = nn.LayerNorm(self.embed_dim).to(dtype=dtype)
+            self.layer_norm = nn.LayerNorm(embed_dim).to(dtype=dtype)
 
         self.linear = nn.Linear(embed_dim, vocab_size).to(dtype=dtype)
 
