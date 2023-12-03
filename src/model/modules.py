@@ -96,7 +96,7 @@ class MultiHeadSelfAttention(nn.Module):
 #                 enable_math=False, 
 #                 enable_mem_efficient=False
 #             ):
-            output = self.attention(q, k, v, is_causal=True, dropout=attn_dropout)
+            output = self.attention(q, k, v, is_causal=True, dropout_p=attn_dropout)
         else:
             output = self.attention(q, k, v, mask=mask)
 
