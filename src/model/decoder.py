@@ -46,8 +46,13 @@ class Decoder(nn.Module):
             for _ in range(num_layers)
         ])
 
-        self.linear = nn.Linear(embed_dim, vocab_size).to(dtype=dtype)
+        self.use_rms_norm = use_rms_norm
+        if self.use_rms_norm:
+            self.layer_norm = RMSNorm(d=self.embed_dim, dtype=dtype)
+        else:
+            self.layer_norm = nn.LayerNorm(self.embed_dim).to(dtype=dtype)
 
+        self.linear = nn.Linear(embed_dim, vocab_size).to(dtype=dtype)
 
     def forward(self, x):
         x = self.word_encoding(x).to(dtype=self.dtype)
@@ -55,9 +60,10 @@ class Decoder(nn.Module):
 
         for layer in self.layers:
             x = layer(x)
-
+        
+        x = self.layer_norm(x)
         x = self.linear(x)
-        return x
+        return x.float()
 
 
 class DecoderBlock(nn.Module):
