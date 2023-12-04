@@ -48,7 +48,7 @@ class Decoder(nn.Module):
 
         self.use_rms_norm = use_rms_norm
         if self.use_rms_norm:
-            self.layer_norm = RMSNorm(d=embed_dim, dtype=dtype)
+            self.layer_norm = RMSNorm(embed_dim=embed_dim, dtype=dtype)
         else:
             self.layer_norm = nn.LayerNorm(embed_dim).to(dtype=dtype)
 
@@ -111,8 +111,8 @@ class DecoderBlock(nn.Module):
         ).to(dtype=dtype)
 
         if use_rms_norm:
-            self.layer_norm_1 = RMSNorm(d=self.embed_dim, dtype=dtype)
-            self.layer_norm_2 = RMSNorm(d=self.embed_dim, dtype=dtype)
+            self.layer_norm_1 = RMSNorm(embed_dim=self.embed_dim, dtype=dtype)
+            self.layer_norm_2 = RMSNorm(embed_dim=self.embed_dim, dtype=dtype)
         else:
             self.layer_norm_1 = nn.LayerNorm(self.embed_dim).to(dtype=dtype)
             self.layer_norm_2 = nn.LayerNorm(self.embed_dim).to(dtype=dtype)

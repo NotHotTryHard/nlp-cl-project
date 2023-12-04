@@ -50,7 +50,6 @@ class TinyStoriesDataset(Dataset):
         )
         self.raw_files_dict = {"train": raw_files_train, "val": raw_files_val}
         if len(os.listdir(self.data_dir)) == 0:
-            raise StopIteration
             self.process_raw_files()
         else:
             print(f"Found processed dataset files in {self.data_dir}")
