@@ -1,100 +1,130 @@
-# Source Separation Homework
+# Big homework 1. BLMs (Boutique LMs)
 
-This is a repository with the TTS homework of the HSE DLA Course. It includes the implementation of FastSpeech2 model architecture and all training utilities. The training was performed on the LJSpeech dataset.
+<p align="center"> <img src="./tiny-llama.jpg" style="width: 30%;"> </p>
+<p align="center">This tiny lama is real</p>
 
-## Installation guide
+## Task description
 
-Clone the repository:
-```shell
-%cd local/cloned/project/path
-git clone https://github.com/NoMoreActimel/dla2023-tts.git
+You need to implement and train a small (but strong) language model on
+a high quality synthetic dataset from the
+[TinyStories](https://arxiv.org/abs/2305.07759) paper **from scratch**
+(no code-templates, no trainers, no checkpoints).
+
+Then you need to write a detailed report about your reproduction with
+implementation details and at least two comparisons (qualitative and
+quantitative) of your model with the
+[GPT2-XL](https://huggingface.co/gpt2-xl) in story generation,
+demonstrating your model is better.
+
+## Data
+
+The dataset can be loaded from HuggingFace:
+
+```bash
+wget --quiet --show-progress "https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinyStories_all_data.tar.gz"
 ```
 
-Install and create pyenv:
-```shell
-pyenv install 3.9.7
-cd path/to/local/cloned/project
-~/.pyenv/versions/3.9.7/bin/python -m venv asr_venv
+## Code & Advice
+
+> [!IMPORTANT]
+> The only dependencies you can use to implement and
+> train your BLM in this homework are in `env.yaml` example below. If
+> your code meaningfully crashes in this env we'll lower the grade
+> to 0.
+
+```yaml
+# env.yaml
+name: b
+channels:
+- https://conda.anaconda.org/nvidia
+- https://conda.anaconda.org/conda-forge
+- nodefaults
+dependencies:
+- pytorch::pytorch=2.1
+- pytorch::pytorch-cuda=12.1
+- sentencepiece
+- requests
+- matplotlib
+- wandb
+- tensorboard
+- tqdm
 ```
 
-Install required packages:
+For evaluation and comparison you can use [mlc](https://llm.mlc.ai/),
+[llama.cpp](https://github.com/ggerganov/llama.cpp),
+[transformers](https://huggingface.co/docs/transformers/index) (only
+for GPT2-XL inference) or any closed model API.
 
-```shell
-pip install -r ./requirements.txt
-```
-
-You need to download MFA alignments for LJSpeech and WaveGlow for spec-to-wav inference. All files are stored on google drive, first install gdown:
-```shell
-pip install gdown
-```
-
-You can download processed data, if you do not want to perform alignments or change something in data processing pipeline. First option is to download full-data archive, having data and raw_data in it (including initial wavs and texts).
-```shell
-gdown --id 1J-Fv9dNxFPMlzqQMTRL_pRmciUmAd7rE
-mkdir -p {{ROOT_PATH}}/dla2023-tts/data/datasets/ljspeech/
-unzip data_processed.zip
-mv content/dla2023-tts/data/datasets/ljspeech/* data/datasets/ljspeech/
-```
-You can download data without initial wavs and texts, which takes much less space:
-```shell
-gdown --id 1--ZVSJlnzBvvSdC7g1b3oYKQo_IpGbgC
-mkdir -p {{ROOT_PATH}}/dla2023-tts/data/datasets/ljspeech/data/
-unzip data_processed.zip
-mv content/dla2023-tts/data/datasets/ljspeech/data/* data/datasets/ljspeech/data/
-```
-
-If you do not want to download all processed data, then MFA alignments are available by themselves:
-MFA alignments:
-```shell
-gdown --id 14mi82n1FxXZ0XHLKpO9DmpaFBQCkyJ-X
-unzip {{ROOT_PATH}}/LJSpeech.zip
-```
-
-Finally, you will need WaveGlow for inference:
-```shell
-gdown https://drive.google.com/u/0/uc?id=1WsibBTsuRg_SF2Z6L6NFRTT-NjEy1oTx
-mkdir -p {{ROOT_PATH}}/dla2023-tts/waveglow/pretrained_model/
-mv waveglow_256channels_ljs_v2.pt {{ROOT_PATH}}/dla2023-tts/waveglow/pretrained_model/waveglow_256channels.pt
-```
-
-You may now launch training / testing of the model, specifying the config file. The default model config is given as default_test_config.json. However, you may check for other examples in src/configs/tts directory.
+Some advice:
+- We recommend you to start (and keep everything simple). With the
+default pre-norm transformer decoder. Don't overengineer.
+- You can look up typical hyperparameters like embedding dimension,
+  num. heads, sizes of FFNs, in the
+  [TinyStories](https://arxiv.org/abs/2305.07759) and
+  [Chinchilla](https://arxiv.org/abs/2203.15556) (last page) papers.
+- **Important**: run the final training in bfloat16 on an A100,
+  maximize the GPU utilization by maximizing the batch size. Look at
+  the power usage, or estimate it (like in
+  [PaLM](https://arxiv.org/pdf/2204.02311.pdf#appendix.B) appendix B,
+  for example).
+- Gradient updates for Medium size'd LMs are typically done for every
+  100k tokens (e.g. for sequence length 256 and batch size 64, you
+  might have to use gradient accumulation with ~6 steps or increase
+  the batch size to ~512 to reach >= 100k tokens per gradient step). ⚠️
+  This is just a commonly used heuristic, use with caution ⚠️.
+- Train for long enough (see Chinchilla paper for example). 10-20B
+  tokens should be good enough for sub 1B models.
+- We used [RoPE](https://blog.eleuther.ai/rotary-embeddings/) and
+  [RMSNorm](https://arxiv.org/abs/1910.07467v1), but the defaults should
+  also suffice.
+- General good advice on experimenting with DL and training models https://github.com/google-research/tuning_playbook
 
 
-Overall, to launch pretrained model you need to download the model-checkpoint and launch the test.py:
-```shell
-gdown --id 1X1B5qX4Ojeo4u569EmhoBZEQRxcU1t0O
-gdown --id 12JkbM8smVxqiqzDIXow_ervyDqkfqv4T
-mkdir default_test_model
-mv checkpoint-epoch95.pth default_test_model/checkpoint.pth
-mv config.json default_test_model/config.json
-```
-```shell
-python test.py \
-   -c default_test_model/config.json \
-   -r default_test_model/checkpoint.pth \
-   -o test_result.json
-``` 
+## Report
+
+Report should contain all the details about your reimplementation: log
+experiments, final configuration parameters and describe the process
+in detail (better than the TinyStories paper).
+
+> [!IMPORTANT]
+> Report should also contain at least **two** pieces of
+> evidence that your trained model outperforms the GPT2-XL in story
+> generation. One could be just qualitative examples. Second could be
+> whatever you want. Automatic evaluation with more powerfull LLMs, 
+> reproducing experiments from TinyStories paper, propose your own experiments 
+> introspecting the obtained model.
 
 
-## Structure
+## Scoring
 
-All written code is located in the src repository. Scripts launching training and testing are given as train.py and test.py in the root project directory. First one will call the trainer instance, which is the class used for training the model. For the convenience everything is getting logged using the wandb logger, you may also look audios and many interesting model-weights graphs out there.
+- `5 pts.` for the trained model
+- `5 pts.` for experiments and comparison with GPT2-XL
+- `2 pts.` extra for excellent reports.
 
-## Training
+## Compute Resources
 
-To train the model you need to specify the config path:
-```shell
-python3 train.py -c src/configs/config_name.json
-```
-If you want to proceed training process from the saved checkpoint, then:
-```shell
-python3 train.py -c src/configs/config_name.json -r saved/checkpoint/path.pth
-```
+We provide around 7700₽ for two large homework. You should manage
+resources yourself. In datasphere pricing this roughly equals to 15
+full A100 (g2.1) hours - enough for both big homework's final runs
+after debugging.
 
-## Testing
 
-Some basic tests are located in src/tests directory. Script to run them:
+## Dates and deadlines
 
-```shell
-python3 -m unittest discover src/tests
-```
+There will be two deadlines (So that you don't try to cramp everything into the last week). 
+
+**Checkpoint Deadline**. ⚠️ Only hard deadline ⚠️. By `20.11.2023 11:00` you
+should submit working training code. Working = it doesn't crash and
+seemingly trains the model. **If nothing is submitted** here, **we will subtract 2 points from the final grade**.
+
+**Final Deadline**. ⚠️ Only hard deadline ⚠️. By `04.12.2023 11:00` you should
+submit the final training code, model checkpoint and the detailed
+report (In either [typst](https://typst.app), [quarto](https://quarto.org), [wandb](https://wandb.ai/site/reports) or LaTeX).
+
+## Plagiarism
+
+Sharing code of your solution with fellow students is prohibited. If
+you have discussed any parts of the assignment with other students or
+used materials from PyTorch help/tutorials, make sure to state this in
+Anytask when submitting the assignment. Copying code from any source
+other than PyTorch help or tutorials is not allowed.
