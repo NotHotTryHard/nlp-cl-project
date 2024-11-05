@@ -3,15 +3,84 @@ import os
 import numpy as np
 import torch
 
+from datasets import Dataset, DatasetDict
 from pathlib import Path
 from sentencepiece import SentencePieceTrainer, SentencePieceProcessor
 from sklearn.model_selection import train_test_split
-from torch.utils.data import Dataset
+from torch.utils.data import TorchDataset
 from typing import Union, List, Tuple
 from tqdm import tqdm
 
 from src.utils import ROOT_PATH
+from src.datasets.cl_datasets import get_dataset
 
+
+class MixedSequentialDataset(Dataset):
+    TRAIN_VAL_RANDOM_SEED = 42
+
+    def __init__(self,
+                 base_mixing_rate,
+                 sequential_mixing_rate=0.0,
+                 base_dataset=None,
+                 datasets=None,
+                 base_dataset_name=None,
+                 datasets_names=None,
+                 tokenizer=None,
+                 args=None,
+                 **kwargs):
+        """
+            Dataset class for sequential fine-tuning on mixed data batches.
+            Provides samples from initial dataset / from previous sequential datasets
+            with specified probabilities.
+
+            base_mixing_rate: rate of samples from base dataset
+            sequential_mixing_rate: rate of samples drawn randomly from previous sequential datasets
+            -- SHOULD WE SUPPORT ADATPIVE SEQUENTIAL MIXING RATES?
+            
+            base_dataset: dataset object, if provided
+            datasets: list of sequential datasets as objects, if provided
+            OR
+            base_dataset_name: the name of the dataset to import from the supported list (get_datasets)
+            datasets_names: list of sequential datasets' names to import from the supported list (get_datasets)
+
+            tokenizer: tokenizer for get_datasets, used only in case of dataset names
+            args: args for get_datasets, used only in case of dataset names
+        """
+        super().__init__()
+
+        self.base_dataset = get_dataset(base_dataset_name, tokenizer, args) if base_dataset is None else base_dataset
+        self.sequential_datasets = [
+            get_dataset(dataset_name, tokenizer, args)
+            for dataset_name in datasets_names
+        ] if datasets is None else datasets
+
+        self.base_mixing_rate = base_mixing_rate
+        self.sequential_mixing_rate = sequential_mixing_rate
+
+        self.cum_sequential_length = np.cumsum([len(dataset) for dataset in self.sequential_datasets])
+    
+    def __len__(self):
+        return sum(len(dataset) for dataset in self.sequential_datasets)
+
+    def __getitem(self, idx):
+        # SHOULD WE GO FOR THIS ONE?
+        # real_idx = (1 - self.base_mixing_rate - self.sequential_mixing_rate)
+
+        p_base = np.random.rand()
+        if p_base < self.base_mixing_rate:
+            return self.base_dataset[idx]
+    
+        n_prev_datasets = next(i for i, length in enumerate(self.cum_sequential_length) if length >= idx)
+        prev_length = self.cum_sequential_length[n_prev_datasets - 1] if n_prev_datasets else 0
+
+        if self.sequential_mixing_rate:
+            p_seq = np.random.rand()
+            if p_seq < self.sequential_mixing_rate:
+                if n_prev_datasets:
+                    dataset_idx = np.random.randint(0, n_prev_datasets)
+                    return self.sequential_datasets[dataset_idx][idx - prev_length]
+        
+        return self.sequential_datasets[n_prev_datasets][idx - prev_length]
 
 class TinyStoriesDataset(Dataset):
     TRAIN_VAL_RANDOM_SEED = 42

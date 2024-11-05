@@ -1,3 +1,5 @@
+# Code from Continual-Post-Training repository: https://github.com/UIC-Liu-Lab/CPT/tree/main
+
 import json
 import os.path
 import random
