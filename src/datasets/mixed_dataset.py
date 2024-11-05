@@ -7,7 +7,7 @@ from datasets import Dataset, DatasetDict
 from pathlib import Path
 from sentencepiece import SentencePieceTrainer, SentencePieceProcessor
 from sklearn.model_selection import train_test_split
-from torch.utils.data import TorchDataset
+from torch.utils.data import Dataset as TorchDataset
 from typing import Union, List, Tuple
 from tqdm import tqdm
 
@@ -15,7 +15,7 @@ from src.utils import ROOT_PATH
 from src.datasets.cl_datasets import get_dataset
 
 
-class MixedSequentialDataset(Dataset):
+class MixedSequentialDataset(TorchDataset):
     TRAIN_VAL_RANDOM_SEED = 42
 
     def __init__(self,
@@ -57,10 +57,17 @@ class MixedSequentialDataset(Dataset):
         self.base_mixing_rate = base_mixing_rate
         self.sequential_mixing_rate = sequential_mixing_rate
 
-        self.cum_sequential_length = np.cumsum([len(dataset) for dataset in self.sequential_datasets])
+        self.cum_sequential_length = np.cumsum([self._get_len(dataset) for dataset in self.sequential_datasets])
+        self.replacements_counter = 0
     
     def __len__(self):
-        return sum(len(dataset) for dataset in self.sequential_datasets)
+        return sum(self._get_len(dataset) for dataset in self.sequential_datasets)
+
+    @staticmethod
+    def _get_len(dataset):
+        if hasattr(dataset, "num_rows"):
+            return dataset.num_rows
+        return len(dataset)
 
     def __getitem(self, idx):
         # SHOULD WE GO FOR THIS ONE?
@@ -68,19 +75,23 @@ class MixedSequentialDataset(Dataset):
 
         p_base = np.random.rand()
         if p_base < self.base_mixing_rate:
-            return self.base_dataset[idx]
+            self.replacements_counter += 1
+            base_idx = np.random.randint(0, self._get_len(self.base_dataset))
+            return self.base_dataset[base_idx]
     
-        n_prev_datasets = next(i for i, length in enumerate(self.cum_sequential_length) if length >= idx)
+        real_idx = idx - self.replacements_counter
+        n_prev_datasets = next(i for i, length in enumerate(self.cum_sequential_length) if length >= real_idx)
         prev_length = self.cum_sequential_length[n_prev_datasets - 1] if n_prev_datasets else 0
 
-        if self.sequential_mixing_rate:
+        if self.sequential_mixing_rate and n_prev_datasets:
             p_seq = np.random.rand()
             if p_seq < self.sequential_mixing_rate:
-                if n_prev_datasets:
-                    dataset_idx = np.random.randint(0, n_prev_datasets)
-                    return self.sequential_datasets[dataset_idx][idx - prev_length]
+                self.replacements_counter += 1
+                dataset_idx = np.random.randint(0, n_prev_datasets)
+                seq_idx = np.random.randint(0, self._get_len(self.sequential_datasets[dataset_idx]))
+                return self.sequential_datasets[dataset_idx][seq_idx]
         
-        return self.sequential_datasets[n_prev_datasets][idx - prev_length]
+        return self.sequential_datasets[n_prev_datasets][real_idx - prev_length]
 
 class TinyStoriesDataset(Dataset):
     TRAIN_VAL_RANDOM_SEED = 42
