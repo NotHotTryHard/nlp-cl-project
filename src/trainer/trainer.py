@@ -116,6 +116,8 @@ class Trainer(BaseTrainer):
         self.train_metrics.reset()
         self.writer.add_scalar("epoch", epoch)
 
+        changed_dataset = self.train_dataloader.dataset.update_epoch(epoch, self.epochs)
+
         for batch_idx, batch in enumerate(
                 tqdm(self.train_dataloader, desc="train", total=self.len_epoch)
         ):
@@ -163,7 +165,7 @@ class Trainer(BaseTrainer):
                 break
     
         log = last_train_metrics
-        if epoch % self.config["trainer"].get("eval_frequency", 1) == 0:
+        if epoch % self.config["trainer"].get("eval_frequency", 1) == 0 or changed_dataset:
             for part, dataloader in self.evaluation_dataloaders.items():
                 val_log = self._evaluation_epoch(epoch, part, dataloader)
                 log.update(**{f"{part}_{name}": value for name, value in val_log.items()})
@@ -180,6 +182,8 @@ class Trainer(BaseTrainer):
         """
         self.model.eval()
         self.evaluation_metrics.reset()
+
+        self.val_dataloader.dataset.update_epoch(epoch, self.epochs)
 
         with torch.no_grad():
             for batch_idx, batch in tqdm(

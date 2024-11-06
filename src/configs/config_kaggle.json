@@ -117,13 +117,12 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 20,
+    "epochs": 30,
     "eval_frequency": 5,
     "save_dir": "saved/",
     "save_period": 5,
     "verbosity": 2,
     "monitor": "min loss",
-    "early_stop": 100,
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
     "wandb_run_name": "T5s Mix=0.1 w/o grad clip",

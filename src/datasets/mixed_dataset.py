@@ -50,6 +50,16 @@ class MixedSequentialDataset(TorchDataset):
     def __len__(self):
         # return sum(len(dataset) for dataset in self.sequential_datasets)
         return len(self.sequential_datasets[self.current_dataset])
+    
+    def num_datasets(self):
+        return len(self.sequential_datasets)
+
+    def update_epoch(self, epoch, epochs):
+        if epoch > epochs // self.num_datasets():
+            self.current_dataset += 1
+            self.replacements_counter = 0
+            return True
+        return False
 
     def __getitem__(self, idx):
         if self.base_dataset is not None and self.base_mixing_rate:
