@@ -1,5 +1,5 @@
-torch==2.0.1
-torchvision==0.15.2
+torch==2.5.0
+torchvision==0.20.0
 numpy
 tqdm
 tensorboard
@@ -9,7 +9,7 @@ pandas
 datasets
 editdistance
 wandb
-torchaudio~=2.0.1
+torchaudio~=2.5.0
 pillow
 
 sentencepiece
@@ -19,3 +19,6 @@ requests==2.31.0
 platformdirs==3.11.0
 psutil==5.8
 decorator==4.4.2
+
+jsonlines
+rouge_score

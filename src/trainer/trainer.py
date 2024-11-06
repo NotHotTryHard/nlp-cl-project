@@ -123,7 +123,7 @@ class Trainer(BaseTrainer):
                 batch = self.process_batch(
                     batch,
                     is_train=True,
-                    metrics_tracker=self.train_metrics,
+                    metrics_tracker=self.train_metrics
                 )
             except RuntimeError as e:
                 if "out of memory" in str(e) and self.skip_oom:
@@ -239,11 +239,11 @@ class Trainer(BaseTrainer):
         
         metrics_tracker.update("loss", batch["loss"].item())
         for met in self.metrics:
-            if hasattr(met, "requires_preds") and met.requires_preds:
-                batch["preds"] = self.model._generative_step(batch)
-            metrics_tracker.update(met.name, met(**batch))
+            if (not is_train) or (self._compute_on_train(met)):
+                metrics_tracker.update(met.name, met(self.model, batch))
         
         return batch
+
 
     def _progress(self, batch_idx):
         base = "[{}/{} ({:.0f}%)]"

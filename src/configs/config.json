@@ -1,5 +1,5 @@
 {
-  "name": "decoder_on_tinystories",
+  "name": "T5_CL_summarization",
   "n_gpu": 1,
   "preprocessing": {},
   "model": {
@@ -12,10 +12,10 @@
   },
   "data": {
     "train": {
-      "batch_size": 256,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
+      "tokenizer_name": ["T5Tokenizer", "t5-small"],
       "use_mixed_dataset": true,
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
@@ -51,7 +51,7 @@
       ]
     },
     "val": {
-      "batch_size": 256,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
@@ -59,7 +59,7 @@
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
         "args": {
-          "sequential_mixing_rate": 0.1
+          "sequential_mixing_rate": 0.0
         }
       },
       "datasets": [
@@ -100,8 +100,10 @@
   },
   "metrics": [
     {
-      "type": "RougeMetric",
-      "args": {}
+      "type": "AverageRougeMetric",
+      "args": {
+        "name": "AverageRouge"
+      }
     }
   ],
   "lr_scheduler": {
@@ -115,16 +117,15 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 1000,
+    "epochs": 10,
     "save_dir": "saved/",
     "save_period": 5,
     "verbosity": 2,
     "monitor": "min loss",
     "early_stop": 100,
     "visualize": "wandb",
-    "wandb_project": "dl-hse-bhw-Tiny-Stories",
-    "wandb_run_name": "12L-8h-512-Decoder, sp-word",
-    "len_epoch": 1000,
-    "grad_norm_clip": 1.0
+    "wandb_project": "nlp-cl-project",
+    "wandb_run_name": "T5s Mix=0.1 w/o grad clip",
+    "grad_norm_clip": 100.0
   }
 }

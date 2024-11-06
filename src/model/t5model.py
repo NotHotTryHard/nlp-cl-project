@@ -67,8 +67,8 @@ class T5forSummarization(nn.Module):
         )
 
         preds = self.ids_to_clean_text(generated_ids)
-        target = self.ids_to_clean_text(batch["labels"])
-        input = self.ids_to_clean_text(batch["input_ids"])
+        target = self.ids_to_clean_text(batch["labels"]) #[torch.where(batch["labels"] != -100)])
+        input = self.ids_to_clean_text(batch["input_ids"]) #[torch.where(batch["labels"] != -100)])
         return input, target, preds
 
     def _generative_samples(self, batch):

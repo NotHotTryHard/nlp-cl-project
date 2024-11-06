@@ -57,7 +57,7 @@ class MixedSequentialDataset(TorchDataset):
                 return self.base_dataset[base_idx]
     
         real_idx = idx - self.replacements_counter
-        n_prev_datasets = next(i + 1 for i, length in enumerate(self.cum_sequential_length) if length > real_idx)
+        n_prev_datasets = next(i for i, length in enumerate(self.cum_sequential_length) if length > real_idx)
         prev_length = self.cum_sequential_length[n_prev_datasets - 1] if n_prev_datasets else 0
 
         if self.sequential_mixing_rate and n_prev_datasets:
