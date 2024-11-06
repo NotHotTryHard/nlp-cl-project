@@ -6,7 +6,7 @@
       "type": "T5forSummarization",
       "args": {
         "model_name": "t5-small",
-        "cache_dir": "/content/nlp-cl-project/cache/",
+        "cache_dir": "/kaggle/working/nlp-cl-project/cache/",
         "max_length": 256
       }
   },
@@ -27,7 +27,7 @@
         {
           "type": "OriginalDataset",
           "args": {
-            "dataset_dir": "/content/nlp-cl-project/summarization-data/cnndm",
+            "dataset_dir": "/kaggle/working/nlp-cl-project/summarization-data/cnndm",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
             "split": "train"
           }
@@ -35,7 +35,7 @@
         {
           "type": "OriginalDataset",
           "args": {
-            "dataset_dir": "/content/nlp-cl-project/summarization-data/wikihow",
+            "dataset_dir": "/kaggle/working/nlp-cl-project/summarization-data/wikihow",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
             "split": "train"
           }
@@ -43,7 +43,7 @@
         {
           "type": "OriginalDataset",
           "args": {
-            "dataset_dir": "/content/nlp-cl-project/summarization-data/xsum",
+            "dataset_dir": "/kaggle/working/nlp-cl-project/summarization-data/xsum",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
             "split": "train"
           }
@@ -66,7 +66,7 @@
         {
           "type": "OriginalDataset",
           "args": {
-            "dataset_dir": "/content/nlp-cl-project/summarization-data/cnndm",
+            "dataset_dir": "/kaggle/working/nlp-cl-project/summarization-data/cnndm",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
             "split": "valid"
           }
@@ -74,7 +74,7 @@
         {
           "type": "OriginalDataset",
           "args": {
-            "dataset_dir": "/content/nlp-cl-project/summarization-data/wikihow",
+            "dataset_dir": "/kaggle/working/nlp-cl-project/summarization-data/wikihow",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
             "split": "valid"
           }
@@ -82,7 +82,7 @@
         {
           "type": "OriginalDataset",
           "args": {
-            "dataset_dir": "/content/nlp-cl-project/summarization-data/xsum",
+            "dataset_dir": "/kaggle/working/nlp-cl-project/summarization-data/xsum",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
             "split": "valid"
           }
