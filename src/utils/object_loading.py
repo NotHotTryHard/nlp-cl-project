@@ -18,9 +18,6 @@ def get_dataloaders(configs: ConfigParser):
         # create and join datasets
         datasets = []
         for ds in params["datasets"]:
-            tokenizer_info = ds.get("tokenizer_name", ["T5Tokenizer", "google-t5/t5-small"])
-            ds["tokenizer"] = getattr(transformers, tokenizer_info[0]).from_pretrained(tokenizer_info[1])
-
             datasets.append(configs.init_obj(
                 ds, src.datasets,
                 config_parser=configs,
@@ -31,7 +28,7 @@ def get_dataloaders(configs: ConfigParser):
         if len(datasets) > 1:
             if params.get("use_mixed_dataset", False):
                 ds = params["mixed_dataset"]
-                ds["datasets"] = datasets
+                ds["args"]["datasets"] = datasets
                 dataset = configs.init_obj(
                     ds, src.datasets,
                     config_parser=configs,
@@ -60,7 +57,9 @@ def get_dataloaders(configs: ConfigParser):
         assert bs <= len(dataset), \
             f"Batch size ({bs}) shouldn't be larger than dataset length ({len(dataset)})"
         
-        collate_obj = CollateClass(pad_id=dataset.pad_id)
+        tokenizer_info = params.get("tokenizer_name", ["T5Tokenizer", "google-t5/t5-small"])
+        tokenizer = getattr(transformers, tokenizer_info[0]).from_pretrained(tokenizer_info[1])
+        collate_obj = CollateClass(tokenizer=tokenizer, max_length=params["max_length"])
     
         # create dataloader
         dataloader = DataLoader(

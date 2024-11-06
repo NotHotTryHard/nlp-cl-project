@@ -42,7 +42,7 @@ class MixedSequentialDataset(TorchDataset):
         self.base_mixing_rate = base_mixing_rate
         self.sequential_mixing_rate = sequential_mixing_rate
 
-        self.cum_sequential_length = np.cumsum([self._get_len(dataset) for dataset in self.sequential_datasets])
+        self.cum_sequential_length = np.cumsum([len(dataset) for dataset in self.sequential_datasets])
         self.replacements_counter = 0
     
     def __len__(self):
@@ -57,7 +57,7 @@ class MixedSequentialDataset(TorchDataset):
                 return self.base_dataset[base_idx]
     
         real_idx = idx - self.replacements_counter
-        n_prev_datasets = next(i for i, length in enumerate(self.cum_sequential_length) if length >= real_idx)
+        n_prev_datasets = next(i + 1 for i, length in enumerate(self.cum_sequential_length) if length > real_idx)
         prev_length = self.cum_sequential_length[n_prev_datasets - 1] if n_prev_datasets else 0
 
         if self.sequential_mixing_rate and n_prev_datasets:

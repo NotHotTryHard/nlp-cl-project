@@ -31,7 +31,7 @@ class CollateClass:
             truncation=True,
             return_tensors="pt"
         )
-        labels, decoder_attention_mask = target_encodings.input_ids, target_encodings.decoder_attention_mask
+        labels, decoder_attention_mask = target_encodings.input_ids, target_encodings.attention_mask
         labels[labels == self.tokenizer.pad_token_id] = -100
         
         return {

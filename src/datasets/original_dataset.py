@@ -18,7 +18,6 @@ from src.datasets.cl_datasets import get_dataset
 class OriginalDataset(TorchDataset):
     def __init__(self,
                  dataset_dir=None,
-                 tokenizer=None,
                  max_length=512,
                  max_samples=None,
                  split="train",
@@ -42,13 +41,12 @@ class OriginalDataset(TorchDataset):
         self.max_samples = max_samples
         self.split = split
         self.data_dir = dataset_dir
-
-        self.data = self._get_data(dataset_dir)
+        self.data = self._get_data()
     
     def _get_data(self):
         data = []
         for subdir in os.listdir(self.data_dir):
-            subdir_path = os.join(self.data_dir, subdir)
+            subdir_path = os.path.join(self.data_dir, subdir)
 
             if os.path.isdir(subdir_path):
                 file_path = os.path.join(subdir_path, f"{self.split}.txt")

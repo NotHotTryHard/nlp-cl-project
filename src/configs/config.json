@@ -5,14 +5,17 @@
   "model": {
       "type": "T5forSummarization",
       "args": {
-        "model_name": "t5-base",
-        "cache_dir": "/content/nlp-cl-project/cache/"
+        "model_name": "t5-small",
+        "cache_dir": "/content/nlp-cl-project/cache/",
+        "max_length": 256
       }
   },
   "data": {
     "train": {
       "batch_size": 256,
       "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
       "use_mixed_dataset": true,
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
@@ -26,8 +29,7 @@
           "args": {
             "dataset_dir": "/content/nlp-cl-project/summarization-data/cnndm",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
-            "split": "train",
-            "max_length": 512
+            "split": "train"
           }
         },
         {
@@ -35,8 +37,7 @@
           "args": {
             "dataset_dir": "/content/nlp-cl-project/summarization-data/wikihow",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
-            "split": "train",
-            "max_length": 512
+            "split": "train"
           }
         },
         {
@@ -44,8 +45,7 @@
           "args": {
             "dataset_dir": "/content/nlp-cl-project/summarization-data/xsum",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
-            "split": "train",
-            "max_length": 512
+            "split": "train"
           }
         }
       ]
@@ -53,9 +53,8 @@
     "val": {
       "batch_size": 256,
       "num_workers": 5,
-      "inference_on_evaluation": true,
-      "inference_indices": [24, 2, 22],
-      "inference_temperatures": [0.5, 1.0, 2.0],
+      "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
       "use_mixed_dataset": true,
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
@@ -69,8 +68,7 @@
           "args": {
             "dataset_dir": "/content/nlp-cl-project/summarization-data/cnndm",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
-            "split": "valid",
-            "max_length": 512
+            "split": "valid"
           }
         },
         {
@@ -78,8 +76,7 @@
           "args": {
             "dataset_dir": "/content/nlp-cl-project/summarization-data/wikihow",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
-            "split": "valid",
-            "max_length": 512
+            "split": "valid"
           }
         },
         {
@@ -87,8 +84,7 @@
           "args": {
             "dataset_dir": "/content/nlp-cl-project/summarization-data/xsum",
             "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
-            "split": "valid",
-            "max_length": 512
+            "split": "valid"
           }
         }
       ]

@@ -21,6 +21,8 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
+def get_number_of_parameters(model):
+        return sum(p.numel() for p in model.parameters())
 
 def main(config):
     logger = config.get_logger("train")
@@ -29,10 +31,7 @@ def main(config):
     dataloaders = get_dataloaders(config)
 
     # build model architecture, then print to console
-    model = module_arch.DecoderModel(
-        config=config.config,
-        dataset=dataloaders["train"].dataset
-    )
+    model = config.init_obj(config["model"], module_arch)
     logger.info(model)
 
     # prepare for (multi-device) GPU training
@@ -41,10 +40,13 @@ def main(config):
     if len(device_ids) > 1:
         model = torch.nn.DataParallel(model, device_ids=device_ids)
     
-    print(f"\nNumber of model parameters: {model.get_number_of_parameters()}\n")
+    print(f"\nNumber of model parameters: {get_number_of_parameters(model)}\n")
 
     # get function handles of loss and metrics
-    pad_id = dataloaders["train"].dataset.pad_id
+    if hasattr(dataloaders["train"].dataset, "pad_id"):
+        pad_id = dataloaders["train"].dataset.pad_id
+    else:
+        pad_id = -100
     criterion = config.init_obj(config["loss"], torch.nn, ignore_index=pad_id).to(device)
 
     metrics = [
@@ -58,20 +60,17 @@ def main(config):
     optimizer = config.init_obj(config["optimizer"], torch.optim, params)
     lr_scheduler = config.init_obj(config["lr_scheduler"], torch.optim.lr_scheduler, optimizer)
 
-    inference_on_evaluation = config["data"]["val"]["inference_on_evaluation"]
+    inference_indices = None
+    inference_temperatures = None
+    inference_on_evaluation = config["data"]["val"].get("inference_on_evaluation", False)
     if inference_on_evaluation:
         inference_indices = config["data"]["val"].get(
-            "inference_indices", None
+            "inference_indices", [24, 2, 22]
         )
         inference_temperatures = config["data"]["val"].get(
-            "inference_temperatures", None
+            "inference_temperatures", [1.0]
         )
-
-        if inference_indices is None:
-            inference_indices = [24, 2, 22]
-        if inference_temperatures is None:
-            inference_temperatures = [1.0]
-
+    
     trainer = Trainer(
         model,
         criterion,
