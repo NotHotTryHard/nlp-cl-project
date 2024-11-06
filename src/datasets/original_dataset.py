@@ -15,12 +15,13 @@ from src.utils import ROOT_PATH
 from src.datasets.cl_datasets import get_dataset
 
 
-class SequentialDataset(TorchDataset):
+class OriginalDataset(TorchDataset):
     def __init__(self,
-                 max_length=512,
-                 datasets=None,
-                 datasets_names=None,
+                 dataset_dir=None,
                  tokenizer=None,
+                 max_length=512,
+                 max_samples=None,
+                 split="train",
                  args=None,
                  **kwargs):
         """
@@ -37,36 +38,42 @@ class SequentialDataset(TorchDataset):
         """
         super().__init__()
 
-        self.sequential_datasets = [
-            get_dataset(dataset_name, tokenizer, args)
-            for dataset_name in datasets_names
-        ] if datasets is None else datasets
-
-        self.cum_sequential_length = np.cumsum([self._get_len(dataset) for dataset in self.sequential_datasets])
-        self.replacements_counter = 0
-
         self.max_length = max_length
+        self.max_samples = max_samples
+        self.split = split
+        self.data_dir = dataset_dir
+
+        self.data = self._get_data(dataset_dir)
+    
+    def _get_data(self):
+        data = []
+        for subdir in os.listdir(self.data_dir):
+            subdir_path = os.join(self.data_dir, subdir)
+
+            if os.path.isdir(subdir_path):
+                file_path = os.path.join(subdir_path, f"{self.split}.txt")
+                if not os.path.isfile(file_path):
+                    print(f"No such file: {file_path}!")
+                    continue
+                with open(file_path, 'r') as file:
+                    for line in file:
+                        input, target = line.strip().split('\t')
+                        data.append([input, target])
+                        if self.max_samples and len(data) >= self.max_samples:
+                            return data
+        return data
     
     def __len__(self):
-        return sum(self._get_len(dataset) for dataset in self.sequential_datasets)
-
-    @staticmethod
-    def _get_len(dataset):
-        if hasattr(dataset, "num_rows"):
-            return dataset.num_rows        НАПИСАТЬ САППОРТ ['train'] и ['text'] сплитов
-        return len(dataset)
+        return len(self.data)
 
     def __getitem__(self, idx):
-        real_idx = idx - self.replacements_counter
-        n_prev_datasets = next(i for i, length in enumerate(self.cum_sequential_length) if length >= real_idx)
-        prev_length = self.cum_sequential_length[n_prev_datasets - 1] if n_prev_datasets else 0
-        
-        sample = self.sequential_datasets[n_prev_datasets][real_idx - prev_length]
-    
-        if len(sample) > self.max_length - 2:
-            sample = sample[:self.max_length - 2]
-
-        pads = [self.pad_id for _ in range(self.max_length - 2 - len(sample))]
-        sample = torch.tensor([self.bos_id] + sample + [self.eos_id] + pads)
-
-        return sample
+        indices_list = []
+        for sentence in self.data[idx]:
+            indices_list.append(self.tokenizer.batch_encode_plus(
+                [sentence],
+                padding=False,
+                max_length=self.max_length,
+                truncation=True,
+                return_tensors="pt"
+            ))
+        return indices_list[0], indices_list[1]

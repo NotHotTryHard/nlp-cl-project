@@ -26,9 +26,19 @@ def get_dataloaders(configs: ConfigParser):
                 config_parser=configs,
                 num_workers=num_workers
             ))
+        
         assert len(datasets)
         if len(datasets) > 1:
-            dataset = ConcatDataset(datasets)
+            if params.get("use_mixed_dataset", False):
+                ds = params["mixed_dataset"]
+                ds["datasets"] = datasets
+                dataset = configs.init_obj(
+                    ds, src.datasets,
+                    config_parser=configs,
+                    num_workers=num_workers
+                )
+            else:
+                dataset = ConcatDataset(datasets)
         else:
             dataset = datasets[0]
 
