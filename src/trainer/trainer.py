@@ -225,11 +225,12 @@ class Trainer(BaseTrainer):
             self.optimizer.zero_grad()
         
 #         with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
-        batch["logits"] = self.model(batch["indices"][:, :-1])
-        batch["loss"] = self.criterion(
-            batch["logits"].transpose(1, 2),
-            batch["indices"][:, 1:]
-        )
+        # batch["logits"] = self.model(batch["indices"][:, :-1])
+        # batch["loss"] = self.criterion(
+        #     batch["logits"].transpose(1, 2),
+        #     batch["indices"][:, 1:]
+        # )
+        batch["loss"] = self.model(batch)
 
         if is_train:
             batch["loss"].backward()
@@ -238,6 +239,8 @@ class Trainer(BaseTrainer):
         
         metrics_tracker.update("loss", batch["loss"].item())
         for met in self.metrics:
+            if hasattr(met, "requires_preds") and met.requires_preds:
+                batch["preds"] = self.model._generative_step(batch)
             metrics_tracker.update(met.name, met(**batch))
         
         return batch

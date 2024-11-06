@@ -67,13 +67,15 @@ class OriginalDataset(TorchDataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        indices_list = []
-        for sentence in self.data[idx]:
-            indices_list.append(self.tokenizer.batch_encode_plus(
-                [sentence],
-                padding=False,
-                max_length=self.max_length,
-                truncation=True,
-                return_tensors="pt"
-            ))
-        return indices_list[0], indices_list[1]
+        # returns [input, target] in sentences, tokenizer in collate
+        return self.data[idx]
+    
+        # for sentence in self.data[idx]:
+            # indices_list.append(self.tokenizer.batch_encode_plus(
+            #     [sentence],
+            #     padding=False,
+            #     max_length=self.max_length,
+            #     truncation=True,
+            #     return_tensors="pt"
+            # ))
+        # return indices_list[0], indices_list[1]
