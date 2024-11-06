@@ -125,7 +125,7 @@ class MixedSequentialDatasetCategorical(TorchDataset):
     @staticmethod
     def _get_len(dataset):
         if hasattr(dataset, "num_rows"):
-            return dataset.num_rows        НАПИСАТЬ САППОРТ ['train'] и ['text'] сплитов
+            return dataset.num_rows        # НАПИСАТЬ САППОРТ ['train'] и ['text'] сплитов
         return len(dataset)
 
     def _get_mixing_sample(self, idx):

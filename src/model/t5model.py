@@ -5,13 +5,15 @@ import pdb
 import sys
 import torch
 import torch.nn as nn
+
 from torch.nn.functional import kl_div
+from transformers import T5Tokenizer, T5ForConditionalGeneration
 
 class T5forSummarization(nn.Module):
-    def __init__(self, model, tokenizer, max_length):
+    def __init__(self, model_name, cache_dir, max_length):
         super(T5forSummarization, self).__init__()
-        self.model = model
-        self.tokenizer = tokenizer
+        self.model = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_dir)
+        self.tokenizer = T5Tokenizer.from_pretrained(model_name, cache_dir=cache_dir)
         self.max_length = max_length
         self.decoder_start_token_id_use = self.model.config.decoder_start_token_id
 
@@ -57,7 +59,7 @@ class T5forSummarization(nn.Module):
             decoder_input_ids=decoder_input_ids,
             attention_mask=batch["attention_mask"],
             use_cache=True,
-            max_length=128,
+            max_length=self.max_length,
             num_beams=4,
             repetition_penalty=2.5,
             length_penalty=1.0,
