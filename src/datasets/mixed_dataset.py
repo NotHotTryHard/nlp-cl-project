@@ -46,6 +46,7 @@ class MixedSequentialDataset(TorchDataset):
         self.replacements_counter = 0
 
         self.current_dataset = 0
+        self.dataset_start_epoch = 1
     
     def __len__(self):
         # return sum(len(dataset) for dataset in self.sequential_datasets)
@@ -55,9 +56,11 @@ class MixedSequentialDataset(TorchDataset):
         return len(self.sequential_datasets)
 
     def update_epoch(self, epoch, epochs):
-        if epoch > epochs // self.num_datasets():
+        if epoch - self.dataset_start_epoch + 1 > epochs // self.num_datasets():
             self.current_dataset += 1
             self.replacements_counter = 0
+            self.dataset_start_epoch = epoch
+            print(f"Switched to dataset {self.current_dataset + 1} / {self.num_datasets()}")
             return True
         return False
 
