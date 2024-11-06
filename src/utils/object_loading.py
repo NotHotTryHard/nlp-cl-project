@@ -1,3 +1,5 @@
+import transformers
+
 from operator import xor
 
 from torch.utils.data import ConcatDataset, DataLoader
@@ -16,6 +18,9 @@ def get_dataloaders(configs: ConfigParser):
         # create and join datasets
         datasets = []
         for ds in params["datasets"]:
+            tokenizer_info = ds.get("tokenizer_name", ["T5Tokenizer", "google-t5/t5-small"])
+            ds["tokenizer"] = getattr(transformers, tokenizer_info[0]).from_pretrained(tokenizer_info[1])
+
             datasets.append(configs.init_obj(
                 ds, src.datasets,
                 config_parser=configs,

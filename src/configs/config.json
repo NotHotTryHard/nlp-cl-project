@@ -22,21 +22,14 @@
       "num_workers": 5,
       "datasets": [
         {
-          "type": "TinyStoriesDataset",
+          "type": "MixedSequentialDataset",
           "args": {
-            "raw_data_dir": "/home/jupyter/work/resources/tinystories_dataset",
-            "data_dir": "/home/jupyter/work/resources/tinystories_processed",
-            "val_size": 0.1,
-            "max_length": 256,
-            "max_index_length": 100000000000000,
-            "tokenizer_config": {
-              "vocab_size": 5000,
-              "pad_id": 3,
-              "model_type": "word",
-              "model_prefix_name": "/home/jupyter/work/resources/sentencepiece/sp_word",
-              "normalization_rule_name": "nmt_nfkc"
-            },
-            "train": true
+            "base_mixing_rate": 0.1,
+            "sequential_mixing_rate": 0.1,
+            "base_dataset_name": "restaurant_unsup",
+            "datasets_names": ["ai_unsup", "acl_unsup", "agnews_unsup"],
+            "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
+            "max_length": 256
           }
         }
       ]
@@ -49,21 +42,11 @@
       "inference_temperatures": [0.5, 1.0, 2.0],
       "datasets": [
         {
-          "type": "TinyStoriesDataset",
+          "type": "SequentialDataset",
           "args": {
-            "raw_data_dir": "/home/jupyter/work/resources/tinystories_dataset",
-            "data_dir": "/home/jupyter/work/resources/tinystories_processed",
-            "val_size": 0.1,
-            "max_length": 256,
-            "max_index_length": 100000,
-            "tokenizer_config": {
-              "vocab_size": 5000,
-              "pad_id": 3,
-              "model_type": "word",
-              "model_prefix_name": "/home/jupyter/work/resources/sentencepiece/sp_word",
-              "normalization_rule_name": "nmt_nfkc"
-            },
-            "train": false
+            "datasets_names": ["ai_unsup"],
+            "tokenizer_name": ["T5Tokenizer", "google-t5/t5-small"],
+            "max_length": 256
           }
         }
       ]
