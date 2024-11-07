@@ -60,16 +60,11 @@ def main(config):
     optimizer = config.init_obj(config["optimizer"], torch.optim, params)
     lr_scheduler = config.init_obj(config["lr_scheduler"], torch.optim.lr_scheduler, optimizer)
 
-    inference_indices = None
-    inference_temperatures = None
-    inference_on_evaluation = config["data"]["val"].get("inference_on_evaluation", False)
-    if inference_on_evaluation:
-        inference_indices = config["data"]["val"].get(
-            "inference_indices", [24, 2, 22]
-        )
-        inference_temperatures = config["data"]["val"].get(
-            "inference_temperatures", [1.0]
-        )
+    inference_indices = {}
+    for split in config["data"]:
+        if split != "train":
+            if config["data"][split].get("inference_on_evaluation", False):
+                inference_indices[split] = config["data"][split].get("inference_indices", [24, 2, 22])
     
     trainer = Trainer(
         model,
@@ -81,9 +76,8 @@ def main(config):
         dataloaders=dataloaders,
         lr_scheduler=lr_scheduler,
         len_epoch=config["trainer"].get("len_epoch", None),
-        inference_on_evaluation=inference_on_evaluation,
-        inference_indices=inference_indices,
-        inference_temperatures=inference_temperatures
+        inference_on_evaluation=len(inference_indices) > 0,
+        inference_indices=inference_indices
     )
 
     trainer.train()

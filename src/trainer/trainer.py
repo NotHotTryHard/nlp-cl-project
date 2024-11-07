@@ -1,4 +1,5 @@
 import random
+from collections import defaultdict
 from pathlib import Path
 from random import shuffle
 
@@ -35,8 +36,7 @@ class Trainer(BaseTrainer):
             len_epoch=None,
             skip_oom=True,
             inference_on_evaluation=False,
-            inference_indices=None,
-            inference_temperatures=[1.0]
+            inference_indices=None
     ):
         super().__init__(
             model, criterion, metrics,
@@ -45,7 +45,6 @@ class Trainer(BaseTrainer):
         self.skip_oom = skip_oom
         self.config = config
         self.train_dataloader = dataloaders["train"]
-        self.val_dataloader = dataloaders["val"]
 
         if len_epoch is None:
             # epoch-based training
@@ -69,20 +68,16 @@ class Trainer(BaseTrainer):
 
         self.inference_on_evaluation = inference_on_evaluation
         self.inference_indices = inference_indices
-        self.inference_temperatures = inference_temperatures
-        self.val_dataset = self.val_dataloader.dataset
 
         if self.inference_on_evaluation:
-            self.inference_texts = []
-            self.inference_prefixes = []
+            self.inference_batch = defaultdict(dict)
+            self.inference_texts = defaultdict(list)
 
-            for ind in self.inference_indices:
-                text = self.val_dataset.files[ind]
-                # take first sentences of stories as prefixes
-                prefix = text.split('.')[0] + '.'
-
-                self.inference_texts.append(text)
-                self.inference_prefixes.append(prefix)
+            for split, val_dataloader in self.evaluation_dataloaders.items():
+                if split in self.inference_indices:
+                    inference_samples = [val_dataloader.dataset[ind] for ind in self.inference_indices[split]]
+                    self.inference_batch[split] = val_dataloader.collate_fn(inference_samples)
+                    self.inference_texts[split] = [sample[1] for sample in inference_samples]
 
     @staticmethod
     def _compute_on_train(metric):
@@ -183,8 +178,6 @@ class Trainer(BaseTrainer):
         self.model.eval()
         self.evaluation_metrics.reset()
 
-        self.val_dataloader.dataset.update_epoch(epoch, self.epochs)
-
         with torch.no_grad():
             for batch_idx, batch in tqdm(
                     enumerate(dataloader),
@@ -200,18 +193,13 @@ class Trainer(BaseTrainer):
             self.writer.set_step(epoch * self.len_epoch, part)
             self._log_scalars(self.evaluation_metrics)
         
-            if self.inference_on_evaluation:
-                for ind, prefix, orig_text in zip(
-                    self.inference_indices,
-                    self.inference_prefixes,
-                    self.inference_texts
-                ):
-                    for temp in self.inference_temperatures:
-                        text = self.model.inference(prefix=prefix, temp=temp)
-                        self._log_inference_as_table(
-                            epoch, temp, prefix, orig_text, text,
-                            name=f"sample_{ind}"
-                        )
+            if self.inference_on_evaluation and (part in self.inference_indices):
+                inference_predicts = self.model(self.inference_batch[part])
+                for ind, text, predict in zip (self.inference_indices[part], self.inference_texts, inference_predicts):
+                    self._log_inference_as_table(
+                        epoch, text, predict,
+                        name=f"sample_{ind}"
+                    )
 
         if self.lr_scheduler is not None:
             if not isinstance(self.lr_scheduler, ReduceLROnPlateau):
@@ -272,11 +260,11 @@ class Trainer(BaseTrainer):
     def _log_text(self, text, name="text"):
         self.writer.add_text(name, text)
     
-    def _log_inference_as_table(self, epoch, temp, prefix, orig_text, text, name):
+    def _log_inference_as_table(self, epoch, orig_text, predict, name):
         self.writer.add_table(
             table_name=name,
-            data=[epoch, temp, prefix, orig_text, text],
-            columns=["epoch", "temp", "prefix", "original story", "generated story"]
+            data=[epoch, orig_text, predict],
+            columns=["epoch", "temp", "target", "predict"]
         )
 
     @torch.no_grad()
