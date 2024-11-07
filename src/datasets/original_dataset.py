@@ -40,7 +40,7 @@ class OriginalDataset(TorchDataset):
         self.max_length = max_length
         self.max_samples = max_samples
         self.split = split
-        self.data_dir = dataset_dir
+        self.data_dir = ROOT_PATH / dataset_dir
         self.data = self._get_data()
     
     def _get_data(self):
@@ -65,7 +65,7 @@ class OriginalDataset(TorchDataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        # returns [input, target] in sentences, tokenizer in collate
+        """ returns [input, target] in sentences, tokenizer in collate"""
         return self.data[idx]
     
         # for sentence in self.data[idx]:

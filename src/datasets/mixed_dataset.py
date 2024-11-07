@@ -26,6 +26,8 @@ class MixedSequentialDataset(TorchDataset):
             Dataset class for sequential fine-tuning on mixed data batches.
             Provides samples from initial dataset / from previous sequential datasets
             with specified probabilities.
+            
+            Switches between datasets epoch-wise via update_epoch method.
 
             base_mixing_rate: rate of samples from base dataset
             sequential_mixing_rate: rate of samples drawn randomly from previous sequential datasets

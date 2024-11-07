@@ -5,7 +5,7 @@
   "model": {
       "type": "T5forSummarization",
       "args": {
-        "model_name": "t5-small",
+        "model_name": "t5-base",
         "cache_dir": "cache/",
         "max_length": 256
       }
@@ -15,7 +15,7 @@
       "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-small"],
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": true,
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
@@ -51,7 +51,7 @@
       "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-small"],
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -67,7 +67,7 @@
       "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-small"],
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -83,7 +83,7 @@
       "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-small"],
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
         {
