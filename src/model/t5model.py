@@ -60,7 +60,7 @@ class T5forSummarization(nn.Module):
             attention_mask=batch["attention_mask"],
             use_cache=True,
             max_length=self.max_length,
-            num_beams=4,
+            num_beams=2,
             repetition_penalty=2.5,
             length_penalty=1.0,
             early_stopping=True

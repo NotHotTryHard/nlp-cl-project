@@ -12,7 +12,7 @@
   },
   "data": {
     "train": {
-      "batch_size": 32,
+      "batch_size": 8,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -48,7 +48,7 @@
       ]
     },
     "val_cnndm": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -64,7 +64,7 @@
       ]
     },
     "val_wikihow": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -80,7 +80,7 @@
       ]
     },
     "val_xsum": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -126,12 +126,12 @@
     "epochs": 60,
     "eval_frequency": 10,
     "save_dir": "saved/",
-    "save_period": 5,
+    "save_period": 60,
     "verbosity": 2,
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "T5s Mix=0.1 w/o grad clip",
+    "wandb_run_name": "T5b Mix=0.1 w/o grad clip",
     "grad_norm_clip": 100.0
   }
 }
