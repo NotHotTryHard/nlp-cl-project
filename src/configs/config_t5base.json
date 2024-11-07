@@ -123,8 +123,8 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 30,
-    "eval_frequency": 5,
+    "epochs": 60,
+    "eval_frequency": 10,
     "save_dir": "saved/",
     "save_period": 5,
     "verbosity": 2,
