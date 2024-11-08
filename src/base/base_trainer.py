@@ -81,7 +81,7 @@ class BaseTrainer:
             self._save_checkpoint(self._last_epoch, save_best=False)
             self.writer.log_tables()
             raise e
-
+    
     def _train_process(self):
         """
         Full training logic

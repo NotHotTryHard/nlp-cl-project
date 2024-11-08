@@ -158,6 +158,10 @@ class Trainer(BaseTrainer):
 
             if batch_idx >= self.len_epoch:
                 break
+
+        if self.lr_scheduler is not None:
+            if not isinstance(self.lr_scheduler, ReduceLROnPlateau):
+                self.lr_scheduler.step()
     
         log = last_train_metrics
         if epoch % self.config["trainer"].get("eval_frequency", 1) == 0 or changed_dataset:
@@ -200,10 +204,6 @@ class Trainer(BaseTrainer):
                         epoch, text, predict,
                         name=f"sample_{ind}"
                     )
-
-        if self.lr_scheduler is not None:
-            if not isinstance(self.lr_scheduler, ReduceLROnPlateau):
-                self.lr_scheduler.step()
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():
