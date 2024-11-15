@@ -3,9 +3,20 @@ from src.datasets.huggingface_dataset import HuggingFaceDataset
 
 
 class MathQADataset(TorchDataset):
-    def __init__(self, **kwargs):
+    def __init__(
+            self,
+            path,
+            name=None,
+            streaming=False,
+            split=None,
+            data_files=None,
+            max_samples=None,
+            shuffle=None,
+            shuffle_seed=None,
+            **kwargs
+    ):
         super().__init__()
-        self.dataset = HuggingFaceDataset(**kwargs)
+        self.dataset = HuggingFaceDataset(path, name, streaming, split, data_files, max_samples, shuffle, shuffle_seed)
         self.category_sep = " [CAT] "
         self.options_sep = " [OPT] "
     
@@ -20,9 +31,20 @@ class MathQADataset(TorchDataset):
 
 
 class MathDataset(TorchDataset):
-    def __init__(self, **kwargs):
+    def __init__(
+            self,
+            path,
+            name=None,
+            streaming=False,
+            split=None,
+            data_files=None,
+            max_samples=None,
+            shuffle=None,
+            shuffle_seed=None,
+            **kwargs
+    ):
         super().__init__()
-        self.dataset = HuggingFaceDataset(**kwargs)
+        self.dataset = HuggingFaceDataset(path, name, streaming, split, data_files, max_samples, shuffle, shuffle_seed)
     
     def __len__(self):
         return len(self.dataset)
