@@ -19,7 +19,7 @@ class HuggingFaceDataset(TorchDataset):
             assert not streaming
             assert split is not None
 
-            dataset = load_dataset(path, name=name)[split]
+            dataset = load_dataset(path, name=name, split=split)
             if shuffle:
                 if shuffle_seed is not None:
                     dataset = dataset.shuffle(shuffle_seed)
