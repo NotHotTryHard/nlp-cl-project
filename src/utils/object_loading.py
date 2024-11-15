@@ -16,19 +16,25 @@ def get_dataloaders(configs: ConfigParser):
         num_workers = params.get("num_workers", 1)
 
         # create and join datasets
+        base_dataset = None
         datasets = []
         for ds in params["datasets"]:
-            datasets.append(configs.init_obj(
+            dataset = configs.init_obj(
                 ds, src.datasets,
                 config_parser=configs,
                 num_workers=num_workers
-            ))
+            )
+            if ds.get("base_dataset", False):
+                base_dataset = dataset
+            else:
+                datasets.append(dataset)
         
         assert len(datasets)
         if len(datasets) > 1:
             if params.get("use_mixed_dataset", False):
                 ds = params["mixed_dataset"]
                 ds["args"]["datasets"] = datasets
+                ds["args"]["base_dataset"] = base_dataset
                 dataset = configs.init_obj(
                     ds, src.datasets,
                     config_parser=configs,
