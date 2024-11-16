@@ -17,7 +17,7 @@ from tqdm import tqdm
 from src.base import BaseTrainer
 from src.logger.utils import plot_spectrogram_to_buf
 from src.utils import inf_loop, MetricTracker
-
+from src.datasets import SequentialDataset
 
 class Trainer(BaseTrainer):
     """
@@ -36,7 +36,8 @@ class Trainer(BaseTrainer):
             len_epoch=None,
             skip_oom=True,
             inference_on_evaluation=False,
-            inference_indices=None
+            inference_indices=None,
+            first_epoch_eval_only=True
     ):
         super().__init__(
             model, criterion, metrics,
@@ -65,6 +66,8 @@ class Trainer(BaseTrainer):
         self.evaluation_metrics = MetricTracker(
             "loss", *[m.name for m in self.metrics], writer=self.writer
         )
+
+        self.first_epoch_eval_only = first_epoch_eval_only
 
         self.inference_on_evaluation = inference_on_evaluation
         self.inference_indices = inference_indices
@@ -111,7 +114,16 @@ class Trainer(BaseTrainer):
         self.train_metrics.reset()
         self.writer.add_scalar("epoch", epoch)
 
-        changed_dataset = self.train_dataloader.dataset.update_epoch(epoch, self.epochs)
+        if isinstance(self.train_dataloader.dataset, SequentialDataset):
+            changed_dataset = self.train_dataloader.dataset.update_epoch(epoch, self.epochs)
+
+        if self.first_epoch_eval_only and epoch == 0:
+            log = self.train_metrics.result()
+            if epoch % self.config["trainer"].get("eval_frequency", 1) == 0 or changed_dataset:
+                for part, dataloader in self.evaluation_dataloaders.items():
+                    val_log = self._evaluation_epoch(epoch, part, dataloader)
+                    log.update(**{f"{part}_{name}": value for name, value in val_log.items()})
+            return log
 
         for batch_idx, batch in enumerate(
                 tqdm(self.train_dataloader, desc="train", total=self.len_epoch)

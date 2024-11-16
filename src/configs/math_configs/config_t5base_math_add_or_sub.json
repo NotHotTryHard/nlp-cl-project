@@ -49,170 +49,7 @@
           "args": {
             "path": "deepmind/math_dataset",
             "name": "arithmetic__add_or_sub",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
-          }
-        }
-      ]
-    },
-    "val_add_or_sub_in_base": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "MathDataset",
-          "args": {
-            "path": "deepmind/math_dataset",
-            "name": "arithmetic__add_or_sub_in_base",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
-          }
-        }
-      ]
-    },
-    "val_add_sub_multiple": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "MathDataset",
-          "args": {
-            "path": "deepmind/math_dataset",
-            "name": "arithmetic__add_sub_multiple",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
-          }
-        }
-      ]
-    },
-    "val_div": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "MathDataset",
-          "args": {
-            "path": "deepmind/math_dataset",
-            "name": "arithmetic__div",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
-          }
-        }
-      ]
-    },
-    "val_mixed": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "MathDataset",
-          "args": {
-            "path": "deepmind/math_dataset",
-            "name": "arithmetic__mixed",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
-          }
-        }
-      ]
-    },
-    "val_mul": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "MathDataset",
-          "args": {
-            "path": "deepmind/math_dataset",
-            "name": "arithmetic__mul",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
-          }
-        }
-      ]
-    },
-    "val_mul_div_multiple": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "MathDataset",
-          "args": {
-            "path": "deepmind/math_dataset",
-            "name": "arithmetic__mul_div_multiple",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
-          }
-        }
-      ]
-    },
-    "val_nearest_integer_root": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "MathDataset",
-          "args": {
-            "path": "deepmind/math_dataset",
-            "name": "arithmetic__nearest_integer_root",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
-          }
-        }
-      ]
-    },
-    "val_simplify_surd": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "MathDataset",
-          "args": {
-            "path": "deepmind/math_dataset",
-            "name": "arithmetic__simplify_surd",
-            "split": "test",
-            "max_samples": 10000,
-            "shuffle": true,
-            "shuffle_seed": 52
+            "split": "test"
           }
         }
       ]
@@ -227,12 +64,6 @@
     }
   },
   "metrics": [
-    {
-      "type": "AverageRougeMetric",
-      "args": {
-        "name": "AverageRouge"
-      }
-    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
@@ -246,14 +77,14 @@
   },
   "trainer": {
     "epochs": 60,
-    "eval_frequency": 10,
+    "eval_frequency": 1,
     "save_dir": "saved/",
     "save_period": 60,
     "verbosity": 2,
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "T5b Mix=0.1 w/o grad clip",
+    "wandb_run_name": "T5b on Math add_or_sub",
     "grad_norm_clip": 100.0
   }
 }

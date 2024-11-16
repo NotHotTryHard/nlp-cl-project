@@ -77,7 +77,8 @@ def main(config):
         lr_scheduler=lr_scheduler,
         len_epoch=config["trainer"].get("len_epoch", None),
         inference_on_evaluation=len(inference_indices) > 0,
-        inference_indices=inference_indices
+        inference_indices=inference_indices,
+        first_epoch_eval_only=config["trainer"].get("first_epoch_eval_only", True)
     )
 
     trainer.train()
