@@ -53,25 +53,6 @@
           }
         }
       ]
-    },
-    "val_C4": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "HuggingFaceDataset",
-          "args": {
-            "path": "allenai/c4",
-            "name": "en",
-            "streaming": false,
-            "split": "validation",
-            "data_files": "en/c4-validation.0000*-of-00008.json.gz"
-          }
-        }
-      ]
     }
   },
   "optimizer": {

@@ -53,7 +53,7 @@
             "name": "en",
             "streaming": true,
             "split": "train",
-            "dataset_files": "en/c4-train.0000*-of-01024.json.gz"
+            "data_files": "en/c4-train.0000*-of-01024.json.gz"
           },
           "base_dataset": true
         }
@@ -121,7 +121,7 @@
             "name": "en",
             "streaming": true,
             "split": "test",
-            "dataset_files": "en/c4-train.0000*-of-01024.json.gz"
+            "data_files": "en/c4-train.0000*-of-01024.json.gz"
           }
         }
       ]
