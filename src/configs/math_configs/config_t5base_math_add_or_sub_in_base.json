@@ -28,7 +28,7 @@
           "type": "MathDataset",
           "args": {
             "path": "deepmind/math_dataset",
-            "name": "arithmetic__add_or_sub",
+            "name": "arithmetic__add_or_sub_in_base",
             "split": "train",
             "max_samples": 10000,
             "shuffle": true,
@@ -48,7 +48,7 @@
           "type": "MathDataset",
           "args": {
             "path": "deepmind/math_dataset",
-            "name": "arithmetic__add_or_sub",
+            "name": "arithmetic__add_or_sub_in_base",
             "split": "test"
           }
         }
