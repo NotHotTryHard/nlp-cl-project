@@ -1,0 +1,8 @@
+Usefull comands to cast gpu sessions
+alias run_gpu='srun --pty --gres=gpu:1 --mem=10GB  --cpus-per-task=8 /bin/bash'
+alias run_cpu='srun --pty --cpus-per-task=4 --time=08:00:00 /bin/bash'
+
+ADD THIS TO YOUR .BASHRC, and then restart shell
+
+# nlp project
+alias nlp_hui='singularity exec --nv  --overlay /scratch/ps5359/nlp_proj_env/overlay-50G-10M.ext3:rw /scratch/work/public/singularity/cuda11.8.86-cudnn8.7-devel-ubuntu22.04.2.sif /bin/bash -c "source /ext3/env.sh && conda activate nlp_env && exec /bin/bash"'
