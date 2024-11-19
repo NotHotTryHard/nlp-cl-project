@@ -119,7 +119,7 @@ class Trainer(BaseTrainer):
 
         if self.first_epoch_eval_only and epoch == 0:
             log = self.train_metrics.result()
-            if epoch % self.config["trainer"].get("eval_frequency", 1) == 0 or changed_dataset:
+            if epoch % self.config["trainer"].get("eval_frequency", 1) == 1 or changed_dataset:
                 for part, dataloader in self.evaluation_dataloaders.items():
                     val_log = self._evaluation_epoch(epoch, part, dataloader)
                     log.update(**{f"{part}_{name}": value for name, value in val_log.items()})

@@ -106,12 +106,31 @@
           }
         }
       ]
+    },
+    "val_C4": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "allenai/c4",
+            "name": "en",
+            "streaming": true,
+            "split": "test",
+            "dataset_files": "en/c4-train.0000*-of-01024.json.gz"
+          }
+        }
+      ]
     }
   },
   "optimizer": {
     "type": "AdamW",
     "args": {
-      "lr": 5e-1,
+      "lr": 5e-4,
       "betas": [0.9, 0.95],
       "weight_decay": 1e-5
     }
