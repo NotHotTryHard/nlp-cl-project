@@ -47,6 +47,8 @@ class Trainer(BaseTrainer):
         self.config = config
         self.train_dataloader = dataloaders["train"]
 
+        self.train_dataset = self.train_dataloader.dataset
+        
         if len_epoch is None:
             # epoch-based training
             self.len_epoch = len(self.train_dataloader)
@@ -115,8 +117,8 @@ class Trainer(BaseTrainer):
         self.writer.add_scalar("epoch", epoch)
 
         changed_dataset = False
-        if isinstance(self.train_dataloader.dataset, SequentialDataset):
-            changed_dataset = self.train_dataloader.dataset.update_epoch(epoch, self.epochs)
+        if isinstance(self.train_dataset, SequentialDataset):
+            changed_dataset = self.train_dataset.update_epoch(epoch, self.epochs)
 
         if self.first_epoch_eval_only and epoch == 1:
             log = self.train_metrics.result()
