@@ -22,3 +22,6 @@ decorator==4.4.2
 
 jsonlines
 rouge_score
+
+transformers
+datasets

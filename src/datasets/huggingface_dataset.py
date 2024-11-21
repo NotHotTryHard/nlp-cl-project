@@ -11,7 +11,8 @@ class HuggingFaceDataset(TorchDataset):
             data_files=None,
             max_samples=None,
             shuffle=None,
-            shuffle_seed=None
+            shuffle_seed=None,
+            **kwargs
             ):
         super().__init__()
 
@@ -40,7 +41,7 @@ class HuggingFaceDataset(TorchDataset):
 
     def __len__(self):
         if self.streaming:
-            return float('inf')
+            return int(float('inf'))
         return len(self.dataset)
 
     def __iter__(self):
