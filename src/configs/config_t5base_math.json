@@ -30,7 +30,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__add_or_sub",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }
@@ -41,7 +41,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__add_or_sub_in_base",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }
@@ -52,7 +52,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__add_sub_multiple",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }
@@ -63,7 +63,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__div",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }
@@ -74,7 +74,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__mixed",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }
@@ -85,7 +85,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__mul",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }
@@ -96,7 +96,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__mul_div_multiple",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }
@@ -107,7 +107,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__nearest_integer_root",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }
@@ -118,7 +118,7 @@
             "path": "deepmind/math_dataset",
             "name": "arithmetic__simplify_surd",
             "split": "train",
-            "max_samples": 10000,
+            "max_samples": 25000,
             "shuffle": true,
             "shuffle_seed": 52
           }

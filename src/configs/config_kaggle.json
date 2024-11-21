@@ -99,12 +99,6 @@
     }
   },
   "metrics": [
-    {
-      "type": "AverageRougeMetric",
-      "args": {
-        "name": "AverageRouge"
-      }
-    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
@@ -120,6 +114,7 @@
     "epochs": 30,
     "eval_frequency": 5,
     "save_dir": "saved/",
+    "len_epoch": 1000,
     "save_period": 5,
     "verbosity": 2,
     "monitor": "min loss",

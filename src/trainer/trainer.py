@@ -41,7 +41,8 @@ class Trainer(BaseTrainer):
     ):
         super().__init__(
             model, criterion, metrics,
-            optimizer, lr_scheduler, config, device
+            optimizer, lr_scheduler, config, device,
+            first_epoch_eval_only
         )
         self.skip_oom = skip_oom
         self.config = config
@@ -69,7 +70,8 @@ class Trainer(BaseTrainer):
             "loss", *[m.name for m in self.metrics], writer=self.writer
         )
 
-        self.first_epoch_eval_only = first_epoch_eval_only
+        # now in base_trainer.py
+        # self.first_epoch_eval_only = first_epoch_eval_only
 
         self.inference_on_evaluation = inference_on_evaluation
         self.inference_indices = inference_indices
@@ -120,7 +122,7 @@ class Trainer(BaseTrainer):
         if isinstance(self.train_dataset, SequentialDataset):
             changed_dataset = self.train_dataset.update_epoch(epoch, self.epochs)
 
-        if self.first_epoch_eval_only and epoch == 1:
+        if self.first_epoch_eval_only and epoch == 0:
             log = self.train_metrics.result()
             for part, dataloader in self.evaluation_dataloaders.items():
                 val_log = self._evaluation_epoch(epoch, part, dataloader)

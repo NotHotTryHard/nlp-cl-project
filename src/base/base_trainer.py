@@ -20,7 +20,8 @@ class BaseTrainer:
             optimizer, 
             lr_scheduler, 
             config, 
-            device):
+            device,
+            first_epoch_eval_only):
         self.device = device
         self.config = config
         self.logger = config.get_logger("trainer", config["trainer"]["verbosity"])
@@ -52,7 +53,8 @@ class BaseTrainer:
             if self.early_stop <= 0:
                 self.early_stop = inf
 
-        self.start_epoch = 1
+        self.first_epoch_eval_only = first_epoch_eval_only
+        self.start_epoch = 1 - first_epoch_eval_only
 
         self.checkpoint_dir = config.save_dir
 
@@ -177,7 +179,7 @@ class BaseTrainer:
         resume_path = str(resume_path)
         self.logger.info("Loading checkpoint: {} ...".format(resume_path))
         checkpoint = torch.load(resume_path, self.device)
-        self.start_epoch = checkpoint["epoch"] + 1
+        self.start_epoch = checkpoint["epoch"] + 1 - self.first_epoch_eval_only
         self.mnt_best = checkpoint["monitor_best"]
 
         # load architecture params from checkpoint.
