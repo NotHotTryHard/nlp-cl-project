@@ -17,7 +17,7 @@ from tqdm import tqdm
 from src.base import BaseTrainer
 from src.logger.utils import plot_spectrogram_to_buf
 from src.utils import inf_loop, MetricTracker
-from src.datasets import SequentialDataset
+from src.datasets import MixedSequentialDataset
 
 class Trainer(BaseTrainer):
     """
@@ -119,7 +119,7 @@ class Trainer(BaseTrainer):
         self.writer.add_scalar("epoch", epoch)
 
         changed_dataset = False
-        if isinstance(self.train_dataset, SequentialDataset):
+        if isinstance(self.train_dataset, MixedSequentialDataset):
             changed_dataset = self.train_dataset.update_epoch(epoch, self.epochs)
 
         if self.first_epoch_eval_only and epoch == 0:

@@ -10,7 +10,7 @@ from torch.nn.functional import kl_div
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 
 class T5forSummarization(nn.Module):
-    def __init__(self, model_name, cache_dir, max_length, output_hidden_states):
+    def __init__(self, model_name, cache_dir, max_length, output_hidden_states=True):
         super(T5forSummarization, self).__init__()
         self.model = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir=cache_dir)
         self.tokenizer = T5Tokenizer.from_pretrained(model_name, cache_dir=cache_dir)
@@ -48,8 +48,6 @@ class T5forSummarization(nn.Module):
 
     def forward(self, batch):
         outputs = self._step(**batch)
-        if self.output_hidden_states:
-            return outputs.loss, outputs.hidden_states
         return outputs.loss
 
     def _generative_step(self, batch):

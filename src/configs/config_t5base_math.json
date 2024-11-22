@@ -315,12 +315,6 @@
     }
   },
   "metrics": [
-    {
-      "type": "AverageRougeMetric",
-      "args": {
-        "name": "AverageRouge"
-      }
-    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
@@ -342,7 +336,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "T5b Mix=0.1 w/o grad clip",
+    "wandb_run_name": "MATH-8 T5b Mix=0.1",
     "grad_norm_clip": 100.0
   }
 }
