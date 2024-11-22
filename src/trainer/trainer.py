@@ -120,7 +120,13 @@ class Trainer(BaseTrainer):
 
         changed_dataset = False
         if isinstance(self.train_dataset, MixedSequentialDataset):
-            changed_dataset = self.train_dataset.update_epoch(epoch, self.epochs)
+            changed_dataset = self.train_dataset.update_epoch(
+                epoch, self.epochs,
+                self.model,
+                self.train_dataloader.batch_size,
+                self.train_dataloader.collate_fn,
+                max_samples=1000
+            )
 
         if self.first_epoch_eval_only and epoch == 0:
             log = self.train_metrics.result()

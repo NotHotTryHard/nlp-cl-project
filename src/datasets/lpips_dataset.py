@@ -35,7 +35,7 @@ class LPIPSReorderedDataset(TorchDataset):
     def __init__(self, dataset_type, dataset_args, embedding_specs, **kwargs):
         super().__init__()
 
-        self.dataset = getattr(src.datasets, dataset_type)(dataset_args)
+        self.dataset = getattr(src.datasets, dataset_type)(**dataset_args)
 
         self.dataset_surprise_scores = None
         self.prev_mean = None
