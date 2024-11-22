@@ -20,7 +20,7 @@
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
         "args": {
-          "sequential_mixing_rate": 0.1
+          "sequential_mixing_rate": 0.0
         }
       },
       "datasets": [
@@ -153,12 +153,6 @@
     }
   },
   "metrics": [
-    {
-      "type": "AverageRougeMetric",
-      "args": {
-        "name": "AverageRouge"
-      }
-    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
@@ -171,15 +165,16 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 60,
+    "epochs": 30,
     "eval_frequency": 10,
+    "first_epoch_eval_only": true,
     "save_dir": "saved/",
     "save_period": 60,
     "verbosity": 2,
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "T5b Mix=0.1 w/o grad clip",
+    "wandb_run_name": "LPIPS summarization T5b NO Mix",
     "grad_norm_clip": 100.0
   }
 }

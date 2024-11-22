@@ -315,6 +315,18 @@
     }
   },
   "metrics": [
+    {
+      "type": "ArithmeticAccuracyMetric",
+      "args": {
+        "name": "ArithmeticAccuracyMetric"
+      }
+    },
+    {
+      "type": "ArithmeticMAEMetric",
+      "args": {
+        "name": "ArithmeticMAEMetric"
+      }
+    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
@@ -330,6 +342,7 @@
     "epochs": 81,
     "eval_frequency": 3,
     "len_epoch": 1000,
+    "first_epoch_eval_only": true,
     "save_dir": "saved/",
     "save_period": 60,
     "verbosity": 2,
