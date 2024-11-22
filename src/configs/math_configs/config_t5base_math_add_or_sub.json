@@ -64,6 +64,18 @@
     }
   },
   "metrics": [
+      {
+        "type": "ArithmeticAccuracyMetric",
+        "args": {
+          "name": "ArithmeticAccuracyMetric"
+        }
+      },
+      {
+        "type": "ArithmeticMAEMetric",
+        "args": {
+          "name": "ArithmeticMAEMetric"
+        }
+      }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
