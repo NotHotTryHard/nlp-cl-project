@@ -1,11 +1,11 @@
-from datasets import load_metric
+import evaluate
 from src.base import BaseMetric
 
 class AverageRougeMetric(BaseMetric):
     def __init__(self, name=None, *args, **kwargs):
         super().__init__(name, args, kwargs)
 
-        self.rouge = load_metric('rouge')
+        self.rouge = evaluate.load('rouge')
         self.requires_preds = True
         self.compute_on_train = False
     
