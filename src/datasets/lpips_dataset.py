@@ -25,8 +25,8 @@ class IndexedCollateClass:
         self.collate = collate
     
     def __call__(self, dataset_items):
-        indices = [item[-1] for item in dataset_items]
-        output = self.collate(dataset_items)
+        indices = [item[1] for item in dataset_items]
+        output = self.collate([item[0] for item in dataset_items])
         output.update({"indices": indices})
         return output
 
@@ -37,7 +37,7 @@ class LPIPSReorderedDataset(TorchDataset):
 
         self.dataset = getattr(src.datasets, dataset_type)(**dataset_args)
 
-        self.dataset_surprise_scores = None
+        self.dataset_surprise_scores = list(range(len(self.dataset)))
         self.prev_mean = None
         self.prev_std = None
 
@@ -56,30 +56,38 @@ class LPIPSReorderedDataset(TorchDataset):
 
         dataloader = TorchDataloader(dataset, batch_size=batch_size, collate_fn=collate, shuffle=True)
 
-        activations_mean = torch.zeros(dataloader.batch_size, model.config.d_model)
-        activations_squared_mean = torch.zeros(dataloader.batch_size, model.config.d_model)
+        class HookClass:
+            def __init__(self, batch_size, d_model, device):
+                super().__init__()
+                self.activations_mean = torch.zeros(batch_size, d_model, device=device)
+                self.activations_squared_mean = torch.zeros(batch_size, d_model, device=device)
 
-        def hook_fn(module, input, output):
-            activations_mean += output.detach().mean(dim=1)
-            activations_squared_mean += (output ** 2).detach().mean(dim=1)
+            def __call__(self, module, input, output):
+                self.activations_mean += output.detach().mean(dim=1)
+                self.activations_squared_mean += (output ** 2).detach().mean(dim=1)
+            
+        hook = HookClass(batch_size, model.model.config.d_model, model.model.device)
 
         # Attach the hook to a specific layer
-        model_layer = getattr(model, self.model_part).block[self.model_block].layer[self.block_layer]
-        model_layer.register_forward_hook(hook_fn)
+        model_layer = getattr(model.model, self.model_part).block[self.model_block].layer[self.block_layer]
+        handle = model_layer.register_forward_hook(hook)
 
         N_batches = max_samples // dataloader.batch_size
-
-        for batch in tqdm(dataloader, len=N_batches):
-            batch = self.move_batch_to_device(batch, model.device)
+        for batch in tqdm(dataloader, total=N_batches):
+            batch = self.move_batch_to_device(batch, model.model.device)
             # collect model embeddings
             model(batch)
         
-        activations_mean = activations_mean / N_batches
-        activations_std = torch.sqrt(activations_squared_mean / N_batches - activations_mean ** 2)
+        handle.remove()
+        
+        activations_mean = hook.activations_mean / N_batches
+        activations_std = torch.sqrt(hook.activations_squared_mean / N_batches - activations_mean ** 2)
         return activations_mean, activations_std
 
     def collect_initial_dataset_activations_mean(self, model, initial_dataset, batch_size, collate, max_samples):
-        self.prev_mean, self.prev_std = self._collect_activations_mean(model, initial_dataset, batch_size, collate, max_samples)
+        self.prev_mean, self.prev_std = self._collect_activations_mean_std(
+            model, initial_dataset, batch_size, collate, max_samples
+        )
 
     def compute_surprise_scores(self, model, batch_size, collate, max_samples):
         model.eval()
@@ -88,29 +96,39 @@ class LPIPSReorderedDataset(TorchDataset):
         indexed_collate = IndexedCollateClass(collate)
         dataloader = TorchDataloader(indexed_dataset, batch_size=batch_size, collate_fn=indexed_collate, shuffle=True)
         
-        surprise_scores = {}
+        class HookClass:
+            def __init__(self, prev_mean, prev_std):
+                super().__init__()
+                self.surprise_scores = {}
+                self.batch_indices = None
+                self.prev_mean = prev_mean
+                self.prev_std = prev_std
 
-        def hook_fn(module, input, output):
-            activations_mean = output.detach().mean(dim=1)
+            def __call__(self, module, input, output):
+                activations_mean = output.detach().mean(dim=1)
+                for ind, activation_mean in zip(self.batch_indices, activations_mean):
+                    diff = (activation_mean - self.prev_mean).abs().sum()
+                    self.surprise_scores[ind] = diff if diff > self.prev_std.sum() else 0.
             
-            for ind, activation_mean in zip(batch_indices, activations_mean):
-                diff = (activation_mean - self.prev_mean).abs().sum()
-                surprise_scores[ind] = diff if diff > self.prev_std.sum() else 0.
+        hook = HookClass(self.prev_mean, self.prev_std)        
 
         # Attach the hook to a specific layer
-        model_layer = getattr(model, self.model_part).block[self.model_block].layer[self.block_layer]
-        model_layer.register_forward_hook(hook_fn)
+        model_layer = getattr(model.model, self.model_part).block[self.model_block].layer[self.block_layer]
+        handle = model_layer.register_forward_hook(hook)
 
         N_batches = max_samples // batch_size
-        for batch, batch_indices in tqdm(dataloader, len= N_batches):
-            batch = self.move_batch_to_device(batch, model.device)
+        for batch in tqdm(dataloader, total=N_batches):
+            batch = self.move_batch_to_device(batch, model.model.device)
+            hook.batch_indices = batch['indices']
             model(batch)
         
+        surprise_scores = hook.surprise_scores
+        handle.remove()
         return surprise_scores
 
     def reorder_dataset(self, model, batch_size, collate, max_samples):
         surprise_scores = self.compute_surprise_scores(model, batch_size, collate, max_samples)
-        self.dataset_surprise_scores = sorted(list(surprise_scores.items()), key=lambda x: x[1])
+        self.dataset_surprise_scores = [x[0] for x in sorted(list(surprise_scores.items()), key=lambda x: x[1])]
 
     def __len__(self):
         return len(self.dataset)

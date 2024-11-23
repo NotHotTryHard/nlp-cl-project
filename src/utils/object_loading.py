@@ -15,6 +15,8 @@ def get_dataloaders(configs: ConfigParser):
     for split, params in configs["data"].items():
         num_workers = params.get("num_workers", 1)
 
+        has_reoredered_datasets = False
+
         # create and join datasets
         base_dataset = None
         datasets = []
@@ -28,6 +30,9 @@ def get_dataloaders(configs: ConfigParser):
                 base_dataset = dataset
             else:
                 datasets.append(dataset)
+            
+            if isinstance(dataset, src.datasets.LPIPSReorderedDataset):
+                has_reoredered_datasets = True
         
         assert len(datasets)
         if len(datasets) > 1:
@@ -58,6 +63,9 @@ def get_dataloaders(configs: ConfigParser):
             bs, shuffle = 1, False
         else:
             raise Exception()
+    
+        if has_reoredered_datasets:
+            shuffle = False
 
         # Fun fact. An hour of debugging was wasted to write this line
         assert bs <= len(dataset), \

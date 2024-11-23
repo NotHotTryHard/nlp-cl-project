@@ -43,8 +43,6 @@ class MixedSequentialDataset(TorchDataset):
 
         self.current_dataset = 0
         self.dataset_start_epoch = 1
-
-        self.initial_reorder = False
     
     def __len__(self):
         # return sum(len(dataset) for dataset in self.sequential_datasets)
@@ -54,7 +52,6 @@ class MixedSequentialDataset(TorchDataset):
         return len(self.sequential_datasets)
     
     def reorder_if_lpips(self, model, batch_size, collate, max_samples):
-        self.initial_reorder = True
         if isinstance(self.sequential_datasets[self.current_dataset], src.datasets.LPIPSReorderedDataset):
             print(f"Reordering the dataset {self.current_dataset + 1} w.r.t. the mean embeddings diff...")
             prev_dataset = self.sequential_datasets[self.current_dataset - 1]
@@ -73,9 +70,6 @@ class MixedSequentialDataset(TorchDataset):
             print(f"Switched to dataset {self.current_dataset + 1} / {self.num_datasets()}")
             self.reorder_if_lpips(model, batch_size, collate, max_samples)
             return True
-
-        if not self.initial_reorder:
-            self.reorder_if_lpips(model, batch_size, collate, max_samples)
         
         return False
 
