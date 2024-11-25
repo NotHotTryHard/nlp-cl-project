@@ -69,7 +69,7 @@ class Trainer(BaseTrainer):
         self.evaluation_metrics = MetricTracker(
             "loss", *[m.name for m in self.metrics], writer=self.writer
         )
-        self.perform_generative_eval = len(self.evaluation_metrics) > 1
+        self.perform_generative_eval = self.evaluation_metrics._data.shape[0] > 1
 
         # now in base_trainer.py
         # self.first_epoch_eval_only = first_epoch_eval_only
