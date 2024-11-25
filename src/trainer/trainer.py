@@ -69,6 +69,7 @@ class Trainer(BaseTrainer):
         self.evaluation_metrics = MetricTracker(
             "loss", *[m.name for m in self.metrics], writer=self.writer
         )
+        self.perform_generative_eval = len(self.evaluation_metrics) > 1
 
         # now in base_trainer.py
         # self.first_epoch_eval_only = first_epoch_eval_only
@@ -255,7 +256,7 @@ class Trainer(BaseTrainer):
             self.optimizer.step()
         
             metrics_tracker.update("loss", batch["loss"].item())
-        else:
+        elif self.perform_generative_eval:
             inputs, target, preds = self.model._generative_step(batch)
             batch['inputs'], batch['target'], batch['preds']  = inputs, target, preds
             
