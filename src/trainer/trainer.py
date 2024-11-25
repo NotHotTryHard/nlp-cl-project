@@ -247,10 +247,9 @@ class Trainer(BaseTrainer):
         #     batch["logits"].transpose(1, 2),
         #     batch["indices"][:, 1:]
         # )
+        batch["loss"] = self.model(batch)
         
         if is_train:
-            batch["loss"] = self.model(batch)
-
             batch["loss"].backward()
             self._clip_grad_norm()
             self.optimizer.step()

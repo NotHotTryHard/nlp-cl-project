@@ -136,12 +136,6 @@
     }
   },
   "metrics": [
-    {
-      "type": "AverageRougeMetric",
-      "args": {
-        "name": "AverageRouge"
-      }
-    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
