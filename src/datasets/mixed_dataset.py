@@ -57,6 +57,8 @@ class MixedSequentialDataset(TorchDataset):
             prev_dataset = self.sequential_datasets[self.current_dataset - 1]
             dataset = self.sequential_datasets[self.current_dataset]
 
+            # BASE_DATASET SUPPORT ?
+
             dataset.collect_initial_dataset_activations_mean(model, prev_dataset, batch_size, collate, max_samples)
             dataset.reorder_dataset(model, batch_size, collate, max_samples)
             print(f"Finished reordering the dataset {self.current_dataset}.")
