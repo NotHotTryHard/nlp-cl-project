@@ -117,6 +117,8 @@ class Trainer(BaseTrainer):
         self.model.train()
         self.train_metrics.reset()
         self.writer.add_scalar("epoch", epoch)
+        
+        print(self.train_dataloader)
 
         changed_dataset = False
         if isinstance(self.train_dataset, MixedSequentialDataset):
@@ -245,14 +247,20 @@ class Trainer(BaseTrainer):
         #     batch["logits"].transpose(1, 2),
         #     batch["indices"][:, 1:]
         # )
-        batch["loss"] = self.model(batch)
-
+        
         if is_train:
+            batch["loss"] = self.model(batch)
+
             batch["loss"].backward()
             self._clip_grad_norm()
             self.optimizer.step()
         
-        metrics_tracker.update("loss", batch["loss"].item())
+            metrics_tracker.update("loss", batch["loss"].item())
+        else:
+            inputs, target, preds = self.model._generative_step(batch)
+            batch['inputs'], batch['target'], batch['preds']  = inputs, target, preds
+            
+            
         for met in self.metrics:
             if (not is_train) or (self._compute_on_train(met)):
                 metrics_tracker.update(met.name, met(self.model, batch))

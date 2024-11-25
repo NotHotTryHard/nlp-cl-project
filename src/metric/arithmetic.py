@@ -9,8 +9,7 @@ class ArithmeticAccuracyMetric(BaseMetric):
         self.compute_on_train = False
     
     def __call__(self, model, batch):
-        input, target, preds = model._generative_step(batch)
-        # print("\n=======\n", input[0], target[0], preds[0], "\n=======\n")
+        target, preds = batch['target'], batch['preds']
         res = []
         for i in range(len(preds)):
             pred_number = extract_number_from_pred(preds[i])
@@ -27,8 +26,7 @@ class ArithmeticMAEMetric(BaseMetric):
         self.compute_on_train = False
     
     def __call__(self, model, batch):
-        input, target, preds = model._generative_step(batch)
-        # print(input[0], target[0], preds[0])
+        target, preds = batch['target'], batch['preds']
         res = []
         for i in range(len(preds)):
             pred_number = extract_number_from_pred(preds[i])

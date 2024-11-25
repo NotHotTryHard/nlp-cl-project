@@ -10,7 +10,7 @@ class AverageRougeMetric(BaseMetric):
         self.compute_on_train = False
     
     def __call__(self, model, batch):
-        input, target, preds = model._generative_step(batch)
+        target, preds = batch['target'], batch['preds']
         rouge_score = self.rouge.compute(references=target, predictions=preds)
 
         rouge1 = rouge_score["rouge1"].mid.fmeasure
