@@ -20,7 +20,8 @@
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
         "args": {
-          "sequential_mixing_rate": 0.0
+          "sequential_mixing_rate": 0.1,
+          "base_mixing_rate": 0.1
         }
       },
       "datasets": [
@@ -73,10 +74,10 @@
           "type": "HuggingFaceDataset",
           "args": {
             "path": "allenai/c4",
-            "name": "en",
-            "streaming": true,
+            "streaming": false,
             "split": "train",
-            "data_files": "en/c4-train.0000*-of-01024.json.gz"
+            "data_files": {"validation": "en/c4-train.00000-of-00008.json.gz"},
+            "max_samples": 1000
           },
           "base_dataset": true
         }
@@ -93,12 +94,11 @@
           "type": "HuggingFaceDataset",
           "args": {
             "path": "allenai/c4",
-            "name": "en",
-            "streaming": true,
+            "streaming": false,
             "split": "validation",
-            "data_files": "en/c4-validation.0000*-of-01024.json.gz"
-          },
-          "base_dataset": true
+            "data_files": {"validation": "en/c4-validation.00000-of-00008.json.gz"},
+            "max_samples": 1000
+          }
         }
       ]
     },
