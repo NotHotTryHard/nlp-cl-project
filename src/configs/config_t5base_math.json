@@ -341,7 +341,6 @@
   "trainer": {
     "epochs": 81,
     "eval_frequency": 3,
-    "len_epoch": 1000,
     "first_epoch_eval_only": true,
     "save_dir": "saved/",
     "save_period": 60,
