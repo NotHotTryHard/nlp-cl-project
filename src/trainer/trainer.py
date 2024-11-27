@@ -100,6 +100,8 @@ class Trainer(BaseTrainer):
         """
         for tensor_for_gpu in ["input_ids", "attention_mask", "labels", "decoder_attention_mask"]:
             batch[tensor_for_gpu] = batch[tensor_for_gpu].to(device)
+        if "decoder_input_ids" in batch:
+            batch["decoder_input_ids"] = batch["decoder_input_ids"].to(device)
         return batch
 
     def _clip_grad_norm(self):
@@ -124,10 +126,11 @@ class Trainer(BaseTrainer):
         changed_dataset = False
         if isinstance(self.train_dataset, MixedSequentialDataset):
             changed_dataset = self.train_dataset.update_epoch(
-                epoch, self.epochs,
-                self.model,
-                self.train_dataloader.batch_size,
-                self.train_dataloader.collate_fn,
+                epoch=epoch,
+                epochs=self.epochs,
+                model=self.model,
+                batch_size=self.train_dataloader.batch_size,
+                collate=self.train_dataloader.collate_fn,
                 max_samples=1000
             )
 
@@ -249,20 +252,18 @@ class Trainer(BaseTrainer):
         #     batch["indices"][:, 1:]
         # )
         batch["loss"] = self.model(batch)
+        metrics_tracker.update("loss", batch["loss"].item())
         
         if is_train:
             batch["loss"].backward()
             self._clip_grad_norm()
             self.optimizer.step()
-        
-            metrics_tracker.update("loss", batch["loss"].item())
         elif self.perform_generative_eval:
             inputs, target, preds = self.model._generative_step(batch)
-            batch['inputs'], batch['target'], batch['preds']  = inputs, target, preds
-            
+            batch['inputs'], batch['target'], batch['preds'] = inputs, target, preds
             
         for met in self.metrics:
-            if (not is_train) or (self._compute_on_train(met)):
+            if (not is_train) or self._compute_on_train(met):
                 metrics_tracker.update(met.name, met(self.model, batch))
         
         return batch
