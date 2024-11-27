@@ -7,6 +7,7 @@ from tqdm import tqdm
 import src.collate_fn
 import src.datasets
 from src.utils import ROOT_PATH
+from src.collate_fn.collate import CollateClass
 
 
 class MixedSequentialDataset(TorchDataset):
@@ -15,6 +16,7 @@ class MixedSequentialDataset(TorchDataset):
                  sequential_mixing_rate=0.0,
                  base_dataset=None,
                  datasets=None,
+                 base_dataset_config=None,
                  **kwargs):
         """
             Dataset class for sequential fine-tuning on mixed data batches.
@@ -35,6 +37,8 @@ class MixedSequentialDataset(TorchDataset):
         self.base_dataset = base_dataset
         self.sequential_datasets = datasets
 
+        self.base_dataset_config = base_dataset_config
+
         self.base_mixing_rate = base_mixing_rate
         self.sequential_mixing_rate = sequential_mixing_rate
 
@@ -50,8 +54,17 @@ class MixedSequentialDataset(TorchDataset):
     
     def num_datasets(self):
         return len(self.sequential_datasets)
+
+    def create_base_collate(self, collate):
+        return CollateClass(
+            tokenizer=collate.tokenizer,
+            max_length=collate.max_length,
+            mlm_items=True,
+            mlm_probability=self.base_dataset_config.get("mlm_probability", 0.15),
+            mean_span_length=self.base_dataset_config.get("mean_span_length", 3.)
+        )
     
-    def reorder_if_lpips(self, model, batch_size, collate, max_samples):
+    def reorder_if_lpips(self, model, batch_size, initial_collate, collate, max_samples):
         if isinstance(self.sequential_datasets[self.current_dataset], src.datasets.LPIPSReorderedDataset):
             print(f"Reordering the dataset {self.current_dataset + 1} w.r.t. the mean embeddings diff...")
             prev_dataset = self.sequential_datasets[self.current_dataset - 1]
@@ -59,9 +72,9 @@ class MixedSequentialDataset(TorchDataset):
 
             # BASE_DATASET SUPPORT ?
 
-            dataset.collect_initial_dataset_activations_mean(model, prev_dataset, batch_size, collate, max_samples)
+            dataset.collect_initial_dataset_activations_mean(model, prev_dataset, batch_size, initial_collate, max_samples)
             dataset.reorder_dataset(model, batch_size, collate, max_samples)
-            print(f"Finished reordering the dataset {self.current_dataset}.")
+            print(f"Finished reordering the dataset {self.current_dataset + 1}.")
 
     def update_epoch(self, epoch, epochs, model=None, batch_size=None, collate=None, max_samples=None):
         if epoch - self.dataset_start_epoch + 1 > epochs // self.num_datasets():
@@ -70,8 +83,12 @@ class MixedSequentialDataset(TorchDataset):
             self.dataset_start_epoch = epoch
 
             print(f"Switched to dataset {self.current_dataset + 1} / {self.num_datasets()}")
-            self.reorder_if_lpips(model, batch_size, collate, max_samples)
+            self.reorder_if_lpips(model, batch_size, collate, collate, max_samples)
             return True
+        
+        if self.base_dataset is not None:
+            initial_collate = self.create_base_collate(collate)
+            self.reorder_if_lpips(model, batch_size, initial_collate, collate, max_samples)
         
         return False
 
