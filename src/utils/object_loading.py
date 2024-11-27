@@ -73,7 +73,13 @@ def get_dataloaders(configs: ConfigParser):
         
         tokenizer_info = params.get("tokenizer_name", ["T5Tokenizer", "google-t5/t5-small"])
         tokenizer = getattr(transformers, tokenizer_info[0]).from_pretrained(tokenizer_info[1])
-        collate_obj = CollateClass(tokenizer=tokenizer, max_length=params["max_length"])
+        collate_obj = CollateClass(
+            tokenizer=tokenizer,
+            max_length=params["max_length"],
+            mlm_items=base_dataset is not None,
+            mlm_probability=params.get("mlm_probability", 0.15),
+            mean_span_length=params.get("mean_span_length", 3.)
+        )
     
         # create dataloader
         dataloader = DataLoader(
