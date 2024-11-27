@@ -20,42 +20,55 @@
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
         "args": {
-          "sequential_mixing_rate": 0.1,
-          "base_mixing_rate": 0.1
+          "sequential_mixing_rate": 0.0,
+          "base_mixing_rate": 0.0
         }
       },
       "datasets": [
         {
-          "type": "OriginalDataset",
+          "type": "LPIPSReorderedDataset",
           "args": {
-            "dataset_dir": "summarization-data/cnndm",
-            "split": "train"
+            "dataset_type": "OriginalDataset",
+            "dataset_args": {
+              "dataset_dir": "summarization-data/cnndm",
+              "split": "train"
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
+            }
           }
         },
         {
-          "type": "OriginalDataset",
+          "type": "LPIPSReorderedDataset",
           "args": {
-            "dataset_dir": "summarization-data/wikihow",
-            "split": "train"
+            "dataset_type": "OriginalDataset",
+            "dataset_args": {
+              "dataset_dir": "summarization-data/wikihow",
+              "split": "train"
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
+            }
           }
         },
         {
-          "type": "OriginalDataset",
+          "type": "LPIPSReorderedDataset",
           "args": {
-            "dataset_dir": "summarization-data/xsum",
-            "split": "train"
+            "dataset_type": "OriginalDataset",
+            "dataset_args": {
+              "dataset_dir": "summarization-data/xsum",
+              "split": "train"
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
+            }
           }
-        },
-        {
-          "type": "HuggingFaceDataset",
-          "args": {
-            "path": "allenai/c4",
-            "streaming": false,
-            "split": "train",
-            "data_files": {"train": "en/c4-train.00001-of-01024.json.gz"},
-            "max_samples": 1000
-          },
-          "base_dataset": true
         }
       ]
     },
@@ -149,15 +162,16 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 60,
-    "eval_frequency": 10,
+    "epochs": 9,
+    "eval_frequency": 3,
+    "first_epoch_eval_only": true,
     "save_dir": "saved/",
     "save_period": 60,
     "verbosity": 2,
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "T5b Mix=0.1 w/o grad clip",
+    "wandb_run_name": "LPIPS summarization T5b NO Mix",
     "grad_norm_clip": 100.0
   }
 }

@@ -20,8 +20,8 @@
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
         "args": {
-          "sequential_mixing_rate": 0.1,
-          "base_mixing_rate": 0.1
+          "sequential_mixing_rate": 0.0,
+          "base_mixing_rate": 0.0
         }
       },
       "datasets": [
@@ -79,26 +79,8 @@
             "data_files": {"validation": "en/c4-train.00000-of-00008.json.gz"},
             "max_samples": 1000
           },
-          "base_dataset": true
-        }
-      ]
-    },
-    "val_C4": {
-      "batch_size": 16,
-      "num_workers": 5,
-      "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
-      "use_mixed_dataset": false,
-      "datasets": [
-        {
-          "type": "HuggingFaceDataset",
-          "args": {
-            "path": "allenai/c4",
-            "streaming": false,
-            "split": "validation",
-            "data_files": {"validation": "en/c4-validation.00000-of-00008.json.gz"},
-            "max_samples": 1000
-          }
+          "base_dataset": true,
+          "t5_mlm_masking": true
         }
       ]
     },
@@ -110,18 +92,10 @@
       "use_mixed_dataset": false,
       "datasets": [
         {
-          "type": "LPIPSReorderedDataset",
+          "type": "OriginalDataset",
           "args": {
-            "dataset_type": "OriginalDataset",
-            "dataset_args": {
-              "dataset_dir": "summarization-data/cnndm",
-              "split": "valid"
-            },
-            "embedding_specs": {
-              "model_part": "encoder",
-              "model_block": -1,
-              "block_layer": -1
-            }
+            "dataset_dir": "summarization-data/cnndm",
+            "split": "valid"
           }
         }
       ]
@@ -134,18 +108,10 @@
       "use_mixed_dataset": false,
       "datasets": [
         {
-          "type": "LPIPSReorderedDataset",
+          "type": "OriginalDataset",
           "args": {
-            "dataset_type": "OriginalDataset",
-            "dataset_args": {
-              "dataset_dir": "summarization-data/wikihow",
-              "split": "valid"
-            },
-            "embedding_specs": {
-              "model_part": "encoder",
-              "model_block": -1,
-              "block_layer": -1
-            }
+            "dataset_dir": "summarization-data/wikihow",
+            "split": "valid"
           }
         }
       ]
@@ -158,18 +124,30 @@
       "use_mixed_dataset": false,
       "datasets": [
         {
-          "type": "LPIPSReorderedDataset",
+          "type": "OriginalDataset",
           "args": {
-            "dataset_type": "OriginalDataset",
-            "dataset_args": {
-              "dataset_dir": "summarization-data/xsum",
-              "split": "valid"
-            },
-            "embedding_specs": {
-              "model_part": "encoder",
-              "model_block": -1,
-              "block_layer": -1
-            }
+            "dataset_dir": "summarization-data/xsum",
+            "split": "valid"
+          }
+        }
+      ]
+    },
+    "val_C4": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "t5_mlm_masking": true,
+      "datasets": [
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "allenai/c4",
+            "streaming": false,
+            "split": "validation",
+            "data_files": {"validation": "en/c4-validation.00000-of-00008.json.gz"},
+            "max_samples": 1000
           }
         }
       ]
@@ -196,8 +174,8 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 30,
-    "eval_frequency": 10,
+    "epochs": 9,
+    "eval_frequency": 3,
     "first_epoch_eval_only": true,
     "save_dir": "saved/",
     "save_period": 60,

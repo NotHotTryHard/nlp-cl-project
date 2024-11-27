@@ -45,17 +45,6 @@
             "dataset_dir": "summarization-data/xsum",
             "split": "train"
           }
-        },
-        {
-          "type": "HuggingFaceDataset",
-          "args": {
-            "path": "allenai/c4",
-            "streaming": false,
-            "split": "train",
-            "data_files": {"train": "en/c4-train.00001-of-01024.json.gz"},
-            "max_samples": 1000
-          },
-          "base_dataset": true
         }
       ]
     },
