@@ -19,6 +19,7 @@ def get_dataloaders(configs: ConfigParser):
 
         # create and join datasets
         base_dataset = None
+        base_dataset_config = None
         datasets = []
         for ds in params["datasets"]:
             dataset = configs.init_obj(
@@ -28,6 +29,7 @@ def get_dataloaders(configs: ConfigParser):
             )
             if ds.get("base_dataset", False):
                 base_dataset = dataset
+                base_dataset_config = ds
             else:
                 datasets.append(dataset)
             
@@ -40,6 +42,7 @@ def get_dataloaders(configs: ConfigParser):
                 ds = params["mixed_dataset"]
                 ds["args"]["datasets"] = datasets
                 ds["args"]["base_dataset"] = base_dataset
+                ds["args"]["base_dataset_config"] = base_dataset_config
                 dataset = configs.init_obj(
                     ds, src.datasets,
                     config_parser=configs,
@@ -76,7 +79,7 @@ def get_dataloaders(configs: ConfigParser):
         collate_obj = CollateClass(
             tokenizer=tokenizer,
             max_length=params["max_length"],
-            mlm_items=base_dataset is not None,
+            mlm_items=params.get("t5_mlm_masking", False), # for training it's generally set in MixedSequentialDataset.update_epoch
             mlm_probability=params.get("mlm_probability", 0.15),
             mean_span_length=params.get("mean_span_length", 3.)
         )

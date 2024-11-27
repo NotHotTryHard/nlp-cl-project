@@ -109,7 +109,10 @@ class CollateClass:
             decoder_start_token_id=self.decoder_start_token_id
         )
         
-        return mlm_data_collator(batch)
+        batch = mlm_data_collator(batch)
+        for k, v in batch.items():
+            batch[k] = torch.from_numpy(v)
+        return batch
 
     def __call__(self, dataset_items):
         if self.mlm_items:

@@ -3,9 +3,20 @@
 
 from itertools import chain
 from transformers import PreTrainedTokenizer
-from transformers.models.t5.modeling_flax_t5 import shift_tokens_right
+# from transformers.models.t5.modeling_flax_t5 import shift_tokens_right
 from typing import List, Dict
 import numpy as np
+
+
+def shift_tokens_right(input_ids: np.ndarray, pad_token_id: int, decoder_start_token_id: int) -> np.ndarray:
+    """
+    Shift input ids one token to the right.
+    """
+    shifted_input_ids = np.zeros_like(input_ids)
+    shifted_input_ids[:, 1:] = input_ids[:, :-1]
+    shifted_input_ids[:, 0] = decoder_start_token_id
+    shifted_input_ids = np.where(shifted_input_ids == -100, pad_token_id, shifted_input_ids)
+    return shifted_input_ids
 
 class FlaxDataCollatorForT5MLM:
     """
