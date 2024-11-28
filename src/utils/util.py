@@ -3,6 +3,7 @@ from collections import OrderedDict
 from itertools import repeat
 from pathlib import Path
 
+import gc
 import pandas as pd
 import torch
 
@@ -80,3 +81,36 @@ class MetricTracker:
 
     def keys(self):
         return self._data.total.keys()
+
+
+
+def check_cuda_memory():
+    if not torch.cuda.is_available():
+        return {"error": "CUDA is not available on this system."}
+
+    device = torch.device("cuda")  # Assumes the first GPU (index 0) is used
+    total_memory = torch.cuda.get_device_properties(device).total_memory
+    allocated_memory = torch.cuda.memory_allocated(device)
+    cached_memory = torch.cuda.memory_reserved(device)
+
+    memory_info = {
+        "Total Memory (MB)": total_memory / 1024**2,
+        "Allocated Memory (MB)": allocated_memory / 1024**2,
+        "Cached Memory (MB)": cached_memory / 1024**2,
+        "Free Memory (MB)": (total_memory - cached_memory) / 1024**2,
+    }
+
+    print()
+    for key, value in memory_info.items():
+        print(f"{key}: {value:.2f} MB")
+    print()
+
+    return memory_info
+
+def clear_cuda_cache():
+    if not torch.cuda.is_available():
+        return {"error": "CUDA is not available on this system."}
+
+    gc.collect()
+    torch.cuda.empty_cache()
+    print("Cleaned cuda cache!")
