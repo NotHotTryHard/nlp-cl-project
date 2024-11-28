@@ -112,6 +112,10 @@ class CollateClass:
         batch = mlm_data_collator(batch)
         for k, v in batch.items():
             batch[k] = torch.from_numpy(v)
+
+        batch["attention_mask"] = torch.full(batch["input_ids"].shape, True)
+        batch["decoder_attention_mask"] = torch.full(batch["labels"].shape, True)
+        
         return batch
 
     def __call__(self, dataset_items):
