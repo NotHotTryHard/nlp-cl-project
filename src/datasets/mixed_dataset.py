@@ -38,6 +38,7 @@ class MixedSequentialDataset(TorchDataset):
         self.sequential_datasets = datasets
 
         self.base_dataset_config = base_dataset_config
+        self.initial_collate = None
 
         self.base_mixing_rate = base_mixing_rate
         self.sequential_mixing_rate = sequential_mixing_rate
@@ -90,13 +91,17 @@ class MixedSequentialDataset(TorchDataset):
             self.replacements_counter = 0
             self.dataset_start_epoch = epoch
 
+            if self.base_dataset is not None:
+                self.reorder_if_lpips_base(model, batch_size, self.initial_collate, collate, max_samples)
+
             print(f"Switched to dataset {self.current_dataset + 1} / {self.num_datasets()}")
             self.reorder_if_lpips(model, batch_size, collate, max_samples)
+
             return True
         
-        if self.base_dataset is not None:
-            initial_collate = self.create_base_collate(collate)
-            self.reorder_if_lpips_base(model, batch_size, initial_collate, collate, max_samples)
+        if epoch == 1 and self.base_dataset is not None:
+            self.initial_collate = self.create_base_collate(collate)
+            self.reorder_if_lpips_base(model, batch_size, self.initial_collate, collate, max_samples)
         
         return False
 
