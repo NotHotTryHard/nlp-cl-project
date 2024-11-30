@@ -206,5 +206,5 @@ class LPIPSReorderedDataset(TorchDataset):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-        original_idx = self.dataset_surprise_scores[idx]
+        original_idx = self.dataset_surprise_scores[idx][0]
         return self.dataset[original_idx]
