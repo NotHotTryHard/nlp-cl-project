@@ -124,6 +124,7 @@ class LPIPSReorderedDataset(TorchDataset):
         return activations_mean, activations_std
 
     def collect_initial_dataset_activations_mean(self, model, initial_dataset, batch_size, collate, max_samples):
+        clear_cuda_cache()
         print("Before initial:")
         check_cuda_memory()
         
@@ -181,6 +182,8 @@ class LPIPSReorderedDataset(TorchDataset):
 
         del self.prev_mean
         del self.prev_std
+
+        clear_cuda_cache()
 
     def __len__(self):
         return len(self.dataset)
