@@ -96,13 +96,14 @@ class LPIPSReorderedDataset(TorchDataset):
         n_batches = max_samples // dataloader.batch_size
         n_samples = 0
 
-        for batch in tqdm(dataloader, total=n_batches):
-            batch = self.move_batch_to_device(batch, model.model.device)
-            model(batch)
+        with torch.no_grad():
+            for batch in tqdm(dataloader, total=n_batches):
+                batch = self.move_batch_to_device(batch, model.model.device)
+                model(batch)
 
-            n_samples += batch["input_ids"].shape[0] # as batch-size may vary in T5 masked language modelling
-            if max_samples <= n_samples:
-                break
+                n_samples += batch["input_ids"].shape[0] # as batch-size may vary in T5 masked language modelling
+                if max_samples <= n_samples:
+                    break
         
         handle.remove()
 
@@ -160,16 +161,17 @@ class LPIPSReorderedDataset(TorchDataset):
         handle = model_layer.register_forward_hook(hook)
 
         N_batches = max_samples // batch_size
-        for batch in tqdm(dataloader, total=N_batches):
-            batch = self.move_batch_to_device(batch, model.model.device)
-            hook.batch_indices = batch['indices']
-            model(batch)
+        with torch.no_grad():
+            for batch in tqdm(dataloader, total=N_batches):
+                batch = self.move_batch_to_device(batch, model.model.device)
+                hook.batch_indices = batch['indices']
+                model(batch)
         
         surprise_scores = hook.surprise_scores
         handle.remove()
         return surprise_scores
 
-    def reorder_dataset(self, model, batch_size, collate, max_samples):
+    def reorder_dataset(self, model, batch_size, collate, max_samples, update_scores=False, alpha=None, beta=None):
         print("Before surprise")
         check_cuda_memory()
         
@@ -177,9 +179,24 @@ class LPIPSReorderedDataset(TorchDataset):
 
         print("After surprise")
         check_cuda_memory()
-        
-        self.dataset_surprise_scores = [x[0] for x in sorted(list(surprise_scores.items()), key=lambda x: x[1])]
 
+        if update_scores:
+            self.dataset_surprise_scores = list(
+                sorted([
+                        (ind, alpha * prev_score + beta * surprise_scores[ind])
+                        for ind, prev_score in self.dataset_surprise_scores
+                    ],
+                    key=lambda x: x[1], 
+                )
+            )
+        else:
+            self.dataset_surprise_scores = list(
+                sorted(
+                    list(surprise_scores.items()),
+                    key=lambda x: x[1]
+                )
+            )
+        
         del self.prev_mean
         del self.prev_std
 

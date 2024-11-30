@@ -17,6 +17,8 @@ class MixedSequentialDataset(TorchDataset):
                  base_dataset=None,
                  datasets=None,
                  base_dataset_config=None,
+                 lpips_base_coeff=1.0,
+                 lpips_prev_coeff=1.0,
                  **kwargs):
         """
             Dataset class for sequential fine-tuning on mixed data batches.
@@ -39,6 +41,9 @@ class MixedSequentialDataset(TorchDataset):
 
         self.base_dataset_config = base_dataset_config
         self.initial_collate = None
+
+        self.lpips_base_coeff = lpips_base_coeff if self.base_dataset is not None else 0.0
+        self.lpips_prev_coeff = lpips_prev_coeff
 
         self.base_mixing_rate = base_mixing_rate
         self.sequential_mixing_rate = sequential_mixing_rate
@@ -65,25 +70,30 @@ class MixedSequentialDataset(TorchDataset):
             mean_span_length=self.base_dataset_config.get("mean_span_length", 3.)
         )
     
-    def reorder_if_lpips(self, model, batch_size, collate, max_samples):
+    def reorder_if_lpips(self, model, batch_size, collate, max_samples, update_scores=False):
         if isinstance(self.sequential_datasets[self.current_dataset], src.datasets.LPIPSReorderedDataset):
-            print(f"Reordering the dataset {self.current_dataset + 1} w.r.t. the mean embeddings diff...")
+            # print(f"Reordering the dataset {self.current_dataset + 1} w.r.t. the mean embeddings diff...")
             prev_dataset = self.sequential_datasets[self.current_dataset - 1]
             dataset = self.sequential_datasets[self.current_dataset]
 
             dataset.collect_initial_dataset_activations_mean(model, prev_dataset, batch_size, collate, max_samples)
-            dataset.reorder_dataset(model, batch_size, collate, max_samples)
-            print(f"Finished reordering the dataset {self.current_dataset + 1}.")
+            dataset.reorder_dataset(
+                model, batch_size, collate, max_samples,
+                update_scores=update_scores,
+                alpha=self.lpips_base_coeff,
+                beta=self.lpips_prev_coeff
+            )
+            # print(f"Finished reordering the dataset {self.current_dataset + 1}.")
         
     def reorder_if_lpips_base(self, model, batch_size, initial_collate, collate, max_samples):
         if isinstance(self.sequential_datasets[self.current_dataset], src.datasets.LPIPSReorderedDataset):
-            print(f"Reordering the dataset {self.current_dataset + 1} w.r.t. the mean embeddings diff...")
+            # print(f"Reordering the dataset {self.current_dataset + 1} w.r.t. the mean embeddings diff...")
             dataset = self.sequential_datasets[self.current_dataset]
 
             # BASE_DATASET SUPPORT
             dataset.collect_initial_dataset_activations_mean(model, self.base_dataset, batch_size, initial_collate, max_samples)
             dataset.reorder_dataset(model, batch_size, collate, max_samples)
-            print(f"Finished reordering the dataset {self.current_dataset + 1}.")
+            # print(f"Finished reordering the dataset {self.current_dataset + 1}.")
 
     def update_epoch(self, epoch, epochs, model=None, batch_size=None, collate=None, max_samples=None):
         if epoch - self.dataset_start_epoch + 1 > epochs // self.num_datasets():
@@ -91,17 +101,25 @@ class MixedSequentialDataset(TorchDataset):
             self.replacements_counter = 0
             self.dataset_start_epoch = epoch
 
+            print(f"Switched to dataset {self.current_dataset + 1} / {self.num_datasets()}")
             if self.base_dataset is not None:
+                print(f"Reordering dataset {self.current_dataset + 1} w.r.t. the base dataset with coeff={self.lpips_base_coeff}...")
                 self.reorder_if_lpips_base(model, batch_size, self.initial_collate, collate, max_samples)
 
-            print(f"Switched to dataset {self.current_dataset + 1} / {self.num_datasets()}")
-            self.reorder_if_lpips(model, batch_size, collate, max_samples)
-
+                print(f"Updating order of {self.current_dataset + 1} dataset w.r.t. to the previous one with coeff={self.lpips_prev_coeff}...")
+                self.reorder_if_lpips(model, batch_size, collate, max_samples, update_scores=True)
+            else:
+                print(f"Reordering dataset {self.current_dataset + 1} w.r.t. the previous one...")
+                self.reorder_if_lpips(model, batch_size, collate, max_samples)
+            
+            print(f"Finished reordering the dataset {self.current_dataset + 1}.")
             return True
         
         if epoch == 1 and self.base_dataset is not None:
             self.initial_collate = self.create_base_collate(collate)
+            print(f"Reordering dataset {self.current_dataset + 1} w.r.t. the base dataset...")
             self.reorder_if_lpips_base(model, batch_size, self.initial_collate, collate, max_samples)
+            print(f"Finished reordering the dataset {self.current_dataset + 1}.")
         
         return False
 
