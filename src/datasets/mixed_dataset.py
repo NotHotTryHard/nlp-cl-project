@@ -8,7 +8,7 @@ import src.collate_fn
 import src.datasets
 from src.utils import ROOT_PATH
 from src.collate_fn.collate import CollateClass
-
+from src.datasets.lpips_dataset import LPIPSReorderedDataset
 
 class MixedSequentialDataset(TorchDataset):
     def __init__(self,
@@ -69,6 +69,13 @@ class MixedSequentialDataset(TorchDataset):
             mlm_probability=self.base_dataset_config.get("mlm_probability", 0.15),
             mean_span_length=self.base_dataset_config.get("mean_span_length", 3.)
         )
+
+    def create_regular_collate(self, collate):
+        return CollateClass(
+            tokenizer=collate.tokenizer,
+            max_length=collate.max_length,
+            mlm_items=False
+        )
     
     def reorder_if_lpips(self, model, batch_size, collate, max_samples, update_scores=False):
         if isinstance(self.sequential_datasets[self.current_dataset], src.datasets.LPIPSReorderedDataset):
@@ -95,11 +102,17 @@ class MixedSequentialDataset(TorchDataset):
             dataset.reorder_dataset(model, batch_size, collate, max_samples)
             # print(f"Finished reordering the dataset {self.current_dataset + 1}.")
 
-    def update_epoch(self, epoch, epochs, model=None, batch_size=None, collate=None, max_samples=None):
+    def update_epoch(self, epoch, epochs, model=None, dataloader=None, max_samples=None):
+        batch_size = dataloader.batch_size
+        collate = dataloader.collate_fn
+
         if epoch - self.dataset_start_epoch + 1 > epochs // self.num_datasets():
             self.current_dataset += 1
             self.replacements_counter = 0
             self.dataset_start_epoch = epoch
+
+            if not isinstance(self.sequential_datasets[self.current_dataset], LPIPSReorderedDataset):
+                return True
 
             print(f"Switched to dataset {self.current_dataset + 1} / {self.num_datasets()}")
             if self.base_dataset is not None:
@@ -115,11 +128,16 @@ class MixedSequentialDataset(TorchDataset):
             print(f"Finished reordering the dataset {self.current_dataset + 1}.")
             return True
         
+        if not isinstance(self.sequential_datasets[self.current_dataset], LPIPSReorderedDataset):
+            return False
+        
         if epoch == 1 and self.base_dataset is not None:
             self.initial_collate = self.create_base_collate(collate)
+            # dataloader.collate_fn = self.initial_collate
             print(f"Reordering dataset {self.current_dataset + 1} w.r.t. the base dataset...")
             self.reorder_if_lpips_base(model, batch_size, self.initial_collate, collate, max_samples)
             print(f"Finished reordering the dataset {self.current_dataset + 1}.")
+            return True
         
         return False
 
