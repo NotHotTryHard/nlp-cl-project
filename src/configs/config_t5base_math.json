@@ -20,7 +20,7 @@
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
         "args": {
-          "sequential_mixing_rate": 0.1
+          "sequential_mixing_rate": 0.0
         }
       },
       "datasets": [
@@ -304,6 +304,26 @@
           }
         }
       ]
+    },
+    "val_C4": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "t5_mlm_masking": true,
+      "datasets": [
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "allenai/c4",
+            "streaming": false,
+            "split": "validation",
+            "data_files": {"validation": "en/c4-validation.00000-of-00008.json.gz"},
+            "max_samples": 1000
+          }
+        }
+      ]
     }
   },
   "optimizer": {
@@ -339,8 +359,8 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 81,
-    "eval_frequency": 3,
+    "epochs": 9,
+    "eval_frequency": 1,
     "first_epoch_eval_only": true,
     "save_dir": "saved/",
     "save_period": 60,
