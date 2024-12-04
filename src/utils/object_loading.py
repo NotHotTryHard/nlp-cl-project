@@ -43,6 +43,8 @@ def get_dataloaders(configs: ConfigParser):
                 ds["args"]["datasets"] = datasets
                 ds["args"]["base_dataset"] = base_dataset
                 ds["args"]["base_dataset_config"] = base_dataset_config
+                ds["args"]["lpips_base_coeff"] = params.get("lpips_base_coeff", 1.0 if base_dataset is not None else 0.0)
+                ds["args"]["lpips_prev_coeff"] = params.get("lpips_prev_coeff", 1.0)
                 dataset = configs.init_obj(
                     ds, src.datasets,
                     config_parser=configs,

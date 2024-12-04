@@ -33,15 +33,15 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__add_or_sub",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
         },
         {
@@ -52,15 +52,15 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__add_or_sub_in_base",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
         },
         {
@@ -71,15 +71,15 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__add_sub_multiple",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
         },
         {
@@ -90,15 +90,15 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__div",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
         },
         {
@@ -109,15 +109,15 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__mixed",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
         },
         {
@@ -128,15 +128,15 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__mul",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
         },
         {
@@ -147,15 +147,15 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__mul_div_multiple",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
         },
         {
@@ -166,15 +166,15 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__nearest_integer_root",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
         },
         {
@@ -185,16 +185,28 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__simplify_surd",
               "split": "train",
-              "max_samples": 24000,
+              "max_samples": 8000,
               "shuffle": true,
               "shuffle_seed": 52
+            },
+            "embedding_specs": {
+              "model_part": "encoder",
+              "model_block": -1,
+              "block_layer": -1
             }
-          },
-          "embedding_specs": {
-            "model_part": "encoder",
-            "model_block": -1,
-            "block_layer": -1
           }
+        },
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "allenai/c4",
+            "streaming": false,
+            "split": "train",
+            "data_files": {"train": "en/c4-train.00000-of-01024.json.gz"},
+            "max_samples": 1000
+          },
+          "base_dataset": true,
+          "t5_mlm_masking": true
         }
       ]
     },
