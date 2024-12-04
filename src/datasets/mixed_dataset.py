@@ -102,7 +102,7 @@ class MixedSequentialDataset(TorchDataset):
             dataset.reorder_dataset(model, batch_size, collate, max_samples)
             # print(f"Finished reordering the dataset {self.current_dataset + 1}.")
 
-    def update_epoch(self, epoch, epochs, model=None, dataloader=None, max_samples=None):
+    def update_epoch(self, epoch, epochs, model=None, dataloader=None, max_samples=None):       
         batch_size = dataloader.batch_size
         collate = dataloader.collate_fn
 
@@ -163,94 +163,3 @@ class MixedSequentialDataset(TorchDataset):
                 return self.sequential_datasets[dataset_idx][seq_idx]
         
         return self.sequential_datasets[self.current_dataset][real_idx] # (real_idx - prev_length) % len(self.current_dataset)]
-
-
-# class MixedSequentialDatasetCategorical(TorchDataset):
-#     def __init__(self,
-#                  base_mixing_rate=0.0,
-#                  sequential_mixing_rate=0.0,
-#                  max_length=512,
-#                  base_dataset=None,
-#                  datasets=None,
-#                  base_dataset_name=None,
-#                  datasets_names=None,
-#                  tokenizer=None,
-#                  args=None,
-#                  **kwargs):
-#         """
-#             Dataset class for sequential fine-tuning on mixed data batches.
-#             Provides samples from initial dataset / from previous sequential datasets
-#             with specified probabilities.
-
-#             base_mixing_rate: rate of samples from base dataset
-#             sequential_mixing_rate: rate of samples drawn randomly from previous sequential datasets
-#             -- SHOULD WE SUPPORT ADATPIVE SEQUENTIAL MIXING RATES?
-
-#             max_length: max length of the sample
-            
-#             base_dataset: dataset object, if provided
-#             datasets: list of sequential datasets as objects, if provided
-#             OR
-#             base_dataset_name: the name of the dataset to import from the supported list (get_datasets)
-#             datasets_names: list of sequential datasets' names to import from the supported list (get_datasets)
-
-#             tokenizer: tokenizer for get_datasets, used only in case of dataset names
-#             args: args for get_datasets, used only in case of dataset names
-#         """
-#         super().__init__()
-
-#         self.base_dataset = get_dataset(base_dataset_name, tokenizer, args) if base_dataset is None else base_dataset
-#         self.sequential_datasets = [
-#             get_dataset(dataset_name, tokenizer, args)
-#             for dataset_name in datasets_names
-#         ] if datasets is None else datasets
-
-#         self.base_mixing_rate = base_mixing_rate
-#         self.sequential_mixing_rate = sequential_mixing_rate
-
-#         self.cum_sequential_length = np.cumsum([self._get_len(dataset) for dataset in self.sequential_datasets])
-#         self.replacements_counter = 0
-
-#         self.max_length = max_length
-    
-#     def __len__(self):
-#         return sum(self._get_len(dataset) for dataset in self.sequential_datasets)
-
-#     @staticmethod
-#     def _get_len(dataset):
-#         if hasattr(dataset, "num_rows"):
-#             return dataset.num_rows        # НАПИСАТЬ САППОРТ ['train'] и ['text'] сплитов
-#         return len(dataset)
-
-#     def _get_mixing_sample(self, idx):
-#         if self.base_dataset is not None and self.base_mixing_rate:
-#             p_base = np.random.rand()
-#             if p_base < self.base_mixing_rate:
-#                 self.replacements_counter += 1
-#                 base_idx = np.random.randint(0, self._get_len(self.base_dataset))
-#                 return self.base_dataset[base_idx]
-    
-#         real_idx = idx - self.replacements_counter
-#         n_prev_datasets = next(i for i, length in enumerate(self.cum_sequential_length) if length >= real_idx)
-#         prev_length = self.cum_sequential_length[n_prev_datasets - 1] if n_prev_datasets else 0
-
-#         if self.sequential_mixing_rate and n_prev_datasets:
-#             p_seq = np.random.rand()
-#             if p_seq < self.sequential_mixing_rate:
-#                 self.replacements_counter += 1
-#                 dataset_idx = np.random.randint(0, n_prev_datasets)
-#                 seq_idx = np.random.randint(0, self._get_len(self.sequential_datasets[dataset_idx]))
-#                 return self.sequential_datasets[dataset_idx][seq_idx]
-        
-#         return self.sequential_datasets[n_prev_datasets][real_idx - prev_length]
-
-#     def __getitem__(self, idx):
-#         sample = self._get_mixing_sample(idx)
-        
-#         if len(sample) > self.max_length - 2:
-#             sample = sample[:self.max_length - 2]
-
-#         pads = [self.pad_id for _ in range(self.max_length - 2 - len(sample))]
-#         sample = torch.tensor([self.bos_id] + sample + [self.eos_id] + pads)
-
-#         return sample
