@@ -13,7 +13,8 @@
         "lora_config": {
           "rank": 4, 
           "alpha": 16, 
-          "dropout_p": 0.1
+          "dropout_p": 0.1,
+          "target_layers": ["q", "k", "v", "o", "wi", "wo"]
         }
       }
   },
@@ -52,17 +53,6 @@
             "dataset_dir": "summarization-data/xsum",
             "split": "train"
           }
-        },
-        {
-          "type": "HuggingFaceDataset",
-          "args": {
-            "path": "allenai/c4",
-            "streaming": false,
-            "split": "train",
-            "data_files": {"train": "en/c4-train.00001-of-01024.json.gz"},
-            "max_samples": 1000
-          },
-          "base_dataset": true
         }
       ]
     },
@@ -164,7 +154,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "T5b Mix=0.1 w/o grad clip",
+    "wandb_run_name": "LoRA + С4",
     "grad_norm_clip": 100.0
   }
 }

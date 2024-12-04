@@ -3,7 +3,8 @@ from torch import nn
 from src.model.t5model import T5forSummarization
 
 class LoRA(nn.Module):
-    def __init__(self, orig_module, rank, alpha, dropout_p):
+    def __init__(self, orig_module, rank, alpha, dropout_p, **kwargs):
+        super().__init__()
         self.dropout = nn.Dropout(dropout_p)
         self.lora_down = nn.Linear(orig_module.in_features, rank, bias=False)
         self.lora_up = nn.Linear(rank, orig_module.out_features, bias=False)
@@ -22,13 +23,13 @@ class T5LoRA(T5forSummarization):
     def __init__(self, t5_config, lora_config, **cfg):
         super().__init__(**t5_config)
         
-        for name, module in model.named_modules():
-            module.requires_grad = False
-            if 'hui' in name:
+        for p in self.parameters():
+            p.requires_grad = False
+        
+        for name, module in self.named_modules():
+            if isinstance(module, nn.Linear) and name.split('.')[-1] in lora_config['target_layers']:
                 module.lora = LoRA(module, **lora_config)
                 module.forward = self.add_lora_forward(module)
-                module.lora.requires_grad = True
-        
         
     def add_lora_forward(self, module):
         def new_forward(x):

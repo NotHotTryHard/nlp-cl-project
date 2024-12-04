@@ -120,8 +120,6 @@ class Trainer(BaseTrainer):
         self.model.train()
         self.train_metrics.reset()
         self.writer.add_scalar("epoch", epoch)
-        
-        print(self.train_dataloader)
 
         changed_dataset = False
         if isinstance(self.train_dataset, MixedSequentialDataset):
