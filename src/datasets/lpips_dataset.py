@@ -207,32 +207,32 @@ class LPIPSReorderedDataset(TorchDataset):
         dataloader = TorchDataloader(indexed_dataset, batch_size=batch_size, collate_fn=indexed_collate, shuffle=True)
         
         class HookClass:
-            def __init__(self, prev_mean, prev_std, cdf_surprise_scores=False):
+            def __init__(hook_self, prev_mean, prev_std, cdf_surprise_scores=False):
                 super().__init__()
-                self.surprise_scores = {}
-                self.batch_indices = None
-                self.prev_mean = prev_mean
-                self.prev_std = prev_std
-                self.activations = None
-                self.indices = None
-                self.cdf_surprise_scores = cdf_surprise_scores
+                hook_self.surprise_scores = {}
+                hook_self.batch_indices = None
+                hook_self.prev_mean = prev_mean
+                hook_self.prev_std = prev_std
+                hook_self.activations = None
+                hook_self.indices = None
+                hook_self.cdf_surprise_scores = cdf_surprise_scores
 
-            def __call__(self, module, input, output):
+            def __call__(hook_self, module, input, output):
                 activations_mean = output.detach().mean(dim=1)
 
-                if self.cdf_surprise_scores:
+                if hook_self.cdf_surprise_scores:
                     diffs, min_diff, max_diff = self.compute_diffs(activation_mean)
                     diffs_cumsums = self.compute_diffs_cumsums(diffs, num_points=100, start=0.66 * min_diff, end=1.5 * max_diff)
 
                     diffs_ema = self.get_diffs_ema(diffs_cumsums)
                     scores = {i: x for i, x in enumerate(diffs_ema)}
 
-                    for score, dataset_ind in zip(scores, self.batch_indices):
-                        self.surprise_scores[dataset_ind] = score
+                    for score, dataset_ind in zip(scores, hook_self.batch_indices):
+                        hook_self.surprise_scores[dataset_ind] = score
                 else:
-                    for ind, activation_mean in zip(self.batch_indices, activations_mean):
-                        diff = (activation_mean - self.prev_mean).abs()
-                        self.surprise_scores[ind] = torch.norm(diff)
+                    for ind, activation_mean in zip(hook_self.batch_indices, activations_mean):
+                        diff = (activation_mean - hook_self.prev_mean).abs()
+                        hook_self.surprise_scores[ind] = torch.norm(diff)
             
         hook = HookClass(self.prev_mean, self.prev_std, cdf_surprise_scores=self.cdf_surprise_scores)  
 
