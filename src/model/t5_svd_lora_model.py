@@ -53,16 +53,73 @@ class T5SVDLoRA(T5forSummarization):
                 module.forward = self.add_lora_forward(module)
         
         print("Init loss:", self.calc_extra_loss())
-                
         
-        
+    @staticmethod 
     def add_lora_forward(self, module):
         def new_forward(x):
             return module.lora(x)
         module.original_forward = module.forward
         return new_forward 
     
+    def calc_extra_loss(self, ):
+        res = 0
+        cnt = 0
+        for name, module in self.named_modules():
+            if hasattr(module, 'lora'):
+                mod = getattr(module, 'lora')
+                u_cat = torch.cat([mod.u, mod.lora_u], 1)
+                vt_cat = torch.cat([mod.vt, mod.lora_vt], 0)
+                u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(mod.k, device=u_cat.device)) 
+                vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(mod.k, device=u_cat.device)) 
+                res += (u_norm + vt_norm)
+                cnt += 2
+        return (res / cnt)
+
+
+class T5SVDLoRASequential(T5forSummarization):
+    def __init__(self, t5_config, svd_lora_config, **cfg):
+        super().__init__(**t5_config)
+
+        self.current_adapter_idx = 0
+        self.n_adapters = svd_lora_config['n_adapters']
+        self.svd_lora_config = svd_lora_config
+        
+        for p in self.parameters():
+            p.requires_grad = False
+
+        self.svd_loras = [{} for _ in range(self.n_adapters)]
+        
+        for name, module in self.named_modules():
+            if self.check_module(name, module):
+                for i in range(self.n_adapters):
+                    self.svd_loras[i][name] = SVDLoRA(module, **svd_lora_config)
+        
+        self.update_adapter(adapter_index=0)
     
+        print("Init loss:", self.calc_extra_loss())
+
+    def update_adapter(self, adapter_index):
+        for name, module in self.named_modules():
+            if self.check_module(name, module):
+                module.lora = self.svd_loras[adapter_index][name]
+                module.forward = self.add_lora_forward(module)
+
+    def check_module(self, name, module):
+        return isinstance(module, nn.Linear) and name.split('.')[-1] in self.svd_lora_config['target_layers']
+
+    def update_adapter_index(self, adapter_idx):
+        if self.current_adapter_idx != adapter_idx:
+            print(f"Changing to {adapter_idx+1}-th adapter!")
+            self.update_adapter(adapter_idx)
+        self.current_adapter_idx = adapter_idx
+
+    @staticmethod
+    def add_lora_forward(module):
+        def new_forward(x):
+            return module.original_forward(x) + module.lora(x)
+        module.original_forward = module.forward
+        return new_forward 
+
     def calc_extra_loss(self, ):
         res = 0
         cnt = 0
