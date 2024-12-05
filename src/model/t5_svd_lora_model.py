@@ -76,6 +76,51 @@ class T5SVDLoRA(T5forSummarization):
         return (res / cnt)
 
 
+
+class SVDLoRASequential(nn.Module):
+    def __init__(self, orig_module, rank, n_adapters, **kwargs):
+        super().__init__()
+        # self.dropout = nn.Dropout(dropout_p)
+        # self.lora_down = nn.Linear(orig_module.in_features, rank, bias=False)
+        # self.lora_up = nn.Linear(rank, orig_module.out_features, bias=False)
+        # self.rank = rank
+        # self.alpha = alpha
+        
+        # weight - (out_features, in_features)
+        self.u, self.s, self.vt = torch.linalg.svd(orig_module.weight.T, full_matrices=False) 
+        # u - out_features, k
+        # s - k
+        # vt - k, in_features
+        self.in_features = orig_module.in_features
+        self.out_features = orig_module.out_features
+        self.k = self.s.shape[0]
+
+        self.loras_u = []
+        self.loras_s = []
+        self.loras_vt = []
+
+        for k in range(n_adapters):
+            self.loras_u.append(nn.Parameter(self.u[:, -rank * (k + 1) : -rank * k], requires_grad=True)) # out_features, rank
+            self.loras_s.append(nn.Parameter(self.s[-rank * (k + 1) : -rank * k], requires_grad=True))  # rank, 
+            self.loras_vt.append(nn.Parameter(self.vt[-rank * (k + 1) : -rank * k, :], requires_grad=True)) # rank, in_features
+        
+        self.u = nn.Parameter(self.u[:, :-rank * n_adapters], requires_grad=False)
+        self.s = nn.Parameter(self.s[:-rank * n_adapters], requires_grad=False)
+        self.vt = nn.Parameter(self.vt[:-rank * n_adapters, :], requires_grad=False)
+
+        # SELECT ADAPTER FOR THE CURRENT TASK
+    
+    def forward(self, x):
+        # print('=='*10)
+        # print("x.shape", x.shape)
+        # print("self.u", self.u.shape)
+        # print("self.s", self.s.shape)
+        # print("self.vt", self.vt.shape)
+        orig_pass = x @ self.u @ torch.diag(self.s) @ self.vt
+        lora_pass = x @ self.lora_u @ torch.diag(self.lora_s) @ self.lora_vt
+        return orig_pass + lora_pass
+
+
 class T5SVDLoRASequential(T5forSummarization):
     def __init__(self, t5_config, svd_lora_config, **cfg):
         super().__init__(**t5_config)
@@ -97,6 +142,9 @@ class T5SVDLoRASequential(T5forSummarization):
         self.update_adapter(adapter_index=0)
     
         print("Init loss:", self.calc_extra_loss())
+
+
+        # WRONG
 
     def update_adapter(self, adapter_index):
         for name, module in self.named_modules():
