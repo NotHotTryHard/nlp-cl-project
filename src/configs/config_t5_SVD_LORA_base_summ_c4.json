@@ -32,61 +32,25 @@
       },
       "datasets": [
         {
-          "type": "LPIPSReorderedDataset",
+          "type": "OriginalDataset",
           "args": {
-            "dataset_type": "OriginalDataset",
-            "dataset_args": {
-              "dataset_dir": "summarization-data/cnndm",
-              "split": "train"
-            },
-            "embedding_specs": {
-              "model_part": "encoder",
-              "model_block": -1,
-              "block_layer": -1
-            }
+            "dataset_dir": "summarization-data/cnndm",
+            "split": "train"
           }
         },
         {
-          "type": "LPIPSReorderedDataset",
+          "type": "OriginalDataset",
           "args": {
-            "dataset_type": "OriginalDataset",
-            "dataset_args": {
-              "dataset_dir": "summarization-data/wikihow",
-              "split": "train"
-            },
-            "embedding_specs": {
-              "model_part": "encoder",
-              "model_block": -1,
-              "block_layer": -1
-            }
+            "dataset_dir": "summarization-data/wikihow",
+            "split": "train"
           }
         },
         {
-          "type": "LPIPSReorderedDataset",
+          "type": "OriginalDataset",
           "args": {
-            "dataset_type": "OriginalDataset",
-            "dataset_args": {
-              "dataset_dir": "summarization-data/xsum",
-              "split": "train"
-            },
-            "embedding_specs": {
-              "model_part": "encoder",
-              "model_block": -1,
-              "block_layer": -1
-            }
+            "dataset_dir": "summarization-data/xsum",
+            "split": "train"
           }
-        },
-        {
-          "type": "HuggingFaceDataset",
-          "args": {
-            "path": "allenai/c4",
-            "streaming": false,
-            "split": "train",
-            "data_files": {"train": "en/c4-train.00000-of-01024.json.gz"},
-            "max_samples": 1000
-          },
-          "base_dataset": true,
-          "t5_mlm_masking": true
         }
       ]
     },

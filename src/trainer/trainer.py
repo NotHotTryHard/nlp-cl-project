@@ -62,12 +62,12 @@ class Trainer(BaseTrainer):
         self.log_step = 50
 
         self.train_metrics = MetricTracker(
-            "loss", "grad norm",
+            "loss", "extra_loss", 'total_loss', "grad norm",
             *[m.name for m in self.metrics if self._compute_on_train(m)],
             writer=self.writer
         )
         self.evaluation_metrics = MetricTracker(
-            "loss", *[m.name for m in self.metrics], writer=self.writer
+            "loss", "extra_loss", "total_loss", *[m.name for m in self.metrics], writer=self.writer
         )
         self.perform_generative_eval = self.evaluation_metrics._data.shape[0] > 1
 
@@ -250,7 +250,14 @@ class Trainer(BaseTrainer):
         #     batch["indices"][:, 1:]
         # )
         batch["loss"] = self.model(batch)
-        metrics_tracker.update("loss", batch["loss"].item())
+        if hasattr(self.model, 'calc_extra_loss'):
+            extra_loss = self.model.calc_extra_loss()
+            metrics_tracker.update("extra_loss", extra_loss.item())
+            metrics_tracker.update("loss", batch["loss"].item())
+            batch["loss"] = batch["loss"] + extra_loss
+            metrics_tracker.update("total_loss", batch["loss"].item())
+        else:    
+            metrics_tracker.update("loss", batch["loss"].item())
         
         if is_train:
             batch["loss"].backward()

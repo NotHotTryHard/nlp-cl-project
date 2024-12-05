@@ -52,7 +52,7 @@ class T5SVDLoRA(T5forSummarization):
                 module.lora = SVDLoRA(module, **svd_lora_config)
                 module.forward = self.add_lora_forward(module)
         
-        print("Init loss:", self.svd_conditioning_loss())
+        print("Init loss:", self.calc_extra_loss())
                 
         
         
@@ -63,7 +63,7 @@ class T5SVDLoRA(T5forSummarization):
         return new_forward 
     
     
-    def svd_conditioning_loss(self, ):
+    def calc_extra_loss(self, ):
         res = 0
         cnt = 0
         for name, module in self.named_modules():
@@ -71,8 +71,8 @@ class T5SVDLoRA(T5forSummarization):
                 mod = getattr(module, 'lora')
                 u_cat = torch.cat([mod.u, mod.lora_u], 1)
                 vt_cat = torch.cat([mod.vt, mod.lora_vt], 0)
-                u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(mod.k)) 
-                vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(mod.k)) 
+                u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(mod.k, device=u_cat.device)) 
+                vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(mod.k, device=u_cat.device)) 
                 res += (u_norm + vt_norm)
                 cnt += 2
         return (res / cnt)

@@ -163,7 +163,7 @@ class LPIPSReorderedDataset(TorchDataset):
 
         return diffs, min_diff, max_diff
 
-    def get_diffs_numpy(diffs):
+    def get_diffs_numpy(self, diffs):
         return [[x[0].cpu().numpy() for x in diffs[i]] for i in range(len(diffs))]
 
     def compute_diffs_cumsums(self, diffs, num_points=100, start=None, end=None):
@@ -221,7 +221,7 @@ class LPIPSReorderedDataset(TorchDataset):
                 activations_mean = output.detach().mean(dim=1)
 
                 if hook_self.cdf_surprise_scores:
-                    diffs, min_diff, max_diff = self.compute_diffs(activation_mean)
+                    diffs, min_diff, max_diff = self.compute_diffs(activations_mean)
                     diffs_cumsums = self.compute_diffs_cumsums(diffs, num_points=100, start=0.66 * min_diff, end=1.5 * max_diff)
 
                     diffs_ema = self.get_diffs_ema(diffs_cumsums)
