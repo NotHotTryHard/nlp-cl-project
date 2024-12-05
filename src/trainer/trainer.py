@@ -18,6 +18,7 @@ from src.base import BaseTrainer
 from src.logger.utils import plot_spectrogram_to_buf
 from src.utils import inf_loop, MetricTracker
 from src.datasets import MixedSequentialDataset
+from src.model import T5SVDLoRA
 
 class Trainer(BaseTrainer):
     """
@@ -138,6 +139,10 @@ class Trainer(BaseTrainer):
                 val_log = self._evaluation_epoch(epoch, part, dataloader)
                 log.update(**{f"{part}_{name}": value for name, value in val_log.items()})
             return log
+    
+
+        if isinstance(self.model, T5SVDLoRA):
+            self.model.enable_extra_loss()
 
         for batch_idx, batch in enumerate(
                 tqdm(self.train_dataloader, desc="train", total=self.len_epoch)
@@ -206,6 +211,8 @@ class Trainer(BaseTrainer):
         :return: A log that contains information about validation
         """
         self.model.eval()
+        if isinstance(self.model, T5SVDLoRA):
+            self.model.disable_extra_loss()
         self.evaluation_metrics.reset()
 
         with torch.no_grad():
@@ -250,14 +257,21 @@ class Trainer(BaseTrainer):
         #     batch["indices"][:, 1:]
         # )
         batch["loss"] = self.model(batch)
-        if hasattr(self.model, 'calc_extra_loss'):
-            extra_loss = self.model.calc_extra_loss()
-            metrics_tracker.update("extra_loss", extra_loss.item())
+
+        if hasattr(self.model, 'extra_loss'):
+            metrics_tracker.update("extra_loss", self.extra_loss.item())
             metrics_tracker.update("loss", batch["loss"].item())
-            batch["loss"] = batch["loss"] + extra_loss
+            batch["loss"] = batch["loss"] + self.extra_loss
             metrics_tracker.update("total_loss", batch["loss"].item())
         else:    
             metrics_tracker.update("loss", batch["loss"].item())
+
+        # if hasattr(self.model, 'calc_extra_loss'):
+        #     extra_loss = self.model.calc_extra_loss()
+        #     metrics_tracker.update("extra_loss", extra_loss.item())
+        #     metrics_tracker.update("loss", batch["loss"].item())
+        #     batch["loss"] = batch["loss"] + extra_loss
+        #     metrics_tracker.update("total_loss", batch["loss"].item())
         
         if is_train:
             batch["loss"].backward()
