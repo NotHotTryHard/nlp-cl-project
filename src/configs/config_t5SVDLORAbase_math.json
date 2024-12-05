@@ -18,7 +18,7 @@
   },
   "data": {
     "train": {
-      "batch_size": 8,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -132,7 +132,7 @@
       ]
     },
     "val_add_or_sub": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -152,7 +152,7 @@
       ]
     },
     "val_add_or_sub_in_base": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -172,7 +172,7 @@
       ]
     },
     "val_add_sub_multiple": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -192,7 +192,7 @@
       ]
     },
     "val_div": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -212,7 +212,7 @@
       ]
     },
     "val_mixed": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -232,7 +232,7 @@
       ]
     },
     "val_mul": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -252,7 +252,7 @@
       ]
     },
     "val_mul_div_multiple": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -272,7 +272,7 @@
       ]
     },
     "val_nearest_integer_root": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -292,7 +292,7 @@
       ]
     },
     "val_simplify_surd": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -312,7 +312,7 @@
       ]
     },
     "val_C4": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -341,18 +341,6 @@
     }
   },
   "metrics": [
-    {
-      "type": "ArithmeticAccuracyMetric",
-      "args": {
-        "name": "ArithmeticAccuracyMetric"
-      }
-    },
-    {
-      "type": "ArithmeticMAEMetric",
-      "args": {
-        "name": "ArithmeticMAEMetric"
-      }
-    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
