@@ -20,7 +20,8 @@
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
         "args": {
-          "sequential_mixing_rate": 0.0
+          "sequential_mixing_rate": 0.1,
+          "base_mixing_rate": 0.1
         }
       },
       "datasets": [
@@ -122,6 +123,18 @@
             "shuffle": true,
             "shuffle_seed": 52
           }
+        },
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "allenai/c4",
+            "streaming": false,
+            "split": "train",
+            "data_files": {"train": "en/c4-train.00000-of-01024.json.gz"},
+            "max_samples": 1000
+          },
+          "base_dataset": true,
+          "t5_mlm_masking": true
         }
       ]
     },
@@ -335,18 +348,6 @@
     }
   },
   "metrics": [
-    {
-      "type": "ArithmeticAccuracyMetric",
-      "args": {
-        "name": "ArithmeticAccuracyMetric"
-      }
-    },
-    {
-      "type": "ArithmeticMAEMetric",
-      "args": {
-        "name": "ArithmeticMAEMetric"
-      }
-    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
@@ -368,7 +369,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "MATH-8 T5b Mix=0.1",
+    "wandb_run_name": "MATH-1e-24k T5b Mix=0.1+0.1",
     "grad_norm_clip": 100.0
   }
 }
