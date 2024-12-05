@@ -20,8 +20,8 @@
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
         "args": {
-          "sequential_mixing_rate": 0.1,
-          "base_mixing_rate": 0.1
+          "sequential_mixing_rate": 0.0,
+          "base_mixing_rate": 0.0
         }
       },
       "datasets": [
@@ -33,7 +33,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__add_or_sub",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -52,7 +52,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__add_or_sub_in_base",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -71,7 +71,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__add_sub_multiple",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -90,7 +90,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__div",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -109,7 +109,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__mixed",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -128,7 +128,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__mul",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -147,7 +147,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__mul_div_multiple",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -166,7 +166,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__nearest_integer_root",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -185,7 +185,7 @@
               "path": "deepmind/math_dataset",
               "name": "arithmetic__simplify_surd",
               "split": "train",
-              "max_samples": 8000,
+              "max_samples": 24000,
               "shuffle": true,
               "shuffle_seed": 52
             },
@@ -432,8 +432,8 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 81,
-    "eval_frequency": 3,
+    "epochs": 9,
+    "eval_frequency": 1,
     "first_epoch_eval_only": true,
     "save_dir": "saved/",
     "save_period": 60,
@@ -441,7 +441,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "LPIPS Math T5b NO Mix",
+    "wandb_run_name": "CDF LPIPS Math-1e-24k T5b NO Mix",
     "grad_norm_clip": 100.0
   }
 }

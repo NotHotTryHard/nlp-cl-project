@@ -119,15 +119,7 @@ class LPIPSReorderedDataset(TorchDataset):
         activations_std = torch.sqrt(activations_squared_mean - activations_mean ** 2)
 
         activations = hook.activations
-        
-        print("After initial, hook not deleted yet:")
-        check_cuda_memory()
-
         hook.kill_yourself()
-        
-        print("After initial, hook deleted:")
-        check_cuda_memory()
-
         clear_cuda_cache()
         print("After initial, CUDA cache cleared:")
         check_cuda_memory()
@@ -148,23 +140,36 @@ class LPIPSReorderedDataset(TorchDataset):
         max_diff = 0.0
         diffs = []
 
+        
         for activation in activations:
-            diffs.append([])
-            for prev_activation in self.prev_activations:
-                diff = torch.norm(activation - prev_activation)
-                diffs[-1].append(diff)
-                min_diff = min(min_diff, diff)
-                max_diff = max(max_diff, diff)
+            cur_diffs = torch.norm(activation.unsqueeze(0) - self.prev_activations, dim=1)
+            diffs.append(cur_diffs)
 
-        diffs = [
-            list(sorted([(diff, j) for j, diff in enumerate(diffs[i])]))
-            for i in range(len(diffs))
-        ]   
+            min_diff = min(min_diff, torch.min(cur_diffs).item())
+            max_diff = max(max_diff, torch.max(cur_diffs).item())
+            
+            # for prev_activation in self.prev_activations:
+            #     diff = torch.norm(activation - prev_activation)
+            #     diffs[-1].append(diff.unsqueeze(0))
+            #     min_diff = min(min_diff, diff)
+            #     max_diff = max(max_diff, diff)
+            # diffs[-1] = torch.cat(diffs[-1], 0)
+
+        print('pizdec')
+
+        diffs_new = []
+        for i in range(len(diffs)):
+            diffs_new.append(
+                list(sorted([(diff.item(), j) for j, diff in enumerate(diffs[i])], key=lambda x: x[0]))
+            )
+            if i % 100 == 0:
+                print(f'pizdec {i}')
+
+        diffs = diffs_new
+            
+        print('PIZDEC')
 
         return diffs, min_diff, max_diff
-
-    def get_diffs_numpy(self, diffs):
-        return [[x[0].cpu().numpy() for x in diffs[i]] for i in range(len(diffs))]
 
     def compute_diffs_cumsums(self, diffs, num_points=100, start=None, end=None):
         if start is None or end is None:
@@ -178,7 +183,14 @@ class LPIPSReorderedDataset(TorchDataset):
         log_end = torch.log10(torch.tensor(end))
         diff_grid = torch.logspace(log_start, log_end, steps=num_points).cpu().numpy()
 
-        diffs_numpy = self.get_diffs_numpy(diffs)
+        # print(len(diffs))
+        # print(len())
+        # diffs = torch.cat([torch.cat([x[0].unsqueeze(0) for x in diffs[i]], 0) for i in range(len(diffs))], 0)
+        # diffs_numpy = diffs.cpu().numpy()
+        # diffs_numpy = [[x for x in diffs_numpy[i]] for i in range(len(diffs_numpy))]
+        print('hui')
+        diffs_numpy = [[x[0] for x in diffs[i]] for i in range(len(diffs))]
+        print('HUI')
 
         diffs_cumsums = []
         
@@ -187,12 +199,12 @@ class LPIPSReorderedDataset(TorchDataset):
             for diff_threshold in diff_grid:
                 pos = bisect.bisect_left(diff_numpy, diff_threshold)
                 diffs_cumsums[-1].append(pos)
-            if i % 10 == 0:
-                print('passed', i)
+            # if i % 10 == 0:
+            #     print('passed', i)
 
         return diffs_cumsums
 
-    def get_diffs_ema(diffs_cumsums):
+    def get_diffs_ema(self, diffs_cumsums):
         diffs_ema = []
         ema_coeffs = torch.logspace(0.0, torch.log10(torch.tensor(0.1)), steps=len(diffs_cumsums[0]))
         for diff_cumsum in diffs_cumsums:
@@ -221,14 +233,21 @@ class LPIPSReorderedDataset(TorchDataset):
                 activations_mean = output.detach().mean(dim=1)
 
                 if hook_self.cdf_surprise_scores:
-                    diffs, min_diff, max_diff = self.compute_diffs(activations_mean)
-                    diffs_cumsums = self.compute_diffs_cumsums(diffs, num_points=100, start=0.66 * min_diff, end=1.5 * max_diff)
+                    # diffs, min_diff, max_diff = self.compute_diffs(activations_mean)
+                    # diffs_cumsums = self.compute_diffs_cumsums(diffs, num_points=100, start=0.66 * min_diff, end=1.5 * max_diff)
 
-                    diffs_ema = self.get_diffs_ema(diffs_cumsums)
-                    scores = {i: x for i, x in enumerate(diffs_ema)}
+                    # diffs_ema = self.get_diffs_ema(diffs_cumsums)
+                    # scores = {i: x for i, x in enumerate(diffs_ema)}
 
-                    for score, dataset_ind in zip(scores, hook_self.batch_indices):
-                        hook_self.surprise_scores[dataset_ind] = score
+                    # for score, dataset_ind in zip(scores, hook_self.batch_indices):
+                    #     hook_self.surprise_scores[dataset_ind] = score
+
+                    if hook_self.activations is None:
+                        hook_self.activations = activations_mean
+                        hook_self.indices = hook_self.batch_indices
+                    else:
+                        hook_self.activations = torch.cat((hook_self.activations, activations_mean), 0)
+                        hook_self.indices = hook_self.indices + hook_self.batch_indices
                 else:
                     for ind, activation_mean in zip(hook_self.batch_indices, activations_mean):
                         diff = (activation_mean - hook_self.prev_mean).abs()
@@ -247,7 +266,25 @@ class LPIPSReorderedDataset(TorchDataset):
                 hook.batch_indices = batch['indices']
                 model(batch)
         
-        surprise_scores = hook.surprise_scores
+        # surprise_scores = hook.surprise_scores
+        if self.cdf_surprise_scores:
+            activations = hook.activations
+            indices = hook.indices
+            
+            diffs, min_diff, max_diff = self.compute_diffs(activations)
+            print('computed diffs')
+            diffs_cumsums = self.compute_diffs_cumsums(diffs, num_points=25, start=min_diff, end=max_diff)
+            print('computed diffs_cumsums')
+    
+            diffs_ema = self.get_diffs_ema(diffs_cumsums)
+            scores = {i: x.item() for i, x in enumerate(diffs_ema)}
+            print('computed scores')
+    
+            surprise_scores = {dataset_ind: scores[i] for i, dataset_ind in enumerate(indices)}
+            
+            del activations
+        else:
+            surprise_scores = hook.surprise_scores
 
         handle.remove()
         return surprise_scores
@@ -257,11 +294,12 @@ class LPIPSReorderedDataset(TorchDataset):
         check_cuda_memory()
         
         surprise_scores = self.compute_surprise_scores(model, batch_size, collate, max_samples)
+        # print(surprise_scores)
 
         print("After surprise")
         check_cuda_memory()
 
-        if update_scores is None:
+        if update_scores is False:
             self.dataset_surprise_scores = list(surprise_scores.items())
         else:
             self.dataset_surprise_scores = [
@@ -269,10 +307,12 @@ class LPIPSReorderedDataset(TorchDataset):
                 for ind, prev_score in self.dataset_surprise_scores
             ]
         
-        self.dataset_surprise_scores = list(sorted(self.dataset_surprise_scores), lambda x: x[1])
+        self.dataset_surprise_scores = list(sorted(self.dataset_surprise_scores, key=lambda x: x[1]))
+        # print(self.dataset_surprise_scores)
         
         del self.prev_mean
         del self.prev_std
+        del self.prev_activations
 
         clear_cuda_cache()
 

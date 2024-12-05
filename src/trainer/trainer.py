@@ -121,7 +121,7 @@ class Trainer(BaseTrainer):
         self.train_metrics.reset()
         self.writer.add_scalar("epoch", epoch)
 
-        
+
         changed_dataset = False
         if isinstance(self.train_dataset, MixedSequentialDataset):
             changed_dataset = self.train_dataset.update_epoch(
@@ -129,7 +129,7 @@ class Trainer(BaseTrainer):
                 epochs=self.epochs,
                 model=self.model,
                 dataloader=self.train_dataloader,
-                max_samples=1000
+                max_samples=250
             )
 
         if self.first_epoch_eval_only and epoch == 0:
