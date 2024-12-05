@@ -3,19 +3,17 @@
   "n_gpu": 1,
   "preprocessing": {},
   "model": {
-    "type": "T5LoRA",
+    "type": "T5SVDLoRA",
     "args": {
       "t5_config": {
         "model_name": "t5-base",
         "cache_dir": "cache/",
         "max_length": 256
       },
-      "lora_config": {
-        "rank": 4, 
-        "alpha": 16, 
-        "dropout_p": 0.1,
-        "target_layers": ["q", "k", "v", "o", "wi", "wo"]
-      }
+        "svd_lora_config": {
+          "rank": 4,
+          "target_layers": ["q", "k", "v", "o", "wi", "wo"]
+        }
     }
   },
   "data": {
@@ -376,7 +374,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single LoRA Math-1e-24k",
+    "wandb_run_name": "Single SVDLoRA Math-1e-24k",
     "grad_norm_clip": 100.0
   }
 }
