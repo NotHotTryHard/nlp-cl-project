@@ -21,7 +21,7 @@ class SVDLoRA(nn.Module):
         self.out_features = orig_module.out_features
         self.k = self.s.shape[0]
 
-        self.eye_k = torch.eye(self.k, device=orig_module.device, requires_grad=False)
+        self.eye_k = torch.eye(self.k, device=self.u.device, requires_grad=False)
         
         self.lora_u = nn.Parameter(self.u[:, -rank:], requires_grad=True) # out_features, rank
         self.lora_s = nn.Parameter(self.s[-rank:], requires_grad=True)  # rank, 
@@ -31,7 +31,7 @@ class SVDLoRA(nn.Module):
         self.s = nn.Parameter(self.s[:-rank], requires_grad=False)
         self.vt = nn.Parameter(self.vt[:-rank, :], requires_grad=False)
         
-        self.model_self = model_self
+        self.extra_loss = torch.tensor(0., device=self.u.device)
         self.calc_extra_loss = calc_extra_loss
     
     def forward(self, x):
@@ -44,15 +44,12 @@ class SVDLoRA(nn.Module):
         orig_pass = x @ self.u @ torch.diag(self.s) @ self.vt
         lora_pass = x @ self.lora_u @ torch.diag(self.lora_s) @ self.lora_vt
 
-
         if self.calc_extra_loss:
             u_cat = torch.cat([self.u, self.lora_u], 1, requires_grad=False)
             vt_cat = torch.cat([self.vt, self.lora_vt], 0, requires_grad=False)
             u_norm = torch.norm(u_cat.T @ u_cat - self.eye_k)
             vt_norm = torch.norm(vt_cat @ vt_cat.T - self.eye_k)
-
-            extra_loss = (u_norm + vt_norm) / self.model_self.count_adaptable_weights
-            self.model_self.extra_loss = self.model_self.extra_loss + extra_loss
+            self.extra_loss = u_norm + vt_norm
 
         return orig_pass + lora_pass
 
@@ -65,11 +62,15 @@ class T5SVDLoRA(T5forSummarization):
             p.requires_grad = False
 
         self.count_adaptable_weights = 0
+        self.svd_lora_config = svd_lora_config
+
+        self.svd_loras = []
         
         for name, module in self.named_modules():
             if self.check_module(name, module):
                 module.lora = SVDLoRA(module, model_self=self, calc_extra_loss=True, **svd_lora_config)
                 module.forward = self.add_lora_forward(module)
+                self.svd_loras.append(module.lora)
                 self.count_adaptable_weights += 2
         
         self.extra_loss = torch.tensor(0., device=self.model.device)
@@ -95,7 +96,16 @@ class T5SVDLoRA(T5forSummarization):
             if self.check_module(name, module):
                 module.lora.calc_extra_loss = False
             
-    def calc_extra_loss(self, ):
+    def collect_extra_loss(self):
+        extra_loss = torch.tensor(0., device=self.model.device)
+        for lora in self.svd_loras:
+            extra_loss = extra_loss + lora.extra_loss
+            lora.extra_loss = torch.tensor(0., device=self.model.device)
+        
+        extra_loss = extra_loss / self.count_adaptable_weights
+        return extra_loss
+
+    def calc_extra_loss(self):
         res = 0
         cnt = 0
         for name, module in self.named_modules():
@@ -108,7 +118,6 @@ class T5SVDLoRA(T5forSummarization):
                 res += (u_norm + vt_norm)
                 cnt += 2
         return (res / cnt)
-
 
 
 class SVDLoRASequential(nn.Module):

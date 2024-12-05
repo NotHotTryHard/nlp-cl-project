@@ -258,21 +258,22 @@ class Trainer(BaseTrainer):
         # )
         batch["loss"] = self.model(batch)
 
-        if hasattr(self.model, 'extra_loss'):
-            metrics_tracker.update("extra_loss", self.extra_loss.item())
+
+        if hasattr(self.model, 'collect_extra_loss'):
+            extra_loss = self.model.collect_extra_loss()
+            metrics_tracker.update("extra_loss", extra_loss.item())
             metrics_tracker.update("loss", batch["loss"].item())
-            batch["loss"] = batch["loss"] + self.extra_loss
+            batch["loss"] = batch["loss"] + extra_loss
             metrics_tracker.update("total_loss", batch["loss"].item())
-        else:    
+        # elif hasattr(self.model, 'calc_extra_loss'):
+        #     extra_loss = self.model.calc_extra_loss()
+        #     metrics_tracker.update("extra_loss", self.extra_loss.item())
+        #     metrics_tracker.update("loss", batch["loss"].item())
+        #     batch["loss"] = batch["loss"] + self.extra_loss
+        #     metrics_tracker.update("total_loss", batch["loss"].item())
+        else:
             metrics_tracker.update("loss", batch["loss"].item())
 
-        # if hasattr(self.model, 'calc_extra_loss'):
-        #     extra_loss = self.model.calc_extra_loss()
-        #     metrics_tracker.update("extra_loss", extra_loss.item())
-        #     metrics_tracker.update("loss", batch["loss"].item())
-        #     batch["loss"] = batch["loss"] + extra_loss
-        #     metrics_tracker.update("total_loss", batch["loss"].item())
-        
         if is_train:
             batch["loss"].backward()
             self._clip_grad_norm()
