@@ -55,7 +55,7 @@ class T5SVDLoRA(T5forSummarization):
         print("Init loss:", self.calc_extra_loss())
         
     @staticmethod 
-    def add_lora_forward(self, module):
+    def add_lora_forward(module):
         def new_forward(x):
             return module.lora(x)
         module.original_forward = module.forward
