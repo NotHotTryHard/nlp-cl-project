@@ -40,7 +40,11 @@ def main(config):
     if len(device_ids) > 1:
         model = torch.nn.DataParallel(model, device_ids=device_ids)
     
-    print(f"\nNumber of model parameters: {get_number_of_parameters(model)}\n")
+    all_params = get_number_of_parameters(model)
+    trainable_params = sum([p.numel() for p in model.parameters() if p.requires_grad])
+    print(f"\nNumber of model parameters: {all_params:_}")
+    print(f"Number of trainable parameters: {trainable_params:_}")
+    print(f"Trainable: {100.0 * trainable_params / all_params:.2f}%\n")
 
     # get function handles of loss and metrics
     if hasattr(dataloaders["train"].dataset, "pad_id"):
