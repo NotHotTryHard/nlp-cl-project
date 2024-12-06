@@ -70,7 +70,7 @@ class Trainer(BaseTrainer):
         self.evaluation_metrics = MetricTracker(
             "loss", "extra_loss", "total_loss", *[m.name for m in self.metrics], writer=self.writer
         )
-        self.perform_generative_eval = self.evaluation_metrics._data.shape[0] > 1
+        self.perform_generative_eval = len(self.metrics) > 0 
 
         # now in base_trainer.py
         # self.first_epoch_eval_only = first_epoch_eval_only
@@ -257,13 +257,13 @@ class Trainer(BaseTrainer):
         #     batch["indices"][:, 1:]
         # )
         batch["loss"] = self.model(batch)
+        metrics_tracker.update("loss", batch["loss"].item())
 
-
-        if hasattr(self.model, 'collect_extra_loss'):
+        if hasattr(self.model, 'collect_extra_loss') and is_train:
             extra_loss = self.model.collect_extra_loss()
-            metrics_tracker.update("extra_loss", extra_loss.item())
-            metrics_tracker.update("loss", batch["loss"].item())
             batch["loss"] = batch["loss"] + extra_loss
+
+            metrics_tracker.update("extra_loss", extra_loss.item())
             metrics_tracker.update("total_loss", batch["loss"].item())
         # elif hasattr(self.model, 'calc_extra_loss'):
         #     extra_loss = self.model.calc_extra_loss()
@@ -271,8 +271,6 @@ class Trainer(BaseTrainer):
         #     metrics_tracker.update("loss", batch["loss"].item())
         #     batch["loss"] = batch["loss"] + self.extra_loss
         #     metrics_tracker.update("total_loss", batch["loss"].item())
-        else:
-            metrics_tracker.update("loss", batch["loss"].item())
 
         if is_train:
             batch["loss"].backward()

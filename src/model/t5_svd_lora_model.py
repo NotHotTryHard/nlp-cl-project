@@ -4,7 +4,7 @@ from torch import nn
 from src.model.t5model import T5forSummarization
 
 class SVDLoRA(nn.Module):
-    def __init__(self, orig_module, model_self, calc_extra_loss, rank, **kwargs):
+    def __init__(self, orig_module, calc_extra_loss, rank, **kwargs):
         super().__init__()
         # self.dropout = nn.Dropout(dropout_p)
         # self.lora_down = nn.Linear(orig_module.in_features, rank, bias=False)
@@ -21,8 +21,6 @@ class SVDLoRA(nn.Module):
         self.out_features = orig_module.out_features
         self.k = self.s.shape[0]
 
-        self.eye_k = torch.eye(self.k, device=self.u.device, requires_grad=False)
-        
         self.lora_u = nn.Parameter(self.u[:, -rank:], requires_grad=True) # out_features, rank
         self.lora_s = nn.Parameter(self.s[-rank:], requires_grad=True)  # rank, 
         self.lora_vt = nn.Parameter(self.vt[-rank:, :], requires_grad=True) # rank, in_features
@@ -30,7 +28,10 @@ class SVDLoRA(nn.Module):
         self.u = nn.Parameter(self.u[:, :-rank], requires_grad=False)
         self.s = nn.Parameter(self.s[:-rank], requires_grad=False)
         self.vt = nn.Parameter(self.vt[:-rank, :], requires_grad=False)
-        
+
+        self.register_buffer('orig_weight', self.u @ torch.diag(self.s) @ self.vt)
+        # self.orig_weight = self.u @ torch.diag(self.s) @ self.vt
+
         self.extra_loss = torch.tensor(0., device=self.u.device)
         self.calc_extra_loss = calc_extra_loss
     
@@ -41,14 +42,14 @@ class SVDLoRA(nn.Module):
         # print("self.s", self.s.shape)
         # print("self.vt", self.vt.shape)
 
-        orig_pass = x @ self.u @ torch.diag(self.s) @ self.vt
+        orig_pass = x @ self.orig_weight
         lora_pass = x @ self.lora_u @ torch.diag(self.lora_s) @ self.lora_vt
 
         if self.calc_extra_loss:
-            u_cat = torch.cat([self.u, self.lora_u], 1, requires_grad=False)
-            vt_cat = torch.cat([self.vt, self.lora_vt], 0, requires_grad=False)
-            u_norm = torch.norm(u_cat.T @ u_cat - self.eye_k)
-            vt_norm = torch.norm(vt_cat @ vt_cat.T - self.eye_k)
+            u_cat = torch.cat([self.u, self.lora_u], 1).to(self.u.device)
+            vt_cat = torch.cat([self.vt, self.lora_vt], 0).to(self.u.device)
+            u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(self.k, device=self.u.device, requires_grad=False))
+            vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(self.k, device=self.u.device, requires_grad=False))
             self.extra_loss = u_norm + vt_norm
 
         return orig_pass + lora_pass
@@ -68,7 +69,7 @@ class T5SVDLoRA(T5forSummarization):
         
         for name, module in self.named_modules():
             if self.check_module(name, module):
-                module.lora = SVDLoRA(module, model_self=self, calc_extra_loss=True, **svd_lora_config)
+                module.lora = SVDLoRA(module, calc_extra_loss=True, **svd_lora_config)
                 module.forward = self.add_lora_forward(module)
                 self.svd_loras.append(module.lora)
                 self.count_adaptable_weights += 2
