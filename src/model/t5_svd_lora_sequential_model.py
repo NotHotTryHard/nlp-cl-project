@@ -3,38 +3,43 @@ from torch import nn
 
 from src.model.t5_adapter_model_base import T5AdapterBase
 
-class SVDLoRA(nn.Module):
-    def __init__(self, orig_module, enable_extra_loss, rank, **kwargs):
+class SVDLoRASequential(nn.Module):
+    def __init__(self, orig_module, enable_extra_loss, rank, n_adapters, **kwargs):
         super().__init__()
-        # self.dropout = nn.Dropout(dropout_p)
-        # self.lora_down = nn.Linear(orig_module.in_features, rank, bias=False)
-        # self.lora_up = nn.Linear(rank, orig_module.out_features, bias=False)
-        # self.rank = rank
-        # self.alpha = alpha
-        
-        # weight - (out_features, in_features)
-        self.u, self.s, self.vt = torch.linalg.svd(orig_module.weight.T, full_matrices=False) 
-        # u - out_features, k
-        # s - k
-        # vt - k, in_features
+        self.u, self.s, self.vt = torch.linalg.svd(orig_module.weight.T, full_matrices=False)
         self.in_features = orig_module.in_features
         self.out_features = orig_module.out_features
         self.k = self.s.shape[0]
 
-        self.lora_u = nn.Parameter(self.u[:, -rank:], requires_grad=True) # out_features, rank
-        self.lora_s = nn.Parameter(self.s[-rank:], requires_grad=True)  # rank, 
-        self.lora_vt = nn.Parameter(self.vt[-rank:, :], requires_grad=True) # rank, in_features
+        self.loras_u = []
+        self.loras_s = []
+        self.loras_vt = []
+
+        for i in range(n_adapters):
+            self.loras_u.append(nn.Parameter(self.u[:, -rank * (i + 1) : -rank * i], requires_grad=False)) # out_features, rank
+            self.loras_s.append(nn.Parameter(self.s[-rank * (i + 1) : -rank * i], requires_grad=False))  # rank, 
+            self.loras_vt.append(nn.Parameter(self.vt[-rank * (i + 1) : -rank * i, :], requires_grad=False)) # rank, in_features
         
-        self.u = nn.Parameter(self.u[:, :-rank], requires_grad=False)
-        self.s = nn.Parameter(self.s[:-rank], requires_grad=False)
-        self.vt = nn.Parameter(self.vt[:-rank, :], requires_grad=False)
+        self.u = nn.Parameter(self.u[:, :-rank * n_adapters], requires_grad=False)
+        self.s = nn.Parameter(self.s[:-rank * n_adapters], requires_grad=False)
+        self.vt = nn.Parameter(self.vt[:-rank * n_adapters, :], requires_grad=False)
 
         self.register_buffer('orig_weight', self.u @ torch.diag(self.s) @ self.vt)
-        # self.orig_weight = self.u @ torch.diag(self.s) @ self.vt
 
         self.extra_loss = torch.tensor(0., device=self.u.device)
         self.enable_extra_loss = enable_extra_loss
     
+        self.current_adapter_index = 0
+        self.update_adapter(0)
+    
+    def update_adapter(self, current_adapter_index):
+        self.current_adapter_index = current_adapter_index
+        for i in range(self.n_adapters):
+            requires_grad = (i == self.current_adapter_index)
+            self.loras_u[i].requires_grad = requires_grad
+            self.loras_s[i].requires_grad = requires_grad
+            self.loras_vt[i].requires_grad = requires_grad
+        
     def calc_extra_loss(self):
         u_cat = torch.cat([self.u, self.lora_u], 1).to(self.u.device)
         vt_cat = torch.cat([self.vt, self.lora_vt], 0).to(self.u.device)
@@ -46,25 +51,24 @@ class SVDLoRA(nn.Module):
         self.extra_loss = torch.tensor(0., device=self.u.device)
     
     def forward(self, x):
-        # print('=='*10)
-        # print("x.shape", x.shape)
-        # print("self.u", self.u.shape)
-        # print("self.s", self.s.shape)
-        # print("self.vt", self.vt.shape)
-
-        orig_pass = x @ self.orig_weight
-        lora_pass = x @ self.lora_u @ torch.diag(self.lora_s) @ self.lora_vt
+        output = x @ self.orig_weight
+        for i in range(self.n_adapters):
+            lora_output = x @ self.loras_u[i] @ torch.diag(self.loras_s[i]) @ self.loras_vt[i]
+            output = output + lora_output
 
         if self.enable_extra_loss:
             self.calc_extra_loss()
         
-        return orig_pass + lora_pass
+        return output
 
 
-class T5SVDLoRA(T5AdapterBase):
+class T5SVDLoRASequential(T5AdapterBase):
     def __init__(self, t5_config, svd_lora_config, **cfg):
         super().__init__(**t5_config)
-        
+
+        self.current_adapter_idx = 0
+        self.n_adapters = svd_lora_config['n_adapters']
+
         for p in self.parameters():
             p.requires_grad = False
 
@@ -75,16 +79,31 @@ class T5SVDLoRA(T5AdapterBase):
         
         for name, module in self.named_modules():
             if self.check_module(name, module):
-                module.lora = SVDLoRA(module, enable_extra_loss=True, **svd_lora_config)
-                module.forward = self.add_lora_forward(module)
-                self.svd_loras.append(module.lora)
-                self.count_adaptable_weights += 2
+                for i in range(self.n_adapters):
+                    module.lora = SVDLoRASequential(module, enable_extra_loss=True, **svd_lora_config)
+                    module.forward = self.add_lora_forward(module)
+                    self.svd_loras.append(module.lora)
+                    self.count_adaptable_weights += 2
         
+        self.update_adapters(adapter_idx=0)
         print("Init loss:", self.calc_extra_loss())
-        
+
     def check_module(self, name, module):
         return isinstance(module, nn.Linear) and name.split('.')[-1] in self.svd_lora_config['target_layers']
 
+    def update_adapters(self, adapter_idx):
+        if self.current_adapter_idx != adapter_idx:
+            self.current_adapter_idx = adapter_idx
+
+            if adapter_idx == -1:
+                print("Working without adapters!")
+                self.disable_adapters()
+                return
+            
+            print(f"Changing to {adapter_idx+1}-th adapter!")
+            for svd_lora in self.svd_loras:
+                svd_lora.update_adapter(adapter_idx)
+    
     def enable_extra_loss(self):
         for name, module in self.named_modules():
             if self.check_module(name, module):

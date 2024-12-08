@@ -82,7 +82,8 @@ def main(config):
         len_epoch=config["trainer"].get("len_epoch", None),
         inference_on_evaluation=len(inference_indices) > 0,
         inference_indices=inference_indices,
-        first_epoch_eval_only=config["trainer"].get("first_epoch_eval_only", True)
+        first_epoch_eval_only=config["trainer"].get("first_epoch_eval_only", True),
+        eval_adapter_order=config["trainer"].get("eval_adapter_order", None)
     )
 
     trainer.train()

@@ -19,6 +19,7 @@ from src.logger.utils import plot_spectrogram_to_buf
 from src.utils import inf_loop, MetricTracker
 from src.datasets import MixedSequentialDataset
 from src.model import T5SVDLoRA
+from src.utils.util import check_cuda_memory, clear_cuda_cache
 
 class Trainer(BaseTrainer):
     """
@@ -38,7 +39,8 @@ class Trainer(BaseTrainer):
             skip_oom=True,
             inference_on_evaluation=False,
             inference_indices=None,
-            first_epoch_eval_only=True
+            first_epoch_eval_only=True,
+            eval_adapter_order=None
     ):
         super().__init__(
             model, criterion, metrics,
@@ -71,6 +73,8 @@ class Trainer(BaseTrainer):
             "loss", "extra_loss", "total_loss", *[m.name for m in self.metrics], writer=self.writer
         )
         self.perform_generative_eval = len(self.metrics) > 0 
+
+        self.eval_adapter_order = eval_adapter_order
 
         # now in base_trainer.py
         # self.first_epoch_eval_only = first_epoch_eval_only
@@ -122,6 +126,8 @@ class Trainer(BaseTrainer):
         self.train_metrics.reset()
         self.writer.add_scalar("epoch", epoch)
 
+        clear_cuda_cache()
+        check_cuda_memory()
 
         changed_dataset = False
         if isinstance(self.train_dataset, MixedSequentialDataset):
@@ -133,15 +139,17 @@ class Trainer(BaseTrainer):
                 max_samples=250
             )
 
+        if hasattr(self.model, "update_adapters"):
+            self.model.update_adapters(self.train_dataset.current_dataset)
+
         if self.first_epoch_eval_only and epoch == 0:
             log = self.train_metrics.result()
             for part, dataloader in self.evaluation_dataloaders.items():
                 val_log = self._evaluation_epoch(epoch, part, dataloader)
                 log.update(**{f"{part}_{name}": value for name, value in val_log.items()})
             return log
-    
 
-        if isinstance(self.model, T5SVDLoRA):
+        if hasattr(self.model, "enable_extra_loss"):
             self.model.enable_extra_loss()
 
         for batch_idx, batch in enumerate(
@@ -167,6 +175,7 @@ class Trainer(BaseTrainer):
             self.train_metrics.update("grad norm", self.get_grad_norm())
             if batch_idx % self.log_step == 0:
                 self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
+                # self.writer.set_step(((epoch - 1) * self.len_epoch + batch_idx) * self.train_dataloader.batch_size)
                 self.logger.debug(
                     "Train Epoch: {} {} Loss: {:.6f}".format(
                         epoch, self._progress(batch_idx),
@@ -211,9 +220,18 @@ class Trainer(BaseTrainer):
         :return: A log that contains information about validation
         """
         self.model.eval()
-        if isinstance(self.model, T5SVDLoRA):
+
+        if hasattr(self.model, "disable_extra_loss"):
             self.model.disable_extra_loss()
+
         self.evaluation_metrics.reset()
+
+        if hasattr(self.model, "update_adapters"):
+            adapter_idx = self.eval_adapter_order[part]
+            self.model.update_adapters(adapter_idx)
+
+        clear_cuda_cache()
+        check_cuda_memory()
 
         with torch.no_grad():
             for batch_idx, batch in tqdm(
@@ -228,6 +246,7 @@ class Trainer(BaseTrainer):
                 )
             
             self.writer.set_step(epoch * self.len_epoch, part)
+            # self.writer.set_step((epoch * self.len_epoch) * self.train_dataloader.batch_size, part)
             self._log_scalars(self.evaluation_metrics)
         
             if self.inference_on_evaluation and (part in self.inference_indices):
