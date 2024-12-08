@@ -12,12 +12,12 @@ class T5AdapterBase(T5forSummarization):
     @staticmethod 
     def add_lora_forward(module):
         def new_forward(x):
-            return module.lora(x)
+            return module.original_forward(x) + module.lora(x)
         
         if not hasattr(module, "original_forward"):
             module.original_forward = module.forward
         
-        return new_forward 
+        return new_forward
     
     @staticmethod
     def remove_lora_forward(module):

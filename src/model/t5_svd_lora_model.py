@@ -113,3 +113,13 @@ class T5SVDLoRA(T5AdapterBase):
 
         extra_loss = extra_loss / self.count_adaptable_weights
         return extra_loss
+
+    @staticmethod 
+    def add_lora_forward(module):
+        def new_forward(x):
+            return module.lora(x)
+        
+        if not hasattr(module, "original_forward"):
+            module.original_forward = module.forward
+        
+        return new_forward
