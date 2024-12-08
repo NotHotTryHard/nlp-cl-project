@@ -9,16 +9,20 @@ class SVDLoRASequential(nn.Module):
         self.u, self.s, self.vt = torch.linalg.svd(orig_module.weight.T, full_matrices=False)
         self.in_features = orig_module.in_features
         self.out_features = orig_module.out_features
-        self.k = self.s.shape[0]
 
-        self.loras_u = []
-        self.loras_s = []
-        self.loras_vt = []
+        self.k = self.s.shape[0]
+        self.n_adapters = n_adapters
+
+        self.loras_u = nn.ParameterList()
+        self.loras_s = nn.ParameterList()
+        self.loras_vt = nn.ParameterList()
 
         for i in range(n_adapters):
-            self.loras_u.append(nn.Parameter(self.u[:, -rank * (i + 1) : -rank * i], requires_grad=False)) # out_features, rank
-            self.loras_s.append(nn.Parameter(self.s[-rank * (i + 1) : -rank * i], requires_grad=False))  # rank, 
-            self.loras_vt.append(nn.Parameter(self.vt[-rank * (i + 1) : -rank * i, :], requires_grad=False)) # rank, in_features
+            start_index = -rank * (i + 1)
+            end_index = -rank * i if i else self.u.shape[1]
+            self.loras_u.append(nn.Parameter(self.u[:, start_index:end_index], requires_grad=False)) # out_features, rank
+            self.loras_s.append(nn.Parameter(self.s[start_index:end_index], requires_grad=False))  # rank, 
+            self.loras_vt.append(nn.Parameter(self.vt[start_index:end_index, :], requires_grad=False)) # rank, in_features
         
         self.u = nn.Parameter(self.u[:, :-rank * n_adapters], requires_grad=False)
         self.s = nn.Parameter(self.s[:-rank * n_adapters], requires_grad=False)
@@ -41,8 +45,8 @@ class SVDLoRASequential(nn.Module):
             self.loras_vt[i].requires_grad = requires_grad
         
     def calc_extra_loss(self):
-        u_cat = torch.cat([self.u, self.lora_u], 1).to(self.u.device)
-        vt_cat = torch.cat([self.vt, self.lora_vt], 0).to(self.u.device)
+        u_cat = torch.cat([self.u, *[lora_u for lora_u in self.loras_u]], 1).to(self.u.device)
+        vt_cat = torch.cat([self.vt, *[lora_vt for lora_vt in self.loras_vt]], 0).to(self.u.device)
         u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(self.k, device=self.u.device, requires_grad=False))
         vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(self.k, device=self.u.device, requires_grad=False))
         self.extra_loss = u_norm + vt_norm
@@ -66,7 +70,7 @@ class T5SVDLoRASequential(T5AdapterBase):
     def __init__(self, t5_config, svd_lora_config, **cfg):
         super().__init__(**t5_config)
 
-        self.current_adapter_idx = 0
+        self.current_adapter_idx = -10
         self.n_adapters = svd_lora_config['n_adapters']
 
         for p in self.parameters():
@@ -75,7 +79,7 @@ class T5SVDLoRASequential(T5AdapterBase):
         self.count_adaptable_weights = 0
         self.svd_lora_config = svd_lora_config
 
-        self.svd_loras = []
+        self.svd_loras = nn.ModuleList()
         
         for name, module in self.named_modules():
             if self.check_module(name, module):

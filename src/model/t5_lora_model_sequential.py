@@ -7,7 +7,7 @@ class T5LoRASequential(T5AdapterBase):
     def __init__(self, t5_config, lora_config, **cfg):
         super().__init__(**t5_config)
 
-        self.current_adapter_idx = 0
+        self.current_adapter_idx = -10
         self.n_adapters = lora_config['n_adapters']
 
         for p in self.parameters():
@@ -15,12 +15,13 @@ class T5LoRASequential(T5AdapterBase):
 
         self.lora_config = lora_config
 
-        self.loras = [{} for _ in range(self.n_adapters)]
+        self.loras = nn.ModuleList([nn.ModuleDict() for _ in range(self.n_adapters)])
         
         for name, module in self.named_modules():
             if self.check_module(name, module):
                 for i in range(self.n_adapters):
-                    self.loras[i][name] = LoRA(module, **lora_config)
+                    module_dict_name = name.replace('.', '_')
+                    self.loras[i][module_dict_name] = LoRA(module, **lora_config)
         
         self.update_adapters(adapter_idx=0)
     
@@ -39,7 +40,6 @@ class T5LoRASequential(T5AdapterBase):
             print(f"Changing to {adapter_idx+1}-th adapter!")
             for name, module in self.named_modules():
                 if self.check_module(name, module):
-                    module.lora = self.loras[adapter_idx][name]
+                    module_dict_name = name.replace('.', '_')
+                    module.lora = self.loras[adapter_idx][module_dict_name]
                     module.forward = self.add_lora_forward(module)
-    
-    

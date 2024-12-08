@@ -25,6 +25,8 @@ class T5LoRA(T5AdapterBase):
         for p in self.parameters():
             p.requires_grad = False
         
+        self.lora_config = lora_config
+        
         for name, module in self.named_modules():
             if self.check_module(name, module):
                 module.lora = LoRA(module, **lora_config)
