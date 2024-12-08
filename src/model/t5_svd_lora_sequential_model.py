@@ -45,8 +45,8 @@ class SVDLoRASequential(nn.Module):
             self.loras_vt[i].requires_grad = requires_grad
         
     def calc_extra_loss(self):
-        u_cat = torch.cat([self.u, *[lora_u for lora_u in self.loras_u]], 1).to(self.u.device)
-        vt_cat = torch.cat([self.vt, *[lora_vt for lora_vt in self.loras_vt]], 0).to(self.u.device)
+        u_cat = torch.cat([self.u, *[lora_u for lora_u in self.loras_u]], 1)
+        vt_cat = torch.cat([self.vt, *[lora_vt for lora_vt in self.loras_vt]], 0)
         u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(self.k, device=self.u.device, requires_grad=False))
         vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(self.k, device=self.u.device, requires_grad=False))
         self.extra_loss = u_norm + vt_norm
@@ -89,6 +89,7 @@ class T5SVDLoRASequential(T5AdapterBase):
                     self.svd_loras.append(module.lora)
                     self.count_adaptable_weights += 2
         
+        self.disabled_adapters = False
         self.update_adapters(adapter_idx=0)
         print("Init loss:", self.calc_extra_loss())
 
@@ -102,7 +103,12 @@ class T5SVDLoRASequential(T5AdapterBase):
             if adapter_idx == -1:
                 print("Working without adapters!")
                 self.disable_adapters()
+                self.disabled_adapters = True
                 return
+            
+            if self.disabled_adapters:
+                self.enable_adapters()
+                self.disabled_adapters = False
             
             print(f"Changing to {adapter_idx+1}-th adapter!")
             for svd_lora in self.svd_loras:

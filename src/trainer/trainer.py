@@ -18,7 +18,7 @@ from src.base import BaseTrainer
 from src.logger.utils import plot_spectrogram_to_buf
 from src.utils import inf_loop, MetricTracker
 from src.datasets import MixedSequentialDataset
-from src.model import T5SVDLoRA
+from src.model import T5SVDLoRA, T5LoRASequential
 from src.utils.util import check_cuda_memory, clear_cuda_cache
 
 class Trainer(BaseTrainer):
@@ -142,6 +142,12 @@ class Trainer(BaseTrainer):
         if hasattr(self.model, "update_adapters"):
             self.model.update_adapters(self.train_dataset.current_dataset)
 
+            if changed_dataset:
+                params = filter(lambda p: p.requires_grad, self.model.parameters())
+                self.optimizer = self.config.init_obj(self.config["optimizer"], torch.optim, params)
+                self.lr_scheduler = self.config.init_obj(self.config["lr_scheduler"], torch.optim.lr_scheduler, self.optimizer)
+                print("Reinitialized optimizer and lr scheduler for new dataset!")
+
         if self.first_epoch_eval_only and epoch == 0:
             log = self.train_metrics.result()
             for part, dataloader in self.evaluation_dataloaders.items():
@@ -226,7 +232,7 @@ class Trainer(BaseTrainer):
 
         self.evaluation_metrics.reset()
 
-        if hasattr(self.model, "update_adapters"):
+        if isinstance(self.model, T5LoRASequential):
             adapter_idx = self.eval_adapter_order[part]
             self.model.update_adapters(adapter_idx)
 

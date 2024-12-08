@@ -36,8 +36,8 @@ class SVDLoRA(nn.Module):
         self.enable_extra_loss = enable_extra_loss
     
     def calc_extra_loss(self):
-        u_cat = torch.cat([self.u, self.lora_u], 1).to(self.u.device)
-        vt_cat = torch.cat([self.vt, self.lora_vt], 0).to(self.u.device)
+        u_cat = torch.cat([self.u, self.lora_u], 1)
+        vt_cat = torch.cat([self.vt, self.lora_vt], 0)
         u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(self.k, device=self.u.device, requires_grad=False))
         vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(self.k, device=self.u.device, requires_grad=False))
         self.extra_loss = u_norm + vt_norm

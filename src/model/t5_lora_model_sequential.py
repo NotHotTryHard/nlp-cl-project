@@ -23,6 +23,7 @@ class T5LoRASequential(T5AdapterBase):
                     module_dict_name = name.replace('.', '_')
                     self.loras[i][module_dict_name] = LoRA(module, **lora_config)
         
+        self.disabled_adapters = False
         self.update_adapters(adapter_idx=0)
     
     def check_module(self, name, module):
@@ -35,7 +36,12 @@ class T5LoRASequential(T5AdapterBase):
             if adapter_idx == -1:
                 print("Working without adapters!")
                 self.disable_adapters()
+                self.disabled_adapters = True
                 return
+            
+            if self.disabled_adapters:
+                self.enable_adapters()
+                self.disabled_adapters = False
             
             print(f"Changing to {adapter_idx+1}-th adapter!")
             for name, module in self.named_modules():
