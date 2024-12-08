@@ -3,7 +3,7 @@
   "n_gpu": 1,
   "preprocessing": {},
   "model": {
-      "type": "T5SVDLoRASequential",
+      "type": "T5LoRASequential",
       "args": {
         "t5_config": {
           "model_name": "t5-base",
