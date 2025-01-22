@@ -1,8 +1,6 @@
 import torch
 from torch import nn
 
-from src.model.t5_adapter_model_base import T5AdapterBase
-
 class SVDLoRASequentialNested(nn.Module):
     def __init__(self, orig_module, enable_extra_loss, rank, n_adapters, **kwargs):
         """
@@ -56,15 +54,12 @@ class SVDLoRASequentialNested(nn.Module):
             
             for lora_part in [self.lora_u, self.lora_s, self.lora_vt]:
                 lora_part.requires_grad = True
-
-            if new_idx > self.cur_idx:
-                self.u = torch.cat([self.u, self.lora_u])
             
             self.cur_idx = new_idx
         
     def calc_extra_loss(self):
         u_cat = torch.cat([self.u[:, :-self.rank * (self.n_adapters - self.cur_idx)], self.lora_u], 1)
-        vt_cat = torch.cat([self.vt[:, :-self.rank * (self.n_adapters - self.cur_idx)], self.lora_vt], 0)
+        vt_cat = torch.cat([self.vt[:-self.rank * (self.n_adapters - self.cur_idx), :], self.lora_vt], 0)
         u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(self.k, device=self.u.device, requires_grad=False))
         vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(self.k, device=self.u.device, requires_grad=False))
         self.extra_loss = u_norm + vt_norm
