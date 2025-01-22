@@ -11,7 +11,7 @@
         "max_length": 256
       },
       "lora_config": {
-        "rank": 4, 
+        "rank": 36, 
         "alpha": 16, 
         "dropout_p": 0.1,
         "target_layers": ["q", "k", "v", "o", "wi", "wo"]
@@ -364,7 +364,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single LoRA Math-1e-24k",
+    "wandb_run_name": "Single LoRA-36 Math-1e-24k",
     "grad_norm_clip": 100.0
   }
 }
