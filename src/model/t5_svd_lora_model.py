@@ -11,27 +11,13 @@ class SVDLoRA(nn.Module):
         # self.lora_up = nn.Linear(rank, orig_module.out_features, bias=False)
         # self.rank = rank
         # self.alpha = alpha
-        
-        # weight - (out_features, in_features)
-        self.u, self.s, self.vt = torch.linalg.svd(orig_module.weight.T, full_matrices=False) 
-        # u - out_features, k
-        # s - k
-        # vt - k, in_features
+
         self.in_features = orig_module.in_features
         self.out_features = orig_module.out_features
-        self.k = self.s.shape[0]
 
-        self.lora_u = nn.Parameter(self.u[:, -rank:], requires_grad=True) # out_features, rank
-        self.lora_s = nn.Parameter(self.s[-rank:], requires_grad=True)  # rank, 
-        self.lora_vt = nn.Parameter(self.vt[-rank:, :], requires_grad=True) # rank, in_features
+        self.rank = rank
+        self.init_with_weight(self.orig_module.weight)
         
-        self.u = nn.Parameter(self.u[:, :-rank], requires_grad=False)
-        self.s = nn.Parameter(self.s[:-rank], requires_grad=False)
-        self.vt = nn.Parameter(self.vt[:-rank, :], requires_grad=False)
-
-        self.register_buffer('orig_weight', self.u @ torch.diag(self.s) @ self.vt)
-        # self.orig_weight = self.u @ torch.diag(self.s) @ self.vt
-
         self.extra_loss = torch.tensor(0., device=self.u.device)
         self.enable_extra_loss = enable_extra_loss
     
@@ -43,6 +29,31 @@ class SVDLoRA(nn.Module):
         self.extra_loss = u_norm + vt_norm
     
     def clean_extra_loss(self):
+        self.extra_loss = torch.tensor(0., device=self.u.device)
+
+    def init_with_weight(self, prev_weight):
+        # weight - (out_features, in_features)
+        self.u, self.s, self.vt = torch.linalg.svd(prev_weight.T, full_matrices=False) 
+        # u - out_features, k
+        # s - k
+        # vt - k, in_features
+        self.k = self.s.shape[0]
+
+        self.lora_u = nn.Parameter(self.u[:, -self.rank:], requires_grad=True) # out_features, rank
+        self.lora_s = nn.Parameter(self.s[-self.rank:], requires_grad=True)  # rank, 
+        self.lora_vt = nn.Parameter(self.vt[-self.rank:, :], requires_grad=True) # rank, in_features
+        
+        self.u = nn.Parameter(self.u[:, :-self.rank], requires_grad=False)
+        self.s = nn.Parameter(self.s[:-self.rank], requires_grad=False)
+        self.vt = nn.Parameter(self.vt[:-self.rank, :], requires_grad=False)
+
+        self.register_buffer('orig_weight', self.u @ torch.diag(self.s) @ self.vt)
+        # self.orig_weight = self.u @ torch.diag(self.s) @ self.vt
+
+    def reinit_self(self):
+        """ Recomputes rank least significant singular components """
+        weight = self.orig_weight + self.lora_u @ torch.diag(self.lora_s) @ self.lora_vt
+        self.init_with_weight(weight)
         self.extra_loss = torch.tensor(0., device=self.u.device)
     
     def forward(self, x):
@@ -123,3 +134,14 @@ class T5SVDLoRA(T5AdapterBase):
             module.original_forward = module.forward
         
         return new_forward
+    
+    def reinit_adapters(self):
+        for svd_lora in self.svd_loras:
+            svd_lora.reinit_self()
+    
+    def collect_singular_values(self, module_names):
+        singular_values = {}
+        for name, module in self.named_modules(): # as it's a generator
+            if name in module_names:
+                singular_values[name] = module.lora.s
+        return singular_values
