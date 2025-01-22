@@ -76,6 +76,9 @@ class Trainer(BaseTrainer):
 
         self.eval_adapter_order = eval_adapter_order
 
+        self.log_singular_values = self.config["trainer"].get("log_singular_values", False) # only works for SVDLoRA
+        self.log_sv_module_names = self.config["trainer"].get("log_sv_module_names", None)
+
         # now in base_trainer.py
         # self.first_epoch_eval_only = first_epoch_eval_only
 
@@ -148,6 +151,10 @@ class Trainer(BaseTrainer):
                 self.lr_scheduler = self.config.init_obj(self.config["lr_scheduler"], torch.optim.lr_scheduler, self.optimizer)
                 print("Reinitialized optimizer and lr scheduler for new dataset!")
 
+        # move into update_adapters ?
+        if self.config["model"].get("reinit_adapters", False) and hasattr(self.model, "reinit_adapters"):
+            self.model.reinit_adapters()
+            
         if self.first_epoch_eval_only and epoch == 0:
             log = self.train_metrics.result()
             for part, dataloader in self.evaluation_dataloaders.items():
@@ -214,6 +221,12 @@ class Trainer(BaseTrainer):
             for part, dataloader in self.evaluation_dataloaders.items():
                 val_log = self._evaluation_epoch(epoch, part, dataloader)
                 log.update(**{f"{part}_{name}": value for name, value in val_log.items()})
+            
+            if self.log_singular_values:
+                sv_dict = self.model.collect_singular_values(self.log_sv_module_names)
+                for module_name, values in sv_dict.items():
+                    pass
+                    # log.update(**{module_name: values for name})
 
         return log
 
