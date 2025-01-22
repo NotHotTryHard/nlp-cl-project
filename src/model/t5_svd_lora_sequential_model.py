@@ -2,6 +2,7 @@ import torch
 from torch import nn
 
 from src.model.t5_adapter_model_base import T5AdapterBase
+from src.model.t5_svd_lora_sequential_nested import SVDLoRASequentialNested
 
 class SVDLoRASequential(nn.Module):
     def __init__(self, orig_module, enable_extra_loss, rank, n_adapters, **kwargs):
@@ -113,11 +114,16 @@ class T5SVDLoRASequential(T5AdapterBase):
         self.count_adaptable_weights = 0
         self.svd_lora_config = svd_lora_config
 
+        if self.svd_lora_config.get("nested", False):
+            SVDLoRAClass = SVDLoRASequentialNested
+        else:
+            SVDLoRAClass = SVDLoRASequential
+
         self.svd_loras = nn.ModuleList()
         
         for name, module in self.named_modules():
             if self.check_module(name, module):
-                module.lora = SVDLoRASequential(module, enable_extra_loss=True, **svd_lora_config)
+                module.lora = SVDLoRAClass(module, enable_extra_loss=True, **svd_lora_config)
                 module.forward = self.add_lora_forward(module)
                 self.svd_loras.append(module.lora)
                 self.count_adaptable_weights += 2
