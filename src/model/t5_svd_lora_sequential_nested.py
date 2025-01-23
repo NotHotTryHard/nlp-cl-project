@@ -44,7 +44,7 @@ class SVDLoRASequentialNested(nn.Module):
                 prev_lora_weight = (self.lora_u @ torch.diag(self.lora_s) @ self.lora_vt).detach().clone()
                 self.orig_weight.data = self.orig_weight + prev_lora_weight
 
-            start_index = -self.rank * (self.n_adapters - new_idx)
+            start_index = -self.rank * (new_idx + 1) #(self.n_adapters - new_idx)
             self.lora_u = nn.Parameter(self.u[:, start_index:], requires_grad=False)
             self.lora_s = nn.Parameter(self.s[start_index:], requires_grad=False)
             self.lora_vt = nn.Parameter(self.vt[start_index:, :], requires_grad=False)
@@ -58,8 +58,8 @@ class SVDLoRASequentialNested(nn.Module):
             self.cur_idx = new_idx
         
     def calc_extra_loss(self):
-        u_cat = torch.cat([self.u[:, :-self.rank * (self.n_adapters - self.cur_idx)], self.lora_u], 1)
-        vt_cat = torch.cat([self.vt[:-self.rank * (self.n_adapters - self.cur_idx), :], self.lora_vt], 0)
+        u_cat = torch.cat([self.u[:, :-self.rank * (self.cur_idx + 1)], self.lora_u], 1)
+        vt_cat = torch.cat([self.vt[:-self.rank * (self.cur_idx + 1), :], self.lora_vt], 0)
         u_norm = torch.norm(u_cat.T @ u_cat - torch.eye(self.k, device=self.u.device, requires_grad=False))
         vt_norm = torch.norm(vt_cat @ vt_cat.T - torch.eye(self.k, device=self.u.device, requires_grad=False))
         self.extra_loss = u_norm + vt_norm

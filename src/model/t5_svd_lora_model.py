@@ -16,7 +16,7 @@ class SVDLoRA(nn.Module):
         self.out_features = orig_module.out_features
 
         self.rank = rank
-        self.init_with_weight(self.orig_module.weight)
+        self.init_with_weight(orig_module.weight)
         
         self.extra_loss = torch.tensor(0., device=self.u.device)
         self.enable_extra_loss = enable_extra_loss
