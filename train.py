@@ -22,14 +22,14 @@ torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
 def get_number_of_parameters(model):
-        return sum(p.numel() for p in model.parameters())
+    return sum(p.numel() for p in model.parameters())
 
 def main(config):
     logger = config.get_logger("train")
 
     # setup data_loader instances
     dataloaders = get_dataloaders(config)
-
+    print('Dataloaders are done!')
     # build model architecture, then print to console
     model = config.init_obj(config["model"], module_arch)
     logger.info(model)
@@ -69,7 +69,7 @@ def main(config):
         if split != "train":
             if config["data"][split].get("inference_on_evaluation", False):
                 inference_indices[split] = config["data"][split].get("inference_indices", [24, 2, 22])
-    
+
     trainer = Trainer(
         model,
         criterion,
