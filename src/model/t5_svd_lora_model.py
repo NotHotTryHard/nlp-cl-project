@@ -4,7 +4,7 @@ from torch import nn
 from src.model.t5_adapter_model_base import T5AdapterBase
 
 class SVDLoRA(nn.Module):
-    def __init__(self, orig_module, enable_extra_loss, rank, reinit_lora=False, reinit_std=1.0, **kwargs):
+    def __init__(self, orig_module, enable_extra_loss, rank, reinit_lora=False, reinit_std=1.0, reinit_use_qr=False, **kwargs):
         super().__init__()
         # self.dropout = nn.Dropout(dropout_p)
         # self.lora_down = nn.Linear(orig_module.in_features, rank, bias=False)
@@ -18,6 +18,7 @@ class SVDLoRA(nn.Module):
         self.rank = rank
         self.reinit_lora = reinit_lora
         self.reinit_std = reinit_std
+        self.reinit_use_qr = reinit_use_qr
         self.init_with_weight(orig_module.weight)
         
         self.extra_loss = torch.tensor(0., device=self.u.device)
@@ -46,12 +47,13 @@ class SVDLoRA(nn.Module):
         lora_v = (Iv - self.vt.T @ self.vt) @ self.lora_vt.T
         
         # QR decomposition so that vectors inside lora parts are orthogonal
-        Qu, _ = torch.qr(lora_u)
-        Qv, _ = torch.qr(lora_v)
+        if self.reinit_use_qr:
+            lora_u, _ = torch.qr(lora_u)
+            lora_v, _ = torch.qr(lora_v)
 
         with torch.no_grad():
-            self.lora_u.copy_(Qu)
-            self.lora_vt.copy_(Qv.T)
+            self.lora_u.copy_(lora_u)
+            self.lora_vt.copy_(lora_v.T)
 
     def init_with_weight(self, prev_weight):
         # weight - (out_features, in_features)
