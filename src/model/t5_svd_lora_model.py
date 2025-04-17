@@ -4,7 +4,7 @@ from torch import nn
 from src.model.t5_adapter_model_base import T5AdapterBase
 
 class SVDLoRA(nn.Module):
-    def __init__(self, orig_module, enable_extra_loss, rank, **kwargs):
+    def __init__(self, orig_module, enable_extra_loss, rank, reinit_lora=False, reinit_std=1.0, **kwargs):
         super().__init__()
         # self.dropout = nn.Dropout(dropout_p)
         # self.lora_down = nn.Linear(orig_module.in_features, rank, bias=False)
@@ -16,6 +16,8 @@ class SVDLoRA(nn.Module):
         self.out_features = orig_module.out_features
 
         self.rank = rank
+        self.reinit_lora = reinit_lora
+        self.reinit_std = reinit_std
         self.init_with_weight(orig_module.weight)
         
         self.extra_loss = torch.tensor(0., device=self.u.device)
@@ -30,6 +32,23 @@ class SVDLoRA(nn.Module):
     
     def clean_extra_loss(self):
         self.extra_loss = torch.tensor(0., device=self.u.device)
+    
+    def lora_orthogonal_reinit(self):
+        # Reinitialize with random gaussian weights
+        with torch.no_grad():
+            nn.init.normal_(self.lora_u, mean=0.0, std=self.reinit_std)
+            nn.init.normal_(self.lora_vt, mean=0.0, std=self.reinit_std)
+        
+        # Project so that it's orthogonal to U and Vt
+        Iu = torch.eye(self.u.shape[0], dtype=self.u.dtype, device=self.u.device)
+        Iv = torch.eye(self.vt.shape[1], dtype=self.vt.dtype, device=self.vt.device)
+        lora_u = (Iu - self.u @ self.u.T) @ self.lora_u
+        lora_v = (Iv - self.vt.T @ self.vt) @ self.lora_vt.T
+        
+        # QR decomposition so that vectors inside lora parts are orthogonal
+        self.lora_u, _ = torch.qr(lora_u)
+        lora_v, _ = torch.qr(lora_v)
+        self.lora_vt = lora_v.T
 
     def init_with_weight(self, prev_weight):
         # weight - (out_features, in_features)
@@ -49,6 +68,9 @@ class SVDLoRA(nn.Module):
 
         self.register_buffer('orig_weight', self.u @ torch.diag(self.s) @ self.vt)
         # self.orig_weight = self.u @ torch.diag(self.s) @ self.vt
+
+        if self.reinit_lora:
+            self.lora_orthogonal_reinit()
 
     def reinit_self(self):
         """ Recomputes rank least significant singular components """
