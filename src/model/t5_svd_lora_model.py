@@ -4,7 +4,19 @@ from torch import nn
 from src.model.t5_adapter_model_base import T5AdapterBase
 
 class SVDLoRA(nn.Module):
-    def __init__(self, orig_module, enable_extra_loss, rank, reinit_lora=False, reinit_std=1.0, reinit_use_qr=False, **kwargs):
+    def __init__(
+            self,
+            orig_module,
+            enable_extra_loss,
+            rank,
+            reinit_lora=False,
+            reinit_singular_values=False,
+            reinit_std=1.0,
+            reinit_singular_values_std=1.0,
+            reinit_use_qr=True,
+            reinit_ortho_project=True,
+            **kwargs
+    ):
         super().__init__()
         # self.dropout = nn.Dropout(dropout_p)
         # self.lora_down = nn.Linear(orig_module.in_features, rank, bias=False)
@@ -17,8 +29,12 @@ class SVDLoRA(nn.Module):
 
         self.rank = rank
         self.reinit_lora = reinit_lora
+        self.reinit_singular_values = reinit_singular_values
         self.reinit_std = reinit_std
+        self.reinit_singular_values_std = reinit_singular_values_std
         self.reinit_use_qr = reinit_use_qr
+        self.reinit_ortho_project = reinit_ortho_project
+
         self.init_with_weight(orig_module.weight)
         
         self.extra_loss = torch.tensor(0., device=self.u.device)
@@ -40,11 +56,18 @@ class SVDLoRA(nn.Module):
             nn.init.normal_(self.lora_u, mean=0.0, std=self.reinit_std)
             nn.init.normal_(self.lora_vt, mean=0.0, std=self.reinit_std)
         
+        if self.reinit_singular_values:
+            nn.init.normal_(self.lora_s, mean=0.0, std=self.reinit_singular_values_std)
+        
+        lora_u = self.lora_u
+        lora_v = self.lora_vt.T
+        
         # Project so that it's orthogonal to U and Vt
-        Iu = torch.eye(self.u.shape[0], dtype=self.u.dtype, device=self.u.device)
-        Iv = torch.eye(self.vt.shape[1], dtype=self.vt.dtype, device=self.vt.device)
-        lora_u = (Iu - self.u @ self.u.T) @ self.lora_u
-        lora_v = (Iv - self.vt.T @ self.vt) @ self.lora_vt.T
+        if self.reinit_ortho_project:
+            Iu = torch.eye(self.u.shape[0], dtype=self.u.dtype, device=self.u.device)
+            Iv = torch.eye(self.vt.shape[1], dtype=self.vt.dtype, device=self.vt.device)
+            lora_u = (Iu - self.u @ self.u.T) @ self.lora_u
+            lora_v = (Iv - self.vt.T @ self.vt) @ self.lora_vt.T
         
         # QR decomposition so that vectors inside lora parts are orthogonal
         if self.reinit_use_qr:
