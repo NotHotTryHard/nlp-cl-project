@@ -46,9 +46,12 @@ class SVDLoRA(nn.Module):
         lora_v = (Iv - self.vt.T @ self.vt) @ self.lora_vt.T
         
         # QR decomposition so that vectors inside lora parts are orthogonal
-        self.lora_u, _ = torch.qr(lora_u)
-        lora_v, _ = torch.qr(lora_v)
-        self.lora_vt = lora_v.T
+        Qu, _ = torch.qr(lora_u)
+        Qv, _ = torch.qr(lora_v)
+
+        with torch.no_grad():
+            self.lora_u.copy_(Qu)
+            self.lora_vt.copy_(Qv.T)
 
     def init_with_weight(self, prev_weight):
         # weight - (out_features, in_features)
