@@ -106,10 +106,15 @@ class Trainer(BaseTrainer):
         """
         Move all necessary tensors to the HPU
         """
-        for tensor_for_gpu in ["input_ids", "attention_mask", "labels", "decoder_attention_mask"]:
-            batch[tensor_for_gpu] = batch[tensor_for_gpu].to(device)
-        if "decoder_input_ids" in batch:
-            batch["decoder_input_ids"] = batch["decoder_input_ids"].to(device)
+        for tensor_for_gpu in ["input_ids", "attention_mask", "labels"]:
+            if tensor_for_gpu in batch:
+                batch[tensor_for_gpu] = batch[tensor_for_gpu].to(device)
+        
+        # Optional tensors that might not exist for all models (e.g., GPT-2 vs T5)
+        for optional_tensor in ["decoder_attention_mask", "decoder_input_ids"]:
+            if optional_tensor in batch:
+                batch[optional_tensor] = batch[optional_tensor].to(device)
+                
         return batch
 
     def _clip_grad_norm(self):
