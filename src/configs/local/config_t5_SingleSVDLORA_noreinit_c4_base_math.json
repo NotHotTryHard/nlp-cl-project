@@ -10,13 +10,11 @@
         "cache_dir": "cache/",
         "max_length": 256
       },
-        "svd_lora_config": {
-          "rank": 4,
-          "reinit_lora": true,
-          "reinit_std": 1.0,
-          "reinit_use_qr": false,
-          "target_layers": ["q", "k", "v", "o", "wi", "wo"]
-        }
+      "svd_lora_config": {
+        "rank": 4,
+        "reinit_lora": false,
+        "target_layers": ["q", "k", "v", "o", "wi", "wo"]
+      }
     }
   },
   "data": {
@@ -365,7 +363,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single SVDLoRA Math-1e-24k",
+    "wandb_run_name": "T5 SingleSVDLoRA reinit(1.0) ortho",
     "grad_norm_clip": 100.0
   }
 }
