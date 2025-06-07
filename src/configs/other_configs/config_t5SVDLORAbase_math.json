@@ -3,24 +3,25 @@
   "n_gpu": 1,
   "preprocessing": {},
   "model": {
-    "type": "T5LoRA",
+    "type": "T5SVDLoRA",
     "args": {
       "t5_config": {
         "model_name": "t5-base",
         "cache_dir": "cache/",
         "max_length": 256
       },
-      "lora_config": {
-        "rank": 36, 
-        "alpha": 16, 
-        "dropout_p": 0.1,
-        "target_layers": ["q", "k", "v", "o", "wi", "wo"]
-      }
+        "svd_lora_config": {
+          "rank": 4,
+          "reinit_lora": true,
+          "reinit_std": 1.0,
+          "reinit_use_qr": false,
+          "target_layers": ["q", "k", "v", "o", "wi", "wo"]
+        }
     }
   },
   "data": {
     "train": {
-      "batch_size": 8,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -134,7 +135,7 @@
       ]
     },
     "val_add_or_sub": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -154,7 +155,7 @@
       ]
     },
     "val_add_or_sub_in_base": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -174,7 +175,7 @@
       ]
     },
     "val_add_sub_multiple": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -194,7 +195,7 @@
       ]
     },
     "val_div": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -214,7 +215,7 @@
       ]
     },
     "val_mixed": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -234,7 +235,7 @@
       ]
     },
     "val_mul": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -254,7 +255,7 @@
       ]
     },
     "val_mul_div_multiple": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -274,7 +275,7 @@
       ]
     },
     "val_nearest_integer_root": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -294,7 +295,7 @@
       ]
     },
     "val_simplify_surd": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -314,7 +315,7 @@
       ]
     },
     "val_C4": {
-      "batch_size": 16,
+      "batch_size": 32,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -364,7 +365,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single LoRA-36-Init Math-1e-24k",
+    "wandb_run_name": "Single SVDLoRA Math-1e-24k",
     "grad_norm_clip": 100.0
   }
 }
