@@ -62,7 +62,7 @@ class T5IgnoreTopK(T5forSummarization):
         if total_elements <= self.max_tensor_size and len(all_deltas) == 1:
             try:
                 threshold = torch.quantile(all_deltas[0], 1 - k_fraction).item()
-                print(f"[TOPK] Used torch.quantile, threshold: {threshold:.6f}")
+                #print(f"[TOPK] Used torch.quantile, threshold: {threshold:.6f}")
                 return threshold
             except RuntimeError as e:
                 if "quantile() input tensor is too large" in str(e):
