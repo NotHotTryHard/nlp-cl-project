@@ -9,13 +9,14 @@ from src.collate_fn.t5_mlm_data_collator import FlaxDataCollatorForT5MLM, comput
 logger = logging.getLogger(__name__)
 
 class CollateClass:
-    def __init__(self, tokenizer, max_length, mlm_items=False, mlm_probability=0.15, mean_span_length=3, decoder_start_token_id=0):
+    def __init__(self, tokenizer, max_length, mlm_items=False, mlm_probability=0.15, mean_span_length=3, decoder_start_token_id=0, gpt2_lm_mode=False):
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.mlm_items = mlm_items
         self.mlm_probability = mlm_probability
         self.mean_span_length = mean_span_length
         self.decoder_start_token_id = decoder_start_token_id
+        self.gpt2_lm_mode = gpt2_lm_mode
     
     def _generate_spans_per_item(self, input_ids):
         """
@@ -118,9 +119,34 @@ class CollateClass:
         
         return batch
 
+    def _gpt2_lm_call(self, dataset_items):
+        """Handle datasets that return {'text': ...} format for GPT2 language modeling"""
+        texts = [item['text'] for item in dataset_items]
+        
+        # For language modeling, we use the same text as both input and target
+        # The GPT2 model will handle the shifting internally
+        text_encodings = self.tokenizer.batch_encode_plus(
+            texts,
+            padding="longest",
+            max_length=self.max_length,
+            truncation=True,
+            return_tensors="pt"
+        )
+        input_ids, attention_mask = text_encodings.input_ids, text_encodings.attention_mask
+        
+        return {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "labels": input_ids.clone(),  # Same as input for language modeling
+            "decoder_attention_mask": attention_mask.clone()
+        }
+
     def __call__(self, dataset_items):
         if self.mlm_items:
             return self._mlm_call(dataset_items)
+        
+        if self.gpt2_lm_mode:
+            return self._gpt2_lm_call(dataset_items)
 
         inputs = [item[0] for item in dataset_items]
         targets = [item[1] for item in dataset_items]

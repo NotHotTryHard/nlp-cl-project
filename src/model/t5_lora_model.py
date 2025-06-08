@@ -4,11 +4,11 @@ import torch.nn.init as init
 from src.model.t5_adapter_model_base import T5AdapterBase
 
 class LoRA(nn.Module):
-    def __init__(self, orig_module, rank, alpha, dropout_p, **kwargs):
+    def __init__(self, orig_module, rank, alpha, dropout_p, init_std=0.01, **kwargs):
         super().__init__()
         self.dropout = nn.Dropout(dropout_p)
         self.lora_down = nn.Linear(orig_module.in_features, rank, bias=False)
-        init.normal_(self.lora_down.weight, mean=0, std=0.01)  # Init with N(0, a^2)
+        init.normal_(self.lora_down.weight, mean=0, std=init_std)  # Init with N(0, init_std^2)
 
         self.lora_up = nn.Linear(rank, orig_module.out_features, bias=False)
         init.zeros_(self.lora_up.weight)  # Init with zeros 

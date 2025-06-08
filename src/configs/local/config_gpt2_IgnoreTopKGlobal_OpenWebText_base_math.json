@@ -1,0 +1,387 @@
+{
+  "name": "GPT2_CL_generation_ignore_topk",
+  "n_gpu": 1,
+  "preprocessing": {},
+  "model": {
+    "type": "GPT2IgnoreTopK",
+    "args": {
+      "model_name": "gpt2",
+      "cache_dir": "cache/",
+      "max_length": 256,
+      "tau": 20,
+      "prune_fraction_k": 0.08,
+      "global_pruning": true,
+      "threshold_tol": 1e-7,
+      "max_tensor_size": 10000000
+    }
+  },
+  "data": {
+    "train": {
+      "batch_size": 8,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": true,
+      "mixed_dataset": {
+        "type": "MixedSequentialDataset",
+        "args": {
+          "sequential_mixing_rate": 0.0
+        }
+      },
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__add_or_sub",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        },
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__add_or_sub_in_base",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        },
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__add_sub_multiple",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        },
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__div",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        },
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__mixed",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        },
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__mul",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        },
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__mul_div_multiple",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        },
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__nearest_integer_root",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        },
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__simplify_surd",
+            "split": "train",
+            "max_samples": 24000,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_add_or_sub": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__add_or_sub",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_add_or_sub_in_base": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__add_or_sub_in_base",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_add_sub_multiple": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__add_sub_multiple",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_div": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__div",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_mixed": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__mixed",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_mul": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__mul",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_mul_div_multiple": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__mul_div_multiple",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_nearest_integer_root": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__nearest_integer_root",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_simplify_surd": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MathDataset",
+          "args": {
+            "path": "deepmind/math_dataset",
+            "name": "arithmetic__simplify_surd",
+            "split": "test",
+            "max_samples": 256,
+            "shuffle": true,
+            "shuffle_seed": 52
+          }
+        }
+      ]
+    },
+    "val_C4": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "gpt2_lm_mode": true,
+      "datasets": [
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "allenai/c4",
+            "streaming": false,
+            "split": "validation",
+            "data_files": {"validation": "en/c4-validation.00000-of-00008.json.gz"},
+            "max_samples": 1000
+          }
+        }
+      ]
+    },
+    "val_OpenWebText10k": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "gpt2_lm_mode": true,
+      "datasets": [
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "stas/openwebtext-10k",
+            "streaming": false,
+            "split": "train",
+            "max_samples": 1000,
+            "shuffle": true,
+            "shuffle_seed": 42
+          }
+        }
+      ]
+    }
+  },
+  "optimizer": {
+    "type": "AdamW",
+    "args": {
+      "lr": 5e-5,
+      "betas": [0.9, 0.95],
+      "weight_decay": 1e-5
+    }
+  },
+  "metrics": [],
+  "lr_scheduler": {
+    "type": "ExponentialLR",
+    "args": {
+      "gamma": 1.0
+    }
+  },
+  "loss": {
+    "type": "CrossEntropyLoss",
+    "args": {}
+  },
+  "trainer": {
+    "epochs": 9,
+    "eval_frequency": 1,
+    "first_epoch_eval_only": true,
+    "save_dir": "saved/",
+    "save_period": 60,
+    "verbosity": 2,
+    "monitor": "min loss",
+    "visualize": "wandb",
+    "wandb_project": "nlp-cl-project",
+    "wandb_run_name": "GPT2 IgnoreTopK global .08",
+    "grad_norm_clip": 100.0
+  }
+} 

@@ -360,7 +360,7 @@
   "monitor": "min loss",
   "visualize": "wandb",
   "wandb_project": "nlp-cl-project",
-  "wandb_run_name": "IgnoreTopK global .08 Math-1e-24k",
+  "wandb_run_name": "T5 IgnoreTopK global .08",
   "grad_norm_clip": 100.0
 }
 } 
