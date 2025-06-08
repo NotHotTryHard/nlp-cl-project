@@ -1,28 +1,26 @@
 {
-  "name": "T5_CL_summarization",
+  "name": "GPT2_CL_generation_ignore_topk",
   "n_gpu": 1,
   "preprocessing": {},
   "model": {
-    "type": "T5SVDLoRA",
+    "type": "GPT2IgnoreTopK",
     "args": {
-      "t5_config": {
-        "model_name": "t5-base",
-        "cache_dir": "cache/",
-        "max_length": 256
-      },
-      "svd_lora_config": {
-        "rank": 4,
-        "reinit_lora": false,
-        "target_layers": ["q", "k", "v", "o", "wi", "wo"]
-      }
+      "model_name": "gpt2",
+      "cache_dir": "cache/",
+      "max_length": 256,
+      "tau": 20,
+      "prune_fraction_k": 0.08,
+      "global_pruning": true,
+      "threshold_tol": 1e-7,
+      "max_tensor_size": 10000000
     }
   },
   "data": {
     "train": {
-      "batch_size": 16,
+      "batch_size": 8,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": true,
       "mixed_dataset": {
         "type": "MixedSequentialDataset",
@@ -133,10 +131,10 @@
       ]
     },
     "val_add_or_sub": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -153,10 +151,10 @@
       ]
     },
     "val_add_or_sub_in_base": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -173,10 +171,10 @@
       ]
     },
     "val_add_sub_multiple": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -193,10 +191,10 @@
       ]
     },
     "val_div": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -213,10 +211,10 @@
       ]
     },
     "val_mixed": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -233,10 +231,10 @@
       ]
     },
     "val_mul": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -253,10 +251,10 @@
       ]
     },
     "val_mul_div_multiple": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -273,10 +271,10 @@
       ]
     },
     "val_nearest_integer_root": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -293,10 +291,10 @@
       ]
     },
     "val_simplify_surd": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
       "datasets": [
         {
@@ -313,12 +311,12 @@
       ]
     },
     "val_C4": {
-      "batch_size": 32,
+      "batch_size": 16,
       "num_workers": 5,
       "max_length": 256,
-      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
       "use_mixed_dataset": false,
-      "t5_mlm_masking": true,
+      "gpt2_lm_mode": true,
       "datasets": [
         {
           "type": "HuggingFaceDataset",
@@ -331,18 +329,38 @@
           }
         }
       ]
+    },
+    "val_OpenWebText10k": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["GPT2Tokenizer", "gpt2"],
+      "use_mixed_dataset": false,
+      "gpt2_lm_mode": true,
+      "datasets": [
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "stas/openwebtext-10k",
+            "streaming": false,
+            "split": "train",
+            "max_samples": 1000,
+            "shuffle": true,
+            "shuffle_seed": 42
+          }
+        }
+      ]
     }
   },
   "optimizer": {
     "type": "AdamW",
     "args": {
-      "lr": 5e-4,
+      "lr": 5e-5,
       "betas": [0.9, 0.95],
       "weight_decay": 1e-5
     }
   },
-  "metrics": [
-  ],
+  "metrics": [],
   "lr_scheduler": {
     "type": "ExponentialLR",
     "args": {
@@ -363,7 +381,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "T5 SingleSVDLoRA noreinit",
+    "wandb_run_name": "GPT2 IgnoreTopK global .08",
     "grad_norm_clip": 100.0
   }
-}
+} 
