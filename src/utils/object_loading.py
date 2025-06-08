@@ -76,14 +76,17 @@ def get_dataloaders(configs: ConfigParser):
         assert bs <= len(dataset), \
             f"Batch size ({bs}) shouldn't be larger than dataset length ({len(dataset)})"
         
-        tokenizer_info = params.get("tokenizer_name", ["T5Tokenizer", "google-t5/t5-small"])
+        tokenizer_info = params.get("tokenizer_name", ["T5Tokenizer", "t5-base"])
         tokenizer = getattr(transformers, tokenizer_info[0]).from_pretrained(tokenizer_info[1])
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
         collate_obj = CollateClass(
             tokenizer=tokenizer,
             max_length=params["max_length"],
             mlm_items=params.get("t5_mlm_masking", False), # for training it's generally set in MixedSequentialDataset.update_epoch
+            gpt2_lm_mode=params.get("gpt2_lm_mode", False),
             mlm_probability=params.get("mlm_probability", 0.15),
-            mean_span_length=params.get("mean_span_length", 3.)
+            mean_span_length=params.get("mean_span_length", 3.),
         )
     
         # create dataloader
