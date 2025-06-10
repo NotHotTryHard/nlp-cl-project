@@ -1,15 +1,13 @@
-import torch
 from torch import nn
 
-from src.model.t5_adapter_model_base import T5AdapterBase
-from src.model.t5_svd_lora_sequential import SVDLoRASequential
-from src.model.t5_svd_lora_sequential_nested import SVDLoRASequentialNested
+from src.model.adapter_model_base import AdapterModelBase
+from src.model.svd_lora_sequential import SVDLoRASequential
+from src.model.svd_lora_sequential_nested import SVDLoRASequentialNested
 
 
-class T5SVDLoRASequential(T5AdapterBase):
-    def __init__(self, t5_config, svd_lora_config, **cfg):
-        super().__init__(**t5_config)
-
+class SVDLoRASequentialModelBase(AdapterModelBase):
+    def __init__(self, svd_lora_config, **cfg):
+        super(self, AdapterModelBase).__init__()
         self.current_adapter_idx = -10
         self.n_adapters = svd_lora_config['n_adapters']
 
@@ -57,45 +55,6 @@ class T5SVDLoRASequential(T5AdapterBase):
             print(f"Changing to {adapter_idx+1}-th adapter!")
             for svd_lora in self.svd_loras:
                 svd_lora.update_adapter(adapter_idx)
-    
-    def enable_extra_loss(self):
-        for name, module in self.named_modules():
-            if self.check_module(name, module):
-                module.lora.enable_extra_loss = True
-    
-    def disable_extra_loss(self):
-        for name, module in self.named_modules():
-            if self.check_module(name, module):
-                module.lora.enable_extra_loss = False
-            
-    def collect_extra_loss(self):
-        extra_loss = torch.tensor(0., device=self.svd_loras[0].u.device)
-        for svd_lora in self.svd_loras:
-            extra_loss = extra_loss + svd_lora.extra_loss
-            svd_lora.clean_extra_loss()
-        
-        extra_loss = extra_loss / self.count_adaptable_weights
-        return extra_loss
-
-    def calc_extra_loss(self):
-        extra_loss = torch.tensor(0., device=self.svd_loras[0].u.device)
-        for svd_lora in self.svd_loras:
-            svd_lora.calc_extra_loss()
-            extra_loss = extra_loss + svd_lora.extra_loss
-            svd_lora.clean_extra_loss()
-
-        extra_loss = extra_loss / self.count_adaptable_weights
-        return extra_loss
-    
-    @staticmethod 
-    def add_lora_forward(module):
-        def new_forward(x):
-            return module.lora(x)
-        
-        if not hasattr(module, "original_forward"):
-            module.original_forward = module.forward
-        
-        return new_forward
 
     def to(self, device, **kwargs):
         for name, param in self.named_parameters():

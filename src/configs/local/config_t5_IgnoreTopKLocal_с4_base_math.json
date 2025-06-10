@@ -5,14 +5,18 @@
   "model": {
     "type": "T5IgnoreTopK",
     "args": {
-      "model_name": "t5-base",
-      "cache_dir": "cache/",
-      "max_length": 256,
-      "tau": 20,
-      "prune_fraction_k": 0.08,
-      "global_pruning": false,
-      "threshold_tol": 1e-7,
-      "max_tensor_size": 10000000
+      "t5_config": {
+        "model_name": "t5-base",
+        "cache_dir": "cache/",
+        "max_length": 256
+      },
+      "ignoretopk_config": {
+        "tau": 20,
+        "prune_fraction_k": 0.08,
+        "global_pruning": false,
+        "threshold_tol": 1e-7,
+        "max_tensor_size": 10000000
+      }
     }
   },
   "data": {
@@ -363,4 +367,4 @@
     "wandb_run_name": "T5 IgnoreTopK local .08",
     "grad_norm_clip": 100.0
   }
-} 
+}

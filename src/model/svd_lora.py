@@ -1,7 +1,7 @@
 import torch
 from torch import nn
+from transformers.modeling_utils import Conv1D
 
-from src.model.t5_adapter_model_base import T5AdapterBase
 
 class SVDLoRA(nn.Module):
     def __init__(
@@ -12,7 +12,7 @@ class SVDLoRA(nn.Module):
             reinit_lora=False,
             reinit_singular_values=False,
             reinit_std=1.0,
-            reinit_singular_values_std=1.0,
+            reinit_singular_values_value=1.0,
             reinit_use_qr=True,
             reinit_ortho_project=True,
             **kwargs
@@ -24,14 +24,21 @@ class SVDLoRA(nn.Module):
         # self.rank = rank
         # self.alpha = alpha
 
-        self.in_features = orig_module.in_features
-        self.out_features = orig_module.out_features
+        if isinstance(orig_module, nn.Linear):
+            self.in_features = orig_module.in_features
+            self.out_features = orig_module.out_features
+        elif isinstance(orig_module, Conv1D):
+            # For Conv1D, weight is (in_features, out_features)
+            self.in_features = orig_module.weight.shape[0]
+            self.out_features = orig_module.weight.shape[1]
+        else:
+            raise TypeError(f"SVDLoRA is not supported for module of type {type(orig_module)}")
 
         self.rank = rank
         self.reinit_lora = reinit_lora
         self.reinit_singular_values = reinit_singular_values
         self.reinit_std = reinit_std
-        self.reinit_singular_values_std = reinit_singular_values_std
+        self.reinit_singular_values_value = reinit_singular_values_value
         self.reinit_use_qr = reinit_use_qr
         self.reinit_ortho_project = reinit_ortho_project
 
@@ -57,7 +64,7 @@ class SVDLoRA(nn.Module):
             nn.init.normal_(self.lora_vt, mean=0.0, std=self.reinit_std)
         
         if self.reinit_singular_values:
-            nn.init.normal_(self.lora_s, mean=0.0, std=self.reinit_singular_values_std)
+            nn.init.constant_(self.lora_s, self.reinit_singular_values_value)
         
         lora_u = self.lora_u
         lora_v = self.lora_vt.T
@@ -120,78 +127,3 @@ class SVDLoRA(nn.Module):
             self.calc_extra_loss()
         
         return orig_pass + lora_pass
-
-
-class T5SVDLoRA(T5AdapterBase):
-    def __init__(self, t5_config, svd_lora_config, **cfg):
-        super().__init__(**t5_config)
-        
-        for p in self.parameters():
-            p.requires_grad = False
-
-        self.count_adaptable_weights = 0
-        self.svd_lora_config = svd_lora_config
-
-        self.svd_loras = []
-        
-        for name, module in self.named_modules():
-            if self.check_module(name, module):
-                module.lora = SVDLoRA(module, enable_extra_loss=True, **svd_lora_config)
-                module.forward = self.add_lora_forward(module)
-                self.svd_loras.append(module.lora)
-                self.count_adaptable_weights += 2
-        
-        print("Init loss:", self.calc_extra_loss())
-        
-    def check_module(self, name, module):
-        return isinstance(module, nn.Linear) and name.split('.')[-1] in self.svd_lora_config['target_layers']
-
-    def enable_extra_loss(self):
-        for name, module in self.named_modules():
-            if self.check_module(name, module):
-                module.lora.enable_extra_loss = True
-    
-    def disable_extra_loss(self):
-        for name, module in self.named_modules():
-            if self.check_module(name, module):
-                module.lora.enable_extra_loss = False
-            
-    def collect_extra_loss(self):
-        extra_loss = torch.tensor(0., device=self.model.device)
-        for svd_lora in self.svd_loras:
-            extra_loss = extra_loss + svd_lora.extra_loss
-            svd_lora.clean_extra_loss()
-        
-        extra_loss = extra_loss / self.count_adaptable_weights
-        return extra_loss
-
-    def calc_extra_loss(self):
-        extra_loss = torch.tensor(0., device=self.model.device)
-        for svd_lora in self.svd_loras:
-            svd_lora.calc_extra_loss()
-            extra_loss = extra_loss + svd_lora.extra_loss
-            svd_lora.clean_extra_loss()
-
-        extra_loss = extra_loss / self.count_adaptable_weights
-        return extra_loss
-
-    @staticmethod 
-    def add_lora_forward(module):
-        def new_forward(x):
-            return module.lora(x)
-        
-        if not hasattr(module, "original_forward"):
-            module.original_forward = module.forward
-        
-        return new_forward
-    
-    def reinit_adapters(self):
-        for svd_lora in self.svd_loras:
-            svd_lora.reinit_self()
-    
-    def collect_singular_values(self, module_names):
-        singular_values = {}
-        for name, module in self.named_modules(): # as it's a generator
-            if name in module_names:
-                singular_values[name] = module.lora.s
-        return singular_values
