@@ -7,7 +7,7 @@ from src.model.svd_lora import SVDLoRA
 
 class SVDLoRAModelBase(AdapterModelBase):
     def __init__(self, svd_lora_config, **cfg):
-        super(self, AdapterModelBase).__init__() 
+        AdapterModelBase.__init__(self) 
         for p in self.parameters():
             p.requires_grad = False
 

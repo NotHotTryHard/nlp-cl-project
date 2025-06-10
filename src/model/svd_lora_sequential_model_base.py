@@ -7,7 +7,7 @@ from src.model.svd_lora_sequential_nested import SVDLoRASequentialNested
 
 class SVDLoRASequentialModelBase(AdapterModelBase):
     def __init__(self, svd_lora_config, **cfg):
-        super(self, AdapterModelBase).__init__()
+        AdapterModelBase.__init__(self)
         self.current_adapter_idx = -10
         self.n_adapters = svd_lora_config['n_adapters']
 

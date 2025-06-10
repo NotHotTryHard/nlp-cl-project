@@ -3,7 +3,7 @@ from src.model.lora import LoRA
 
 class LoRAModelBase(AdapterModelBase):
     def __init__(self, lora_config, **cfg):
-        super(self, AdapterModelBase).__init__()
+        AdapterModelBase.__init__(self)
         for p in self.parameters():
             p.requires_grad = False
         

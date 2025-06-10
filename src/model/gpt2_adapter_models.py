@@ -10,8 +10,8 @@ from src.model.gpt2model import GPT2forGeneration
 
 class GPT2LoRA(LoRAModelBase, GPT2forGeneration):
     def __init__(self, gpt2_config, lora_config, **cfg):
-        super(self, GPT2forGeneration).__init__(**gpt2_config)
-        super(self, LoRAModelBase).__init__(lora_config, **cfg)
+        GPT2forGeneration.__init__(self, **gpt2_config)
+        LoRAModelBase.__init__(self, lora_config, **cfg)
         
     def check_module(self, name, module):
         return isinstance(module, Conv1D) and name.split('.')[-1] in self.lora_config['target_layers']

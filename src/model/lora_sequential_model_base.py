@@ -1,11 +1,11 @@
 from torch import nn
 
-from src.model.t5_lora_model import LoRA
+from src.model.lora import LoRA
 from src.model.adapter_model_base import AdapterModelBase
 
 class LoRASequentialModelBase(AdapterModelBase):
     def __init__(self, lora_config, **cfg):
-        super(self, AdapterModelBase).__init__()
+        AdapterModelBase.__init__(self)
         self.current_adapter_idx = -10
         self.n_adapters = lora_config['n_adapters']
 
