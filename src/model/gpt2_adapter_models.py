@@ -10,7 +10,7 @@ from src.model.gpt2model import GPT2forGeneration
 
 class GPT2LoRA(GPT2forGeneration, LoRAModelBase):
     def __init__(self, gpt2_config, lora_config, **cfg):
-        super().__init__(self, **gpt2_config)
+        super().__init__(**gpt2_config)
         self.init_lora(self, lora_config, **cfg)
         
     def check_module(self, name, module):
@@ -19,7 +19,7 @@ class GPT2LoRA(GPT2forGeneration, LoRAModelBase):
 
 class GPT2LoRASequential(GPT2forGeneration, LoRASequentialModelBase):
     def __init__(self, gpt2_config, lora_config, **cfg):
-        super().__init__(self, **gpt2_config)
+        super().__init__(**gpt2_config)
         self.init_lora_sequential(self, lora_config, **cfg)
 
     def check_module(self, name, module):
@@ -28,7 +28,7 @@ class GPT2LoRASequential(GPT2forGeneration, LoRASequentialModelBase):
 
 class GPT2SVDLoRA(GPT2forGeneration, SVDLoRAModelBase):
     def __init__(self, gpt2_config, svd_lora_config, **cfg):
-        super().__init__(self, **gpt2_config)
+        super().__init__(**gpt2_config)
         self.init_svd_lora(self, svd_lora_config, **cfg)
 
     def check_module(self, name, module):
@@ -37,7 +37,7 @@ class GPT2SVDLoRA(GPT2forGeneration, SVDLoRAModelBase):
 
 class GPT2SVDLoRASequential(GPT2forGeneration, SVDLoRASequentialModelBase):
     def __init__(self, gpt2_config, svd_lora_config, **cfg):
-        super().__init__(self, **gpt2_config)
+        super().__init__(**gpt2_config)
         self.init_svd_lora_sequential(self, svd_lora_config, **cfg)
 
     def check_module(self, name, module):
@@ -46,7 +46,7 @@ class GPT2SVDLoRASequential(GPT2forGeneration, SVDLoRASequentialModelBase):
 
 class GPT2IgnoreTopK(GPT2forGeneration, IgnoreTopKModelBase):
     def __init__(self, gpt2_config, ignoretopk_config, output_hidden_states=True, **cfg):
-        super().__init__(self, output_hidden_states=output_hidden_states, **gpt2_config)
+        super().__init__(output_hidden_states=output_hidden_states, **gpt2_config)
         self.init_ignoretopk(self, **ignoretopk_config, **cfg)
         
     def forward(self, batch):
