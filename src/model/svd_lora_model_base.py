@@ -6,8 +6,7 @@ from src.model.svd_lora import SVDLoRA
 
 
 class SVDLoRAModelBase(AdapterModelBase):
-    def __init__(self, svd_lora_config, **cfg):
-        AdapterModelBase.__init__(self) 
+    def init_svd_lora(self, svd_lora_config, **cfg):
         for p in self.parameters():
             p.requires_grad = False
 
@@ -23,7 +22,7 @@ class SVDLoRAModelBase(AdapterModelBase):
                 self.svd_loras.append(module.lora)
                 self.count_adaptable_weights += 2
         
-        print("Init loss:", self.calc_extra_loss())
+        # print("Init loss:", self.calc_extra_loss())
         
     def enable_extra_loss(self):
         for svd_lora in self.svd_loras:

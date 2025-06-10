@@ -4,8 +4,7 @@ from src.model.lora import LoRA
 from src.model.adapter_model_base import AdapterModelBase
 
 class LoRASequentialModelBase(AdapterModelBase):
-    def __init__(self, lora_config, **cfg):
-        AdapterModelBase.__init__(self)
+    def init_lora_sequential(self, lora_config, **cfg):
         self.current_adapter_idx = -10
         self.n_adapters = lora_config['n_adapters']
 

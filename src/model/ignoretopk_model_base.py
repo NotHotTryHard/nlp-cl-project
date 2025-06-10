@@ -4,7 +4,7 @@ import numpy as np
 from torch import nn
 
 class IgnoreTopKModelBase(nn.Module):
-    def __init__(
+    def init_ignoretopk(
         self,
         tau=20,                      # steps before applying pruning
         prune_fraction_k=0.08,       # prune fraction 
