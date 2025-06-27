@@ -1,14 +1,9 @@
 from torch import nn
 
-from src.model.gpt2model import GPT2forGeneration
-
-class GPT2AdapterBase(GPT2forGeneration):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-    
+class AdapterModelBase(nn.Module):
     def check_module(self, name, module):
-        pass
-        
+        raise NotImplementedError("You must override this function in model-specific class")
+
     @staticmethod 
     def add_lora_forward(module):
         def new_forward(x):

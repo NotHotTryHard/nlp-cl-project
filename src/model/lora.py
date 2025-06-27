@@ -2,8 +2,6 @@ from torch import nn
 import torch.nn.init as init
 from transformers.modeling_utils import Conv1D
 
-from src.model.gpt2_adapter_model_base import GPT2AdapterBase
-
 class LoRA(nn.Module):
     def __init__(self, orig_module, rank, alpha, dropout_p, init_std=0.01, **kwargs):
         super().__init__()
@@ -33,20 +31,3 @@ class LoRA(nn.Module):
         x = self.lora_up(x)
         x = (self.alpha / self.rank) * x
         return x
-
-class GPT2LoRA(GPT2AdapterBase):
-    def __init__(self, gpt2_config, lora_config, **cfg):
-        super().__init__(**gpt2_config)
-        
-        for p in self.parameters():
-            p.requires_grad = False
-        
-        self.lora_config = lora_config
-        
-        for name, module in self.named_modules():
-            if self.check_module(name, module):
-                module.lora = LoRA(module, **lora_config)
-                module.forward = self.add_lora_forward(module)
-        
-    def check_module(self, name, module):
-        return isinstance(module, Conv1D) and name.split('.')[-1] in self.lora_config['target_layers'] 

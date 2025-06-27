@@ -5,14 +5,18 @@
   "model": {
     "type": "GPT2IgnoreTopK",
     "args": {
-      "model_name": "gpt2",
-      "cache_dir": "cache/",
-      "max_length": 256,
-      "tau": 20,
-      "prune_fraction_k": 0.08,
-      "global_pruning": true,
-      "threshold_tol": 1e-7,
-      "max_tensor_size": 10000000
+      "gpt2_config": {
+        "model_name": "gpt2",
+        "cache_dir": "cache/",
+        "max_length": 256
+      },
+      "ignoretopk_config": {
+        "tau": 20,
+        "prune_fraction_k": 0.08,
+        "global_pruning": true,
+        "threshold_tol": 1e-7,
+        "max_tensor_size": 10000000
+      }
     }
   },
   "data": {
