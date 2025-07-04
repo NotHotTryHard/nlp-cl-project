@@ -12,9 +12,9 @@
       },
         "svd_lora_config": {
           "rank": 4,
-          "reinit_lora": false,
+          "reinit_lora": true,
           "reinit_std": 1.0,
-          "reinit_use_qr": true,
+          "reinit_use_qr": false,
           "target_layers": ["q", "k", "v", "o", "wi", "wo"]
         }
     }
@@ -260,7 +260,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single SVDLoRA MLQA 1e",
+    "wandb_run_name": "Single SVDLoRA Reinit no-QR MLQA 1e",
     "grad_norm_clip": 100.0
   }
 }
