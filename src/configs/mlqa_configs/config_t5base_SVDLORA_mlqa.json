@@ -260,7 +260,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single SVDLoRA Math-1e-24k",
+    "wandb_run_name": "Single SVDLoRA MLQA 1e",
     "grad_norm_clip": 100.0
   }
 }

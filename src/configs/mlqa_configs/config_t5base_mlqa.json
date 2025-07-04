@@ -251,7 +251,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "MATH-1e-24k T5b Mix=0.1+0.1",
+    "wandb_run_name": "t5-base MLQA 1e",
     "grad_norm_clip": 100.0
   }
 }
