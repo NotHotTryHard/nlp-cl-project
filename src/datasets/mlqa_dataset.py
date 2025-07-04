@@ -39,7 +39,7 @@ class MLQAHuggingFaceDataset(TorchDataset):
         if filter_max_length:
             self.max_length = max_length
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.filter_max_length()
+            self.filter_max_length(max_length)
 
         self.split = split
         self.split_train_val_test = split_train_val_test
@@ -49,7 +49,7 @@ class MLQAHuggingFaceDataset(TorchDataset):
         self._train_test_split()
 
     def _train_test_split(self):
-        train, val, test = self.dataset, None, None
+        train, val, test, train_plus_val = self.dataset, None, None, self.dataset
         if self.test_size > 0.0:
             train_plus_val, test = train_test_split(
                 self.dataset,
