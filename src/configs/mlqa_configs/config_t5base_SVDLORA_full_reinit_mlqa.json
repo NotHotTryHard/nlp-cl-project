@@ -239,6 +239,14 @@
     }
   },
   "metrics": [
+    {
+        "type": "ExactMatch_MLQAMetric",
+        "args": {"name": "Exact-Match", "model_type": "enc-dec"}
+    },
+    {
+        "type": "F1_MLQAMetric",
+        "args": {"name": "F1", "model_type": "enc-dec"}
+    }
   ],
   "lr_scheduler": {
     "type": "ExponentialLR",
@@ -251,7 +259,7 @@
     "args": {}
   },
   "trainer": {
-    "epochs": 9,
+    "epochs": 35,
     "eval_frequency": 1,
     "first_epoch_eval_only": true,
     "save_dir": "saved/",
@@ -260,7 +268,7 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single SVDLoRA Reinit no-QR MLQA 1e",
+    "wandb_run_name": "Single SVDLoRA Reinit no-QR MLQA 5e",
     "grad_norm_clip": 100.0
   }
 }

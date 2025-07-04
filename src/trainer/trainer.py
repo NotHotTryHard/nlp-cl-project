@@ -253,11 +253,7 @@ class Trainer(BaseTrainer):
         check_cuda_memory()
 
         with torch.no_grad():
-            for batch_idx, batch in tqdm(
-                    enumerate(dataloader),
-                    desc=part,
-                    total=len(dataloader),
-            ):
+            for batch in tqdm(dataloader, desc=part, total=len(dataloader)):
                 batch = self.process_batch(
                     batch,
                     is_train=False,
@@ -320,8 +316,12 @@ class Trainer(BaseTrainer):
             
         for met in self.metrics:
             if (not is_train) or self._compute_on_train(met):
-                metrics_tracker.update(met.name, met(self.model, batch))
-        
+                res = met(self.model, batch)
+                if isinstance(res, dict):
+                    for key, value in res.items():
+                        metrics_tracker.update(f"{met.name}_{key}", value)
+                else:
+                    metrics_tracker.update(met.name, res)
         return batch
 
 

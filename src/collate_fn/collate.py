@@ -51,8 +51,26 @@ class CollateClass:
 
         return input_ids_masked
 
+    def _item_input(self, item):
+        if isinstance(item, dict):
+            if "input" in item:
+                return item["input"]
+            return item["text"]
+        return item[0]
+
+    def _item_target(self, item):
+        if isinstance(item, dict):
+            if "target" in item:
+                return item["target"]
+            return item["text"]
+        return item[1]
+
+    def _update_batch_with_dataset_items(self, batch, dataset_items):
+        batch.update({k: [item[k] for item in dataset_items] for k in dataset_items[0]})
+        return batch
+
     def _legacy_mlm_call(self, dataset_items):
-        inputs = [item['text'] for item in dataset_items]
+        inputs = [self._item_input(item) for item in dataset_items]
 
         input_encodings = self.tokenizer.batch_encode_plus(
             [sentence for sentence in inputs],
@@ -75,15 +93,17 @@ class CollateClass:
             padding_value=self.tokenizer.pad_token_id
         )
 
-        return {
+        batch = {
             "input_ids": input_ids_masked,
             "attention_mask": attention_mask,
             "labels": input_ids,
             "decoder_attention_mask": None
         }
+        batch = self._update_batch_with_dataset_items(batch, dataset_items)
+        return batch
 
     def _mlm_call(self, dataset_items):
-        inputs = [item['text'] for item in dataset_items]
+        inputs = [self._item_input(item) for item in dataset_items]
         input_encodings = self.tokenizer(
             [sentence for sentence in inputs],
             return_attention_mask=False
@@ -116,12 +136,13 @@ class CollateClass:
 
         batch["attention_mask"] = torch.full(batch["input_ids"].shape, True)
         batch["decoder_attention_mask"] = torch.full(batch["labels"].shape, True)
-        
+
+        batch = self._update_batch_with_dataset_items(batch, dataset_items)
         return batch
 
     def _gpt2_lm_call(self, dataset_items):
         """Handle datasets that return {'text': ...} format for GPT2 language modeling"""
-        texts = [item['text'] for item in dataset_items]
+        texts = [self._item_input(item) for item in dataset_items]
         
         # For language modeling, we use the same text as both input and target
         # The GPT2 model will handle the shifting internally
@@ -134,12 +155,14 @@ class CollateClass:
         )
         input_ids, attention_mask = text_encodings.input_ids, text_encodings.attention_mask
         
-        return {
+        batch = {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
             "labels": input_ids.clone(),  # Same as input for language modeling
             "decoder_attention_mask": attention_mask.clone()
         }
+        batch = self._update_batch_with_dataset_items(batch, dataset_items)
+        return batch
 
     def __call__(self, dataset_items):
         if self.mlm_items:
@@ -148,8 +171,8 @@ class CollateClass:
         if self.gpt2_lm_mode:
             return self._gpt2_lm_call(dataset_items)
 
-        inputs = [item[0] for item in dataset_items]
-        targets = [item[1] for item in dataset_items]
+        inputs = [self._item_input(item) for item in dataset_items]
+        targets = [self._item_input(item) for item in dataset_items]
 
         input_encodings = self.tokenizer.batch_encode_plus(
             [sentence for sentence in inputs],
@@ -170,9 +193,11 @@ class CollateClass:
         labels, decoder_attention_mask = target_encodings.input_ids, target_encodings.attention_mask
         # labels[labels == self.tokenizer.pad_token_id] = -100
         
-        return {
+        batch = {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
             "labels": labels,
             "decoder_attention_mask": decoder_attention_mask
         }
+        batch = self._update_batch_with_dataset_items(batch, dataset_items)
+        return batch

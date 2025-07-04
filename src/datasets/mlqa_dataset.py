@@ -33,6 +33,8 @@ class MLQAHuggingFaceDataset(TorchDataset):
             shuffle_seed=shuffle_seed
         )
 
+        self.lang = name.split('.')[-1]
+
         self.model_type = model_type
         self._preprocess()
 
@@ -95,12 +97,15 @@ class MLQAHuggingFaceDataset(TorchDataset):
             inputs = f'{sample["context"]} question: {sample["question"]} answer: '
             labels = sample["answers"]["text"][0]
 
+            item = {"text": inputs, "answer": labels, "lang": self.lang}
             if self.model_type == "enc-dec":
-                items.append((inputs, labels))
-                continue
-
-            full_text = inputs + " " + labels
-            items.append((full_text, full_text))
+                item["input"] = inputs
+                item["target"] = labels
+            else:
+                full_text = inputs + " " + labels
+                item["input"] = full_text
+                item["target"] = full_text
+            items.append(item)
             
         self.dataset = items
 
