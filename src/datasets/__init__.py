@@ -4,6 +4,8 @@ from src.datasets.mixed_dataset import MixedSequentialDataset
 from src.datasets.huggingface_dataset import HuggingFaceDataset
 from src.datasets.math_datasets import MathQADataset, MathDataset
 from src.datasets.lpips_dataset import LPIPSReorderedDataset
+from src.datasets.glue_dataset import GLUEHuggingFaceDataset, SuperGLUEHuggingFaceDataset
+from src.datasets.mlqa_dataset import MLQAHuggingFaceDataset
 
 __all__ = [
     "OriginalDataset",
@@ -12,5 +14,8 @@ __all__ = [
     "HuggingFaceDataset",
     "MathQADataset",
     "MathDataset",
-    "LPIPSReorderedDataset"
+    "LPIPSReorderedDataset",
+    "GLUEHuggingFaceDataset",
+    "SuperGLUEHuggingFaceDataset",
+    "MLQAHuggingFaceDataset"
 ]
