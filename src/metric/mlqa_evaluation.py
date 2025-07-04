@@ -145,16 +145,19 @@ class ExactMatch_MLQAMetric(BaseMetric):
         self.compute_on_train = False
     
     def __call__(self, model, batch):
-        answers, predictions, lang = batch['answer'], batch['preds'], batch['lang']
+        if ('answer' not in batch) or ('lang' not in batch):
+            return 0.0
+        
+        answers, predictions, langs = batch['answer'], batch['preds'], batch['lang']
 
         if self.model_type == "dec":
             predictions = [pred.split("answer:")[-1].strip() for pred in predictions]
         
         exact_match = 0.0
         total = len(predictions)
-        for pred, answer in zip(predictions, answers):
+        for pred, answer, lang in zip(predictions, answers, langs):
             exact_match += metric_max_over_ground_truths(exact_match_score, pred, answer, lang)
-        exact_match = 100.0 * exact_match / total
+        exact_match = exact_match / total
         return exact_match
 
 class F1_MLQAMetric(BaseMetric):
@@ -166,14 +169,18 @@ class F1_MLQAMetric(BaseMetric):
         self.compute_on_train = False
     
     def __call__(self, model, batch):
-        answers, predictions, lang = batch['answer'], batch['preds'], batch['lang']
+        if ('answer' not in batch) or ('lang' not in batch):
+            return 0.0
+
+        answers, predictions, langs = batch['answer'], batch['preds'], batch['lang']
 
         if self.model_type == "dec":
+            # answers = [ans.split("answer:")[-1].strip() for ans in answers]
             predictions = [pred.split("answer:")[-1].strip() for pred in predictions]
         
         f1 = 0.0
         total = len(predictions)
-        for pred, answer in zip(predictions, answers):
+        for pred, answer, lang in zip(predictions, answers, langs):
             f1 += metric_max_over_ground_truths(f1_score, pred, answer, lang)
-        f1 = 100.0 * f1 / total
+        f1 = f1 / total
         return f1
