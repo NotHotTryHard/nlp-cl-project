@@ -77,7 +77,7 @@ class MLQAHuggingFaceDataset(TorchDataset):
         dataset_size = len(self.dataset)
 
         def _keep(sample):
-            toks = self.tokenizer(sample[0], truncation=False)
+            toks = self.tokenizer(sample["input"], truncation=False)
             return len(toks["input_ids"]) <= max_length
 
         if hasattr(self.dataset, "filter"):
