@@ -12,7 +12,7 @@
   },
   "data": {
     "train": {
-      "batch_size": 16,
+      "batch_size": 8,
       "num_workers": 5,
       "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
@@ -91,7 +91,7 @@
       ]
     },
     "val.en.en": {
-      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "batch_size": 16, "num_workers": 5, "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
@@ -107,7 +107,7 @@
       ]
     },
     "val.de.de": {
-      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "batch_size": 16, "num_workers": 5, "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
@@ -123,7 +123,7 @@
       ]
     },
     "val.es.es": {
-      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "batch_size": 16, "num_workers": 5, "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
@@ -139,7 +139,7 @@
       ]
     },
     "val.ar.ar": {
-      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "batch_size": 16, "num_workers": 5, "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
@@ -155,7 +155,7 @@
       ]
     },
     "val.zh.zh": {
-      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "batch_size": 16, "num_workers": 5, "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
@@ -171,7 +171,7 @@
       ]
     },
     "val.vi.vi": {
-      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "batch_size": 16, "num_workers": 5, "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
@@ -187,7 +187,7 @@
       ]
     },
     "val.hi.hi": {
-      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "batch_size": 16, "num_workers": 5, "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "datasets": [
@@ -203,7 +203,7 @@
       ]
     },
     "val_C4": {
-      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "batch_size": 16, "num_workers": 5, "max_length": 256,
       "tokenizer_name": ["T5Tokenizer", "t5-base"],
       "use_mixed_dataset": false,
       "t5_mlm_masking": true,
