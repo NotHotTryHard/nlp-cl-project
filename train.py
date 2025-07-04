@@ -99,6 +99,12 @@ if __name__ == "__main__":
         help="config file path (default: None)",
     )
     args.add_argument(
+        "--data_config",
+        default=None,
+        type=str,
+        help="[optional] datasets config file path (default: None, data is taken from the main config)",
+    )
+    args.add_argument(
         "-r",
         "--resume",
         default=None,

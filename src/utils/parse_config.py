@@ -74,6 +74,10 @@ class ConfigParser:
         if args.config and resume:
             # update new config for fine-tuning
             config.update(read_json(args.config))
+        
+        # if a separate data config was passed, load it and override/insert under "data"
+        if getattr(args, "data_config", None):
+            config["data"] = read_json(Path(args.data_config))
 
         # parse custom cli options into dictionary
         modification = {
