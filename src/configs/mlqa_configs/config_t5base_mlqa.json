@@ -1,0 +1,257 @@
+{
+  "name": "T5_CL_summarization",
+  "n_gpu": 1,
+  "preprocessing": {},
+  "model": {
+      "type": "T5forSummarization",
+      "args": {
+        "model_name": "t5-base",
+        "cache_dir": "cache/",
+        "max_length": 512
+      }
+  },
+  "data": {
+    "train": {
+      "batch_size": 16,
+      "num_workers": 5,
+      "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": true,
+      "mixed_dataset": {
+        "type": "MixedSequentialDataset",
+        "args": {
+          "sequential_mixing_rate": 0.0,
+          "base_mixing_rate": 0.0
+        }
+      },
+      "datasets": [
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.en.en", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "train",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        },
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.de.de", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "train",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        },
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.es.es", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "train",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        },
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.ar.ar", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "train",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        },
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.zh.zh", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "train",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        },
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.vi.vi", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "train",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        },
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.hi.hi", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "train",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        }
+      ]
+    },
+    "val.en.en": {
+      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.en.en", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "val",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        }
+      ]
+    },
+    "val.de.de": {
+      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.de.de", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "val",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        }
+      ]
+    },
+    "val.es.es": {
+      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.es.es", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "val",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        }
+      ]
+    },
+    "val.ar.ar": {
+      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.ar.ar", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "val",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        }
+      ]
+    },
+    "val.zh.zh": {
+      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.zh.zh", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "val",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        }
+      ]
+    },
+    "val.vi.vi": {
+      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.vi.vi", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "val",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        }
+      ]
+    },
+    "val.hi.hi": {
+      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "datasets": [
+        {
+          "type": "MLQAHuggingFaceDataset",
+          "args": {
+            "name": "mlqa.hi.hi", "shuffle": true, "shuffle_seed": 52,
+            "split_train_val_test": true, "split_random_state": 42, "split": "val",
+            "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+            "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          }
+        }
+      ]
+    },
+    "val_C4": {
+      "batch_size": 32, "num_workers": 5, "max_length": 256,
+      "tokenizer_name": ["T5Tokenizer", "t5-base"],
+      "use_mixed_dataset": false,
+      "t5_mlm_masking": true,
+      "datasets": [
+        {
+          "type": "HuggingFaceDataset",
+          "args": {
+            "path": "allenai/c4",
+            "streaming": false,
+            "split": "validation",
+            "data_files": {"validation": "en/c4-validation.00000-of-00008.json.gz"},
+            "max_samples": 1000
+          }
+        }
+      ]
+    }
+  },
+  "optimizer": {
+    "type": "AdamW",
+    "args": {
+      "lr": 5e-4,
+      "betas": [0.9, 0.95],
+      "weight_decay": 1e-5
+    }
+  },
+  "metrics": [
+  ],
+  "lr_scheduler": {
+    "type": "ExponentialLR",
+    "args": {
+      "gamma": 1.0
+    }
+  },
+  "loss": {
+    "type": "CrossEntropyLoss",
+    "args": {}
+  },
+  "trainer": {
+    "epochs": 9,
+    "eval_frequency": 1,
+    "first_epoch_eval_only": true,
+    "save_dir": "saved/",
+    "save_period": 60,
+    "verbosity": 2,
+    "monitor": "min loss",
+    "visualize": "wandb",
+    "wandb_project": "nlp-cl-project",
+    "wandb_run_name": "MATH-1e-24k T5b Mix=0.1+0.1",
+    "grad_norm_clip": 100.0
+  }
+}
