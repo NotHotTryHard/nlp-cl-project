@@ -165,7 +165,7 @@ class Trainer(BaseTrainer):
         if hasattr(self.model, "enable_extra_loss"):
             self.model.enable_extra_loss()
 
-        self.optimzer.zero_grad()
+        self.optimizer.zero_grad()
 
         for batch_idx, batch in enumerate(
                 tqdm(self.train_dataloader, desc="train", total=self.len_epoch)
@@ -283,6 +283,10 @@ class Trainer(BaseTrainer):
 
 
     def process_batch(self, batch, is_train: bool, metrics_tracker: MetricTracker, batch_idx: int = 0):
+        # zero grad if made a step on previous batch
+        if self.grad_accum_steps == 1 or (batch_idx) % self.grad_accum_steps == 0:
+            self.optimizer.zero_grad()
+
         batch = self.move_batch_to_device(batch, self.device)
         
 #         with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
@@ -312,7 +316,6 @@ class Trainer(BaseTrainer):
             if self.grad_accum_steps == 1 or (batch_idx + 1) % self.grad_accum_steps == 0:
                 self._clip_grad_norm()
                 self.optimizer.step()
-                self.optimizer.zero_grad()
         
         elif self.perform_generative_eval:
             inputs, target, preds = self.model._generative_step(batch)

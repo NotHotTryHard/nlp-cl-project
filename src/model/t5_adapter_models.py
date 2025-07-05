@@ -10,7 +10,7 @@ from src.model.t5model import T5forSummarization
 
 class T5LoRA(T5forSummarization, LoRAModelBase):
     def __init__(self, t5_config, lora_config, **cfg):
-        super.__init__(**t5_config)
+        super().__init__(**t5_config)
         self.init_lora(lora_config, **cfg)
         
     def check_module(self, name, module):
