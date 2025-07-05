@@ -51,13 +51,14 @@
     "epochs": 35,
     "eval_frequency": 1,
     "first_epoch_eval_only": true,
+    "grad_norm_clip": 100.0,
+    "grad_accum_steps": 4,
     "save_dir": "saved/",
     "save_period": 60,
     "verbosity": 2,
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single SVDLoRA Reinit no-QR MLQA 5e",
-    "grad_norm_clip": 100.0
+    "wandb_run_name": "Single SVDLoRA Reinit no-QR MLQA 5e bs2+ga4"
   }
 }

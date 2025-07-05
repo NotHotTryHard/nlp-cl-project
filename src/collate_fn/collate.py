@@ -117,7 +117,6 @@ class CollateClass:
         )
 
         input_ids = group_texts(input_ids, expanded_inputs_length)
-        
         batch = {"input_ids": np.array(input_ids)}
         
         mlm_data_collator = FlaxDataCollatorForT5MLM(
@@ -129,7 +128,15 @@ class CollateClass:
             pad_token_id=self.tokenizer.pad_token_id,
             decoder_start_token_id=self.decoder_start_token_id
         )
-        
+
+        # def pad_numpy_to_max_length(ids, max_length):
+        #     pad_size = max_length - ids.shape[-1]
+        #     pad_id = self.tokenizer.pad_token_id
+        #     return np.pad(ids, ((0, 0), (0, pad_size)), mode="constant", constant_values=pad_id)
+
+        # if batch["input_ids"].shape[-1] < mlm_data_collator.input_length:
+        #     batch["input_ids"] = pad_numpy_to_max_length(batch["input_ids"], mlm_data_collator.input_length)
+
         batch = mlm_data_collator(batch)
         for k, v in batch.items():
             batch[k] = torch.tensor(v)

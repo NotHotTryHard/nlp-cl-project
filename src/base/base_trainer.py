@@ -32,6 +32,8 @@ class BaseTrainer:
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
 
+        self.grad_accum_steps = self.config["trainer"].get("grad_accum_steps", 1)
+
         # for interrupt saving
         self._last_epoch = 0
 
