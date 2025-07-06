@@ -102,7 +102,7 @@ class MLQAHuggingFaceDataset(TorchDataset):
                 item["input"] = inputs
                 item["target"] = labels
             else:
-                full_text = inputs + " " + labels
+                full_text = inputs + labels
                 item["input"] = full_text
                 item["target"] = full_text
             items.append(item)

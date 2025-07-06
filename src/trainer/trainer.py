@@ -172,7 +172,8 @@ class Trainer(BaseTrainer):
         ):
             try:
                 batch = self.process_batch(
-                    batch,
+                    batch=batch,
+                    epoch=epoch,
                     batch_idx=batch_idx,
                     is_train=True,
                     metrics_tracker=self.train_metrics
@@ -256,9 +257,11 @@ class Trainer(BaseTrainer):
         check_cuda_memory()
 
         with torch.no_grad():
-            for batch in tqdm(dataloader, desc=part, total=len(dataloader)):
+            for batch_idx, batch in tqdm(enumerate(dataloader), desc=part, total=len(dataloader)):
                 batch = self.process_batch(
-                    batch,
+                    batch=batch,
+                    epoch=epoch,
+                    batch_idx=batch_idx,
                     is_train=False,
                     metrics_tracker=self.evaluation_metrics
                 )
@@ -282,19 +285,12 @@ class Trainer(BaseTrainer):
         return self.evaluation_metrics.result()
 
 
-    def process_batch(self, batch, is_train: bool, metrics_tracker: MetricTracker, batch_idx: int = 0):
+    def process_batch(self, batch, epoch=0, batch_idx=0, is_train=False, metrics_tracker: MetricTracker = None):
         # zero grad if made a step on previous batch
         if self.grad_accum_steps == 1 or (batch_idx) % self.grad_accum_steps == 0:
             self.optimizer.zero_grad()
 
         batch = self.move_batch_to_device(batch, self.device)
-        
-#         with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
-        # batch["logits"] = self.model(batch["indices"][:, :-1])
-        # batch["loss"] = self.criterion(
-        #     batch["logits"].transpose(1, 2),
-        #     batch["indices"][:, 1:]
-        # )
         batch["loss"] = self.model(batch)
         metrics_tracker.update("loss", batch["loss"].item())
 
@@ -304,12 +300,6 @@ class Trainer(BaseTrainer):
 
             metrics_tracker.update("extra_loss", extra_loss.item())
             metrics_tracker.update("total_loss", batch["loss"].item())
-        # elif hasattr(self.model, 'calc_extra_loss'):
-        #     extra_loss = self.model.calc_extra_loss()
-        #     metrics_tracker.update("extra_loss", self.extra_loss.item())
-        #     metrics_tracker.update("loss", batch["loss"].item())
-        #     batch["loss"] = batch["loss"] + self.extra_loss
-        #     metrics_tracker.update("total_loss", batch["loss"].item())
 
         if is_train:
             batch["loss"].backward()
@@ -318,9 +308,21 @@ class Trainer(BaseTrainer):
                 self.optimizer.step()
         
         elif self.perform_generative_eval:
-            inputs, target, preds = self.model._generative_step(batch)
-            batch['inputs'], batch['target'], batch['preds'] = inputs, target, preds
-            
+            inputs, targets, preds = self.model._generative_step(batch)
+            batch["inputs"], batch["target"], batch["preds"] = inputs, targets, preds
+            if batch_idx == 0:
+                full_text_inputs = batch["input_ids"] == batch["labels"]
+
+                for i, (input, target, pred) in enumerate(zip(inputs, targets, preds)):
+                    text = input
+                    if not full_text_inputs:
+                        text = input + target
+
+                    self._log_inference_as_table(
+                        epoch, text, pred,
+                        name=f"sample_{i}"
+                    )
+        
         for met in self.metrics:
             if (not is_train) or self._compute_on_train(met):
                 res = met(self.model, batch)

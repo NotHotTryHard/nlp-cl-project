@@ -92,31 +92,32 @@ def main(config):
 if __name__ == "__main__":
     args = argparse.ArgumentParser(description="PyTorch Template")
     args.add_argument(
-        "-c",
-        "--config",
-        default=None,
-        type=str,
+        "-c", "--config", default=None, type=str,
         help="config file path (default: None)",
     )
     args.add_argument(
-        "--data_config",
-        default=None,
-        type=str,
+        "--data_config", default=None, type=str,
         help="[optional] datasets config file path (default: None, data is taken from the main config)",
     )
     args.add_argument(
-        "-r",
-        "--resume",
-        default=None,
-        type=str,
+        "-r", "--resume", default=None, type=str,
         help="path to latest checkpoint (default: None)",
     )
     args.add_argument(
-        "-d",
-        "--device",
-        default=None,
-        type=str,
+        "-d", "--device", default=None, type=str,
         help="indices of GPUs to enable (default: all)",
+    )
+    args.add_argument(
+        "--bs", "--batch_size", default=None, type=int,
+        help="train batch size (default: None)",
+    )
+    args.add_argument(
+        "-t", "--task_type", default=None, type=str,
+        help='task type for --val_batch_size option to work, supported: ["math", "mlqa"]',
+    )
+    args.add_argument(
+        "--vbs", "--val_batch_size", default=None, type=int,
+        help="batch size for all ~~hardcoded by task type~~ val datasets (default: None)",
     )
 
     # custom cli options to modify configuration from default values given in json file.
@@ -126,8 +127,30 @@ if __name__ == "__main__":
             ["--lr", "--learning_rate"], type=float, target="optimizer;args;lr"
         ),
         CustomArgs(
-            ["--bs", "--batch_size"], type=int, target="data_loader;args;batch_size"
-        ),
+            ["--bs", "--batch_size"], type=int, target="data;train;batch_size"
+        )
     ]
+
+    if args.task_type is not None:
+        if args.task_type == "math":
+            hardcoded_val_names = [
+                "val_add_or_sub", "val_add_or_sub_in_base", "val_add_or_sub_multiple",
+                "val_div", "val_mixed", "val_mul", "val_mul_div_multiple",
+                "val_nearest_integer_root", "val_simplify_surd"
+            ]
+        elif args.task_type == "mlqa":
+            hardcoded_val_names = [
+                "val.en.en", "val.de.de", "val.es.es", "val.ar.ar",
+                "val.zh.zh", "val.vi.vi", "val.hi.hi"
+            ]
+        hardcoded_val_names.append("val_C4")
+
+        for val_name in hardcoded_val_names:
+            options.append(CustomArgs(
+                ["--vbs", "--val_batch_size"],
+                type=int,
+                target=f"data;{val_name};batch_size"
+            ))
+
     config = ConfigParser.from_args(args, options)
     main(config)
