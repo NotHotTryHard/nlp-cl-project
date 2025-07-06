@@ -143,7 +143,7 @@ if __name__ == "__main__":
                 "val.en.en", "val.de.de", "val.es.es", "val.ar.ar",
                 "val.zh.zh", "val.vi.vi", "val.hi.hi"
             ]
-        hardcoded_val_names.append("val_C4")
+        # hardcoded_val_names.append("val_C4")
 
         for val_name in hardcoded_val_names:
             options.append(CustomArgs(
