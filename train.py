@@ -127,31 +127,24 @@ if __name__ == "__main__":
             ["--lr", "--learning_rate"], type=float, target="optimizer;args;lr"
         ),
         CustomArgs(
-            ["--bs", "--batch_size"], type=int, target="data;train;batch_size"
+            ["--batch_size"], type=int, target="data;train;batch_size"
+        ),
+        CustomArgs(
+            ["--val_batch_size"], type=int, target=None
         )
     ]
 
-    parsed_arg = args.parse_args()
-    if parsed_arg.task_type and parsed_arg.val_batch_size:
-        if parsed_arg.task_type == "math":
-            hardcoded_val_names = [
-                "val_add_or_sub", "val_add_or_sub_in_base", "val_add_or_sub_multiple",
-                "val_div", "val_mixed", "val_mul", "val_mul_div_multiple",
-                "val_nearest_integer_root", "val_simplify_surd"
-            ]
-        elif parsed_arg.task_type == "mlqa":
-            hardcoded_val_names = [
-                "val.en.en", "val.de.de", "val.es.es", "val.ar.ar",
-                "val.zh.zh", "val.vi.vi", "val.hi.hi"
-            ]
-        # hardcoded_val_names.append("val_C4")
+    hardcoded_val_names = {
+        "math": [
+            "val_add_or_sub", "val_add_or_sub_in_base", "val_add_or_sub_multiple",
+            "val_div", "val_mixed", "val_mul", "val_mul_div_multiple",
+            "val_nearest_integer_root", "val_simplify_surd"
+        ],
+        "mlqa": [
+            "val.en.en", "val.de.de", "val.es.es", "val.ar.ar",
+            "val.zh.zh", "val.vi.vi", "val.hi.hi"
+        ]
+    }
 
-        for val_name in hardcoded_val_names:
-            options.append(CustomArgs(
-                ["--vbs", "--val_batch_size"],
-                type=int,
-                target=f"data;{val_name};batch_size"
-            ))
-
-    config = ConfigParser.from_args(args, options)
+    config = ConfigParser.from_args(args, options, hardcoded_val_names)
     main(config)

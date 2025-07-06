@@ -49,7 +49,7 @@ class ConfigParser:
         self.log_levels = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
 
     @classmethod
-    def from_args(cls, args, options=""):
+    def from_args(cls, args, options="", hardcoded_val_names={}):
         """
         Initialize this class from some cli arguments. Used in train, test.
         """
@@ -78,6 +78,11 @@ class ConfigParser:
         # if a separate data config was passed, load it and override/insert under "data"
         if getattr(args, "data_config", None):
             config["data"] = read_json(Path(args.data_config))
+        
+        # change all val splits batch sizes:
+        if args.task_type and args.val_batch_size:
+            for val_name in hardcoded_val_names[args.task_type]:
+                config.config["data"][val_name]["batch_size"] = args.val_batch_size
 
         # parse custom cli options into dictionary
         modification = {
