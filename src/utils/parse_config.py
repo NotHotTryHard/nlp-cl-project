@@ -82,11 +82,12 @@ class ConfigParser:
         # change all val splits batch sizes:
         if args.task_type and args.val_batch_size:
             for val_name in hardcoded_val_names[args.task_type]:
-                config.config["data"][val_name]["batch_size"] = args.val_batch_size
+                config["data"][val_name]["batch_size"] = args.val_batch_size
 
         # parse custom cli options into dictionary
         modification = {
-            opt.target: getattr(args, _get_opt_name(opt.flags)) for opt in options
+            opt.target: getattr(args, _get_opt_name(opt.flags))
+            for opt in options if opt.target is not None
         }
         return cls(config, resume, modification)
 
