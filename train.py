@@ -131,14 +131,15 @@ if __name__ == "__main__":
         )
     ]
 
-    if args.task_type is not None:
-        if args.task_type == "math":
+    parsed_arg = args.parse_args()
+    if parsed_arg.task_type and parsed_arg.val_batch_size:
+        if parsed_arg.task_type == "math":
             hardcoded_val_names = [
                 "val_add_or_sub", "val_add_or_sub_in_base", "val_add_or_sub_multiple",
                 "val_div", "val_mixed", "val_mul", "val_mul_div_multiple",
                 "val_nearest_integer_root", "val_simplify_surd"
             ]
-        elif args.task_type == "mlqa":
+        elif parsed_arg.task_type == "mlqa":
             hardcoded_val_names = [
                 "val.en.en", "val.de.de", "val.es.es", "val.ar.ar",
                 "val.zh.zh", "val.vi.vi", "val.hi.hi"
