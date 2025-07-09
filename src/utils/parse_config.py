@@ -79,9 +79,14 @@ class ConfigParser:
         if getattr(args, "data_config", None):
             config["data"] = read_json(Path(args.data_config))
         
-        # change all val splits batch sizes:
+        # report train batch_size
+        if args.batch_size:
+            print(f'Changed train batch_size to {args.batch_size}')
+
+        # change all val splits batch_sizes:
         if args.task_type and args.val_batch_size:
             for val_name in hardcoded_val_names[args.task_type]:
+                print(f'Changed {val_name} validation batch_size to {args.val_batch_size}') 
                 config["data"][val_name]["batch_size"] = args.val_batch_size
 
         # parse custom cli options into dictionary
