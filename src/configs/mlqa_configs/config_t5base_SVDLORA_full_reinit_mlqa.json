@@ -6,7 +6,7 @@
     "type": "T5SVDLoRA",
     "args": {
       "t5_config": {
-        "model_name": "t5-base",
+        "model_name": "mt5-base",
         "cache_dir": "cache/",
         "max_length": 512
       },
@@ -59,6 +59,6 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single SVDLoRA Reinit no-QR MLQA 5e bs2+ga4"
+    "wandb_run_name": "[MLQA] mT5 Single SVDLoRA Reinit no-QR 5e bs2+ga4"
   }
 }

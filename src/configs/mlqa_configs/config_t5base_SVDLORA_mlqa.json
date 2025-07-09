@@ -6,9 +6,9 @@
     "type": "T5SVDLoRA",
     "args": {
       "t5_config": {
-        "model_name": "t5-base",
+        "model_name": "mt5-base",
         "cache_dir": "cache/",
-        "max_length": 512
+        "max_length": 1024
       },
         "svd_lora_config": {
           "rank": 4,
@@ -59,6 +59,6 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single SVDLoRA MLQA 5e bs2+ga4"
+    "wandb_run_name": "[MLQA] mT5 Single SVDLoRA 5e bs2+ga4"
   }
 }

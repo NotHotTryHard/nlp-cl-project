@@ -4,7 +4,7 @@
     "batch_size": 2,
     "num_workers": 5,
     "max_length": 1024,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": true,
     "mixed_dataset": {
       "type": "MixedSequentialDataset",
@@ -20,7 +20,7 @@
           "name": "mlqa.en.en", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       },
       {
@@ -29,7 +29,7 @@
           "name": "mlqa.de.de", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       },
       {
@@ -38,7 +38,7 @@
           "name": "mlqa.es.es", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       },
       {
@@ -47,7 +47,7 @@
           "name": "mlqa.ar.ar", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       },
       {
@@ -56,7 +56,7 @@
           "name": "mlqa.zh.zh", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       },
       {
@@ -65,7 +65,7 @@
           "name": "mlqa.vi.vi", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       },
       {
@@ -74,14 +74,14 @@
           "name": "mlqa.hi.hi", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       }
     ]
   },
   "val.en.en": {
     "batch_size": 4, "num_workers": 5, "max_length": 1024,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
       {
@@ -90,14 +90,14 @@
           "name": "mlqa.en.en", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       }
     ]
   },
   "val.de.de": {
     "batch_size": 4, "num_workers": 5, "max_length": 1024,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
       {
@@ -106,14 +106,14 @@
           "name": "mlqa.de.de", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       }
     ]
   },
   "val.es.es": {
     "batch_size": 4, "num_workers": 5, "max_length": 1024,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
       {
@@ -122,14 +122,14 @@
           "name": "mlqa.es.es", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       }
     ]
   },
   "val.ar.ar": {
     "batch_size": 4, "num_workers": 5, "max_length": 1024,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
       {
@@ -138,14 +138,14 @@
           "name": "mlqa.ar.ar", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       }
     ]
   },
   "val.zh.zh": {
     "batch_size": 4, "num_workers": 5, "max_length": 1024,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
       {
@@ -154,14 +154,14 @@
           "name": "mlqa.zh.zh", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       }
     ]
   },
   "val.vi.vi": {
     "batch_size": 4, "num_workers": 5, "max_length": 1024,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
       {
@@ -170,14 +170,14 @@
           "name": "mlqa.vi.vi", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       }
     ]
   },
   "val.hi.hi": {
     "batch_size": 4, "num_workers": 5, "max_length": 1024,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
       {
@@ -186,14 +186,14 @@
           "name": "mlqa.hi.hi", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
           "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
-          "filter_max_length": true, "max_length": 1024, "model_name": "t5-base"
+          "filter_max_length": true, "max_length": 1024, "model_name": "mt5-base"
         }
       }
     ]
   },
   "val_C4": {
     "batch_size": 32, "num_workers": 5, "max_length": 256,
-    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "tokenizer_name": ["MT5Tokenizer", "mt5-base"],
     "use_mixed_dataset": false,
     "t5_mlm_masking": true,
     "datasets": [
