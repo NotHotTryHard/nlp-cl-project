@@ -1,7 +1,7 @@
 
 {
   "train": {
-    "batch_size": 2,
+    "batch_size": 1,
     "num_workers": 5,
     "max_length": 1024,
     "tokenizer_name": ["MT5Tokenizer", "google/mt5-base"],
@@ -80,7 +80,7 @@
     ]
   },
   "val.en.en": {
-    "batch_size": 4, "num_workers": 5, "max_length": 1024,
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
     "tokenizer_name": ["MT5Tokenizer", "google/mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
@@ -96,7 +96,7 @@
     ]
   },
   "val.de.de": {
-    "batch_size": 4, "num_workers": 5, "max_length": 1024,
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
     "tokenizer_name": ["MT5Tokenizer", "google/mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
@@ -112,7 +112,7 @@
     ]
   },
   "val.es.es": {
-    "batch_size": 4, "num_workers": 5, "max_length": 1024,
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
     "tokenizer_name": ["MT5Tokenizer", "google/mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
@@ -128,7 +128,7 @@
     ]
   },
   "val.ar.ar": {
-    "batch_size": 4, "num_workers": 5, "max_length": 1024,
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
     "tokenizer_name": ["MT5Tokenizer", "google/mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
@@ -144,7 +144,7 @@
     ]
   },
   "val.zh.zh": {
-    "batch_size": 4, "num_workers": 5, "max_length": 1024,
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
     "tokenizer_name": ["MT5Tokenizer", "google/mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
@@ -160,7 +160,7 @@
     ]
   },
   "val.vi.vi": {
-    "batch_size": 4, "num_workers": 5, "max_length": 1024,
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
     "tokenizer_name": ["MT5Tokenizer", "google/mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
@@ -176,7 +176,7 @@
     ]
   },
   "val.hi.hi": {
-    "batch_size": 4, "num_workers": 5, "max_length": 1024,
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
     "tokenizer_name": ["MT5Tokenizer", "google/mt5-base"],
     "use_mixed_dataset": false,
     "datasets": [
