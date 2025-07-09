@@ -360,7 +360,7 @@ class Trainer(BaseTrainer):
         self.writer.add_table(
             table_name=name,
             data=[epoch, orig_text, predict],
-            columns=["epoch", "temp", "target", "predict"]
+            columns=["epoch", "target", "predict"]
         )
 
     @torch.no_grad()
