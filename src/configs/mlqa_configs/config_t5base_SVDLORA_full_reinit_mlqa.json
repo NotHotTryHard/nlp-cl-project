@@ -6,9 +6,9 @@
     "type": "T5SVDLoRA",
     "args": {
       "t5_config": {
-        "model_name": "mt5-base",
+        "model_name": "google/mt5-base",
         "cache_dir": "cache/",
-        "max_length": 512
+        "max_length": 1024
       },
         "svd_lora_config": {
           "rank": 4,
