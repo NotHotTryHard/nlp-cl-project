@@ -79,6 +79,12 @@ class ConfigParser:
         if getattr(args, "data_config", None):
             config["data"] = read_json(Path(args.data_config))
         
+        # if a modification config was passed, overwrite some fields
+        if getattr(args, "mod_config", None):
+            mod_config = read_json(args.mod_config)
+            flattened_mod_config = flatten_mods(mod_config, sep=";")
+            config = _update_config(config, flattened_mod_config)
+        
         # report train batch_size
         if args.bs:
             print(f'Changed train batch_size to {args.bs}')
@@ -200,3 +206,14 @@ def _set_by_path(tree, keys, value):
 def _get_by_path(tree, keys):
     """Access a nested object in tree by sequence of keys."""
     return reduce(getitem, keys, tree)
+
+def flatten_mods(nested, parent_key="", sep=";"):
+    """Turn a nested dict like into depth-one dict with fields merged via sep"""
+    flat = {}
+    for k, v in nested.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, dict):
+            flat.update(flatten_mods(v, new_key, sep=sep))
+        else:
+            flat[new_key] = v
+    return flat

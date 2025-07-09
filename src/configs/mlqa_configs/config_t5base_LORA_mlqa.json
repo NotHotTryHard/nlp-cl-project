@@ -52,6 +52,7 @@
     "first_epoch_eval_only": true,
     "grad_norm_clip": 100.0,
     "grad_accum_steps": 4,
+    "mixed_precision": "no",
     "save_dir": "saved/",
     "save_period": 60,
     "verbosity": 2,
