@@ -94,6 +94,10 @@ class WanDBWriter:
         print(table_name)
         for ndx, row in self.tables[table_name].iterrows():
             print(ndx, row)
+        
+        self.wandb.log({
+            self._scalar_name(table_name): self.tables[table_name]
+        }, step=self.step)
 
     def log_tables(self):
         for table_name, table in self.tables.items():

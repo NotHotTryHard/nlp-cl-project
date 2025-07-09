@@ -156,7 +156,7 @@ class ExactMatch_MLQAMetric(BaseMetric):
         exact_match = 0.0
         total = len(predictions)
         for pred, answer, lang in zip(predictions, answers, langs):
-            exact_match += metric_max_over_ground_truths(exact_match_score, pred, answer, lang)
+            exact_match += metric_max_over_ground_truths(exact_match_score, pred, [answer], lang)
         exact_match = exact_match / total
         return exact_match
 
@@ -181,6 +181,6 @@ class F1_MLQAMetric(BaseMetric):
         f1 = 0.0
         total = len(predictions)
         for pred, answer, lang in zip(predictions, answers, langs):
-            f1 += metric_max_over_ground_truths(f1_score, pred, answer, lang)
+            f1 += metric_max_over_ground_truths(f1_score, pred, [answer], lang)
         f1 = f1 / total
         return f1
