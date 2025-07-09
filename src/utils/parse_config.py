@@ -80,8 +80,8 @@ class ConfigParser:
             config["data"] = read_json(Path(args.data_config))
         
         # report train batch_size
-        if args.batch_size:
-            print(f'Changed train batch_size to {args.batch_size}')
+        if args.bs:
+            print(f'Changed train batch_size to {args.bs}')
 
         # change all val splits batch_sizes:
         if args.task_type and args.val_batch_size:
