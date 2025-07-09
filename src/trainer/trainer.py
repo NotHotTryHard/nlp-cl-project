@@ -64,6 +64,12 @@ class Trainer(BaseTrainer):
         self.evaluation_dataloaders = {k: v for k, v in dataloaders.items() if k != "train"}
         self.log_step = 50
 
+        self.model, self.optimizer, self.train_dataloader, self.lr_scheduler = self.accelerator.prepare(
+            self.model, self.optimizer, self.train_dataloader, self.lr_scheduler
+        )
+        for key, eval_dataloader in self.evaluation_dataloaders.items():
+            self.evaluation_dataloaders[key] = self.accelerator.prepare(eval_dataloader) 
+
         self.train_metrics = MetricTracker(
             "loss", "extra_loss", 'total_loss', "grad norm",
             *[m.name for m in self.metrics if self._compute_on_train(m)],
@@ -143,6 +149,7 @@ class Trainer(BaseTrainer):
             )
 
         if hasattr(self.model, "update_adapters"):
+            self.model = self.accelerator.unwrap_model(self.model)
             self.model.update_adapters(self.train_dataset.current_dataset)
 
             if changed_dataset:
@@ -150,6 +157,13 @@ class Trainer(BaseTrainer):
                 self.optimizer = self.config.init_obj(self.config["optimizer"], torch.optim, params)
                 self.lr_scheduler = self.config.init_obj(self.config["lr_scheduler"], torch.optim.lr_scheduler, self.optimizer)
                 print("Reinitialized optimizer and lr scheduler for new dataset!")
+                
+                self.model, self.optimizer, self.lr_scheduler = self.accelerator.prepare(
+                    self.model, self.optimizer, self.lr_scheduler
+                )
+            else:
+                self.model = self.accelerator.prepare(self.model)
+
 
         # move into update_adapters ?
         if self.config["model"].get("reinit_adapters", False) and hasattr(self.model, "reinit_adapters"):
@@ -302,7 +316,7 @@ class Trainer(BaseTrainer):
             metrics_tracker.update("total_loss", batch["loss"].item())
 
         if is_train:
-            batch["loss"].backward()
+            self.accelerator.backward(batch["loss"])
             if self.grad_accum_steps == 1 or (batch_idx + 1) % self.grad_accum_steps == 0:
                 self._clip_grad_norm()
                 self.optimizer.step()

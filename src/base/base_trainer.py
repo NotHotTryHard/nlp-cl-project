@@ -1,6 +1,7 @@
-from abc import abstractmethod
-
 import torch
+
+from abc import abstractmethod
+from accelerate import Accelerator
 from numpy import inf
 
 from src.base import BaseModel
@@ -32,6 +33,11 @@ class BaseTrainer:
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
 
+        mixed_precision = self.config["trainer"].get("mixed_precision", "no")
+        print(f"Training with mixed_precision = {mixed_precision} via accelerate!")
+        self.accelerator = Accelerator(mixed_precision=mixed_precision)
+
+        # TO-DO: move to accelerator
         self.grad_accum_steps = self.config["trainer"].get("grad_accum_steps", 1)
 
         # for interrupt saving
