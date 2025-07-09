@@ -311,7 +311,7 @@ class Trainer(BaseTrainer):
             inputs, targets, preds = self.model._generative_step(batch)
             batch["inputs"], batch["target"], batch["preds"] = inputs, targets, preds
             if batch_idx == 0:
-                full_text_inputs = batch["input_ids"] == batch["labels"]
+                full_text_inputs = (batch["input_ids"] == batch["labels"]).all()
 
                 for i, (input, target, pred) in enumerate(zip(inputs, targets, preds)):
                     text = input
