@@ -115,19 +115,16 @@ if __name__ == "__main__":
         "-t", "--task_type", default=None, type=str,
         help='task type for --val_batch_size option to work, supported: ["math", "mlqa"]',
     )
-    args.add_argument(
-        "--vbs", "--val_batch_size", default=None, type=int,
-        help="batch size for all ~~hardcoded by task type~~ val datasets (default: None)",
-    )
+    # args.add_argument(
+    #     "--vbs", "--val_batch_size", default=None, type=int,
+    #     help="batch size for all ~~hardcoded by task type~~ val datasets (default: None)",
+    # )
 
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs = collections.namedtuple("CustomArgs", "flags type target")
     options = [
         CustomArgs(
             ["--lr", "--learning_rate"], type=float, target="optimizer;args;lr"
-        ),
-        CustomArgs(
-            ["--batch_size"], type=int, target="data;train;batch_size"
         ),
         CustomArgs(
             ["--val_batch_size"], type=int, target=None
