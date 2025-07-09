@@ -6,9 +6,9 @@
     "type": "T5LoRA",
     "args": {
       "t5_config": {
-        "model_name": "t5-base",
+        "model_name": "google/mt5-base",
         "cache_dir": "cache/",
-        "max_length": 512
+        "max_length": 1024
       },
       "lora_config": {
         "rank": 4, 
@@ -58,6 +58,6 @@
     "monitor": "min loss",
     "visualize": "wandb",
     "wandb_project": "nlp-cl-project",
-    "wandb_run_name": "Single LoRA MLQA 5e bs2+ga4"
+    "wandb_run_name": "[MLQA] mT5 Single LoRA 5e bs2+ga4"
   }
 }
