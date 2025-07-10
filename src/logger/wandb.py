@@ -88,7 +88,7 @@ class WanDBWriter:
 
     def add_table(self, table_name, data, columns):
         if table_name not in self.tables:
-            self.tables[table_name] = self.wandb.Table(columns=columns)
+            self.tables[table_name] = self.wandb.Table(columns=columns, log_mode="MUTABLE")
 
         self.tables[table_name].add_data(*data)
         print(table_name)
