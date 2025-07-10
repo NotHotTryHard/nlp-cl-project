@@ -8,7 +8,8 @@
       "t5_config": {
         "model_name": "google/mt5-base",
         "cache_dir": "cache/",
-        "max_length": 1024
+        "max_length": 1024,
+        "max_new_tokens": 256
       },
       "lora_config": {
         "rank": 4, 

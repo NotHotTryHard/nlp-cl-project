@@ -83,7 +83,7 @@ class ConfigParser:
         if getattr(args, "mod_config", None):
             mod_config = read_json(args.mod_config)
             flattened_mod_config = flatten_mods(mod_config, sep=";")
-            config = _update_config(config, flattened_mod_config)
+            config = _update_config(config, flattened_mod_config, verbose=True)
         
         # report train batch_size
         if args.bs:
@@ -180,13 +180,15 @@ class ConfigParser:
 
 
 # helper functions to update config dict with custom cli options
-def _update_config(config, modification):
+def _update_config(config, modification, verbose=False):
     if modification is None:
         return config
 
     for k, v in modification.items():
         if v is not None:
             _set_by_path(config, k, v)
+            if verbose:
+                print(f"Overriding / adding keys={k} to the main config!")
     return config
 
 
@@ -200,8 +202,17 @@ def _get_opt_name(flags):
 def _set_by_path(tree, keys, value):
     """Set a value in a nested object in tree by sequence of keys."""
     keys = keys.split(";")
-    _get_by_path(tree, keys[:-1])[keys[-1]] = value
+    try:
+        _get_by_path(tree, keys[:-1])[keys[-1]] = value
+    except KeyError:
+        _set_new_field_by_path(tree, keys, value)
 
+def _set_new_field_by_path(tree, keys, value):
+    for k in keys[:-1]:
+        if k not in tree or not isinstance(tree[k], dict):
+            tree[k] = {}
+        tree = tree[k]
+    tree[keys[-1]] = value
 
 def _get_by_path(tree, keys):
     """Access a nested object in tree by sequence of keys."""

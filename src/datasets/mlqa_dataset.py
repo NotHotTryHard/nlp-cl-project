@@ -20,7 +20,7 @@ class MLQAHuggingFaceDataset(TorchDataset):
             model_type="enc-dec",
             filter_max_length=True,
             max_length=1024,
-            model_name="t5-base", # for tokenization in case of max-length filtering
+            model_name="mt5-base", # for tokenization in case of max-length filtering
             **kwargs
     ):
         super().__init__()
@@ -49,6 +49,24 @@ class MLQAHuggingFaceDataset(TorchDataset):
         self.val_size = val_size
         self.test_size = test_size
         self._train_test_split()
+        self.calc_max_lengths()
+
+    def calc_max_lengths(self):
+        max_ques_len = 0
+        max_ans_len = 0
+        for i, item in enumerate(self.dataset):
+            ques_ids = self.tokenizer(item["text"], truncation=False)["input_ids"]
+            ans_ids = self.tokenizer(item["answer"], truncation=False)["input_ids"]
+            if i % 1000 == 0:
+                print(f"QUESTION: {item['text']}")
+                print(f"ANSWER: {item['answer']}")
+            max_ques_len = max(len(ques_ids), max_ques_len)
+            max_ans_len = max(len(ans_ids), max_ans_len)
+
+        print(f"\nDATASET LANGUAGE: {self.lang}")
+        print(f"DATASET LENGTH: {len(self.dataset)}")
+        print(f"MAX QUESTION LENGTH IN MLQA DATASET: {max_ques_len}")
+        print(f"MAX ANSWER LENGTH IN MLQA DATASET: {max_ans_len}\n")
 
     def _train_test_split(self):
         train, val, test, train_plus_val = self.dataset, None, None, self.dataset
