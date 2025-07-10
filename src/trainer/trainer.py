@@ -283,14 +283,16 @@ class Trainer(BaseTrainer):
             self.writer.set_step(epoch * self.len_epoch, part)
             # self.writer.set_step((epoch * self.len_epoch) * self.train_dataloader.batch_size, part)
             self._log_scalars(self.evaluation_metrics)
+            if batch_idx == 0:
+                self._log_generations(batch, epoch, part)
         
-            if self.inference_on_evaluation and (part in self.inference_indices):
-                inference_predicts = self.model(self.inference_batch[part])
-                for ind, text, predict in zip (self.inference_indices[part], self.inference_texts, inference_predicts):
-                    self._log_inference_as_table(
-                        epoch, text, predict,
-                        name=f"sample_{ind}"
-                    )
+            # if self.inference_on_evaluation and (part in self.inference_indices):
+            #     inference_predicts = self.model(self.inference_batch[part])
+            #     for ind, text, predict in zip (self.inference_indices[part], self.inference_texts, inference_predicts):
+            #         self._log_inference_as_table(
+            #             epoch, text, predict,
+            #             name=f"sample_{ind}_{part}"
+            #         )
 
         # add histogram of model parameters to the tensorboard
         # for name, p in self.model.named_parameters():
@@ -298,6 +300,22 @@ class Trainer(BaseTrainer):
         
         return self.evaluation_metrics.result()
 
+    def _log_generations(self, batch, epoch, part):
+        inputs, targets, preds = batch["inputs"], batch["target"], batch["preds"]
+
+        full_text_inputs = False
+        if batch["input_ids"].shape == batch["labels"].shape:
+            full_text_inputs = (batch["input_ids"] == batch["labels"]).all()
+
+        for i, (input, target, pred) in enumerate(zip(inputs, targets, preds)):
+            text = input
+            if not full_text_inputs:
+                text = input + target
+
+            self._log_inference_as_table(
+                epoch, text, pred,
+                name=f"sample_{i}_{part}"
+            )
 
     def process_batch(self, batch, epoch=0, batch_idx=0, is_train=False, metrics_tracker: MetricTracker = None):
         # zero grad if made a step on previous batch
@@ -324,20 +342,6 @@ class Trainer(BaseTrainer):
         elif self.perform_generative_eval:
             inputs, targets, preds = self.model._generative_step(batch)
             batch["inputs"], batch["target"], batch["preds"] = inputs, targets, preds
-            if batch_idx == 0:
-                full_text_inputs = False
-                if batch["input_ids"].shape == batch["labels"].shape:
-                    full_text_inputs = (batch["input_ids"] == batch["labels"]).all()
-
-                for i, (input, target, pred) in enumerate(zip(inputs, targets, preds)):
-                    text = input
-                    if not full_text_inputs:
-                        text = input + target
-
-                    self._log_inference_as_table(
-                        epoch, text, pred,
-                        name=f"sample_{i}"
-                    )
         
         for met in self.metrics:
             if (not is_train) or self._compute_on_train(met):

@@ -91,12 +91,12 @@ class WanDBWriter:
             self.tables[table_name] = self.wandb.Table(columns=columns, log_mode="MUTABLE")
 
         self.tables[table_name].add_data(*data)
-        print(table_name)
-        for ndx, row in self.tables[table_name].iterrows():
-            print(ndx, row)
+        # print(table_name)
+        # for ndx, row in self.tables[table_name].iterrows():
+        #     print(ndx, row)
         
         self.wandb.log({
-            self._scalar_name(table_name): self.tables[table_name]
+            table_name: self.tables[table_name]
         }, step=self.step)
 
     def log_tables(self):
