@@ -311,9 +311,10 @@ class Trainer(BaseTrainer):
             text = input
             if not full_text_inputs:
                 text = input + target
+                target = text
 
             self._log_inference_as_table(
-                epoch, text, pred,
+                epoch, text, target, pred,
                 name=f"sample_{i}_{part}"
             )
 
@@ -376,11 +377,11 @@ class Trainer(BaseTrainer):
     def _log_text(self, text, name="text"):
         self.writer.add_text(name, text)
     
-    def _log_inference_as_table(self, epoch, orig_text, predict, name):
+    def _log_inference_as_table(self, epoch, question, answer, predict, name):
         self.writer.add_table(
             table_name=name,
-            data=[epoch, orig_text, predict],
-            columns=["epoch", "target", "predict"]
+            data=[epoch, question, answer, predict],
+            columns=["epoch", "question", "answer", "predict"]
         )
 
     @torch.no_grad()
