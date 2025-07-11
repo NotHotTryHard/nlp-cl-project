@@ -72,7 +72,7 @@ class WanDBWriter:
             self._scalar_name(scalar_name): self.wandb.Html(text)
         }, step=self.step)
 
-    def add_histogram(self, scalar_name, hist, bins=None):
+    def add_histogram(self, scalar_name, hist, bins=100):
         hist = hist.detach().cpu().numpy()
         np_hist = np.histogram(hist, bins=bins)
         if np_hist[0].shape[0] > 512:

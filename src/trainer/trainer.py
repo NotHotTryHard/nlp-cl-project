@@ -91,7 +91,7 @@ class Trainer(BaseTrainer):
         self.inference_on_evaluation = inference_on_evaluation
         self.inference_indices = inference_indices
 
-        if self.inference_on_evaluation:
+        if self.inference_on_evaluation and self.inference_indices is not None:
             self.inference_batch = defaultdict(dict)
             self.inference_texts = defaultdict(list)
 

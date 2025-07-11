@@ -1,0 +1,135 @@
+
+{
+  "train": {
+    "batch_size": 1,
+    "num_workers": 5,
+    "max_length": 1024,
+    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "use_mixed_dataset": true,
+    "mixed_dataset": {
+      "type": "MixedSequentialDataset",
+      "args": {
+        "sequential_mixing_rate": 0.0,
+        "base_mixing_rate": 0.0
+      }
+    },
+    "datasets": [
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+          "name": "mnli", "shuffle": true, "shuffle_seed": 52,
+          "split": "train", "model_type": "enc-dec"
+        }
+      },
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+          "name": "qqp", "shuffle": true, "shuffle_seed": 52,
+          "split": "train", "model_type": "enc-dec"
+        }
+      },
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+          "name": "rte", "shuffle": true, "shuffle_seed": 52,
+          "split": "train", "model_type": "enc-dec"
+        }
+      },
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+          "name": "sst-2", "shuffle": true, "shuffle_seed": 52,
+          "split": "train", "model_type": "enc-dec"
+        }
+      }
+    ]
+  },
+  "val_mnli_matched": {
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
+    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "use_mixed_dataset": false,
+    "datasets": [
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+            "name": "mnli", "shuffle": true, "shuffle_seed": 52,
+            "split": "validation_matched", "model_type": "enc-dec"
+        }
+      }
+    ]
+  },
+  "val_mnli_mismatched": {
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
+    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "use_mixed_dataset": false,
+    "datasets": [
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+            "name": "mnli", "shuffle": true, "shuffle_seed": 52,
+            "split": "validation_mismatched", "model_type": "enc-dec"
+        }
+      }
+    ]
+  },
+  "val_qqp": {
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
+    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "use_mixed_dataset": false,
+    "datasets": [
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+            "name": "qqp", "shuffle": true, "shuffle_seed": 52,
+            "split": "validation", "model_type": "enc-dec"
+        }
+      }
+    ]
+  },
+  "val_rte": {
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
+    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "use_mixed_dataset": false,
+    "datasets": [
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+            "name": "rte", "shuffle": true, "shuffle_seed": 52,
+            "split": "validation", "model_type": "enc-dec"
+        }
+      }
+    ]
+  },
+  "val_sst2": {
+    "batch_size": 2, "num_workers": 5, "max_length": 1024,
+    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "use_mixed_dataset": false,
+    "datasets": [
+      {
+        "type": "GLUEHuggingFaceDataset",
+        "args": {
+            "name": "sst-2", "shuffle": true, "shuffle_seed": 52,
+            "split": "validation", "model_type": "enc-dec"
+        }
+      }
+    ]
+  },
+  "val_C4": {
+    "batch_size": 32, "num_workers": 5, "max_length": 256,
+    "tokenizer_name": ["T5Tokenizer", "t5-base"],
+    "use_mixed_dataset": false,
+    "t5_mlm_masking": true,
+    "datasets": [
+      {
+        "type": "HuggingFaceDataset",
+        "args": {
+          "path": "allenai/c4",
+          "streaming": false,
+          "split": "validation",
+          "data_files": {"validation": "en/c4-validation.00000-of-00008.json.gz"},
+          "max_samples": 1000
+        }
+      }
+    ]
+  }
+}

@@ -43,6 +43,7 @@ class TensorboardWriter:
             "add_histogram",
             "add_pr_curve",
             "add_embedding",
+            "add_table"
         }
         self.tag_mode_exceptions = {"add_histogram", "add_embedding"}
         self.timer = datetime.now()
@@ -77,12 +78,22 @@ class TensorboardWriter:
             return wrapper
         else:
             # default action for returning methods defined in this class, set_step() for instance.
-            try:
-                attr = object.__getattr__(name)
-            except AttributeError:
-                raise AttributeError(
-                    "type object '{}' has no attribute '{}'".format(
-                        self.selected_module, name
-                    )
+            raise AttributeError(
+                "type object '{}' has no attribute '{}'".format(
+                    self.selected_module, name
                 )
-            return attr
+            )
+
+    def add_table(self, table_name, data, columns):
+        """
+        Add table data to tensorboard. Since tensorboard doesn't have native table support,
+        we'll log it as text for now.
+        """
+        if self.writer is not None:
+            # Convert table data to text format for tensorboard
+            table_text = f"Table: {table_name}\n"
+            table_text += " | ".join(columns) + "\n"
+            table_text += "-" * len(" | ".join(columns)) + "\n"
+            table_text += " | ".join(str(item) for item in data)
+            
+            self.writer.add_text(f"{table_name}/table", table_text, self.step)
