@@ -9,6 +9,7 @@ class GLUEHuggingFaceDataset(TorchDataset):
             split=None,
             shuffle=None,
             shuffle_seed=None,
+            max_samples=None,
             model_type="enc-dec",
             **kwargs
     ):
@@ -19,7 +20,8 @@ class GLUEHuggingFaceDataset(TorchDataset):
             streaming=streaming,
             split=split,
             shuffle=shuffle,
-            shuffle_seed=shuffle_seed
+            shuffle_seed=shuffle_seed,
+            max_samples=max_samples
         )
 
         self.task_name = name

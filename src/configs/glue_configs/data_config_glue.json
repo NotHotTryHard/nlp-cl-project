@@ -17,14 +17,14 @@
       {
         "type": "GLUEHuggingFaceDataset",
         "args": {
-          "name": "mnli", "shuffle": true, "shuffle_seed": 52,
+          "name": "mnli", "shuffle": true, "shuffle_seed": 52, "max_samples": 10000,
           "split": "train", "model_type": "enc-dec"
         }
       },
       {
         "type": "GLUEHuggingFaceDataset",
         "args": {
-          "name": "qqp", "shuffle": true, "shuffle_seed": 52,
+          "name": "qqp", "shuffle": true, "shuffle_seed": 52, "max_samples": 10000,
           "split": "train", "model_type": "enc-dec"
         }
       },
@@ -38,7 +38,7 @@
       {
         "type": "GLUEHuggingFaceDataset",
         "args": {
-          "name": "sst-2", "shuffle": true, "shuffle_seed": 52,
+          "name": "sst-2", "shuffle": true, "shuffle_seed": 52, "max_samples": 10000,
           "split": "train", "model_type": "enc-dec"
         }
       }
@@ -52,7 +52,7 @@
       {
         "type": "GLUEHuggingFaceDataset",
         "args": {
-            "name": "mnli", "shuffle": true, "shuffle_seed": 52,
+            "name": "mnli", "shuffle": true, "shuffle_seed": 52, "max_samples": 1000,
             "split": "validation_matched", "model_type": "enc-dec"
         }
       }
@@ -66,7 +66,7 @@
       {
         "type": "GLUEHuggingFaceDataset",
         "args": {
-            "name": "mnli", "shuffle": true, "shuffle_seed": 52,
+            "name": "mnli", "shuffle": true, "shuffle_seed": 52, "max_samples": 1000,
             "split": "validation_mismatched", "model_type": "enc-dec"
         }
       }
@@ -80,7 +80,7 @@
       {
         "type": "GLUEHuggingFaceDataset",
         "args": {
-            "name": "qqp", "shuffle": true, "shuffle_seed": 52,
+            "name": "qqp", "shuffle": true, "shuffle_seed": 52, "max_samples": 1000,
             "split": "validation", "model_type": "enc-dec"
         }
       }
