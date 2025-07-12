@@ -38,7 +38,7 @@
       {
         "type": "GLUEHuggingFaceDataset",
         "args": {
-          "name": "sst-2", "shuffle": true, "shuffle_seed": 52, "max_samples": 10000,
+          "name": "sst2", "shuffle": true, "shuffle_seed": 52, "max_samples": 10000,
           "split": "train", "model_type": "enc-dec"
         }
       }
@@ -108,7 +108,7 @@
       {
         "type": "GLUEHuggingFaceDataset",
         "args": {
-            "name": "sst-2", "shuffle": true, "shuffle_seed": 52,
+            "name": "sst2", "shuffle": true, "shuffle_seed": 52,
             "split": "validation", "model_type": "enc-dec"
         }
       }

@@ -1,4 +1,4 @@
-from allennlp.training.metrics import CategoricalAccuracy, F1Measure
+from sklearn.metrics import accuracy_score, f1_score
 from src.base.base_metric import BaseMetric
 
 class CategoricalAccuracy_GLUEMetric(BaseMetric):
@@ -8,7 +8,6 @@ class CategoricalAccuracy_GLUEMetric(BaseMetric):
         self.model_type = model_type
         self.requires_preds = True
         self.compute_on_train = False
-        self.metric = CategoricalAccuracy().get_metric(reset=False)
     
     def __call__(self, model, batch):
         # if ('answer' not in batch) or ('lang' not in batch):
@@ -16,7 +15,7 @@ class CategoricalAccuracy_GLUEMetric(BaseMetric):
         answers, predictions = batch['answer'], batch['preds']
         if self.model_type == "dec":
             predictions = [pred.split("answer:")[-1].strip() for pred in predictions]
-        return self.metric(predictions, answers)
+        return accuracy_score(answers, predictions)
     
 
 class F1_GLUEMetric(BaseMetric):
@@ -26,13 +25,13 @@ class F1_GLUEMetric(BaseMetric):
         self.model_type = model_type
         self.requires_preds = True
         self.compute_on_train = False
-        prc, rcl, f1 = F1Measure().get_metric(reset=False)
-        self.metric = f1
     
     def __call__(self, model, batch):
         # if ('answer' not in batch) or ('lang' not in batch):
             # return 0.0
-        answers, predictions = batch['answer'], batch['preds']
+        answers, predictions, task_name = batch['answer'], batch['preds'], batch['task_name']
+        if task_name not in ["qqp", "mrpc"]:
+            return 0.0
         if self.model_type == "dec":
             predictions = [pred.split("answer:")[-1].strip() for pred in predictions]
-        return self.metric(predictions, answers)
+        return f1_score(answers, predictions, average='macro')
