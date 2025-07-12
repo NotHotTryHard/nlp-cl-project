@@ -46,7 +46,7 @@ class GLUEHuggingFaceDataset(TorchDataset):
         return len(self.dataset)
 
     def map_sample_input(self, sample, prefix):
-        if self.task_name in ["ax", "mnli", "mnli_matched", "mnli_mismatched", "rte"]:
+        if self.task_name in ["ax", "mnli", "mnli_matched", "mnli_mismatched"]:
             inp = prefix + sample["premise"] + " hypothesis: " + sample["hypothesis"]
         elif self.task_name in ["cola", "sst2"]:
             inp = prefix + sample["sentence"]
@@ -74,13 +74,17 @@ class GLUEHuggingFaceDataset(TorchDataset):
                 labels = str(sample["label"])
             else:
                 labels = self.label_mappings[self.task_name][sample["label"]]
-
-            if self.model_type == "enc-dec":
-                items.append((inputs, labels))
-            else:
-                full_text = inputs + " " + labels
-                items.append((full_text, full_text))
             
+            item = {"text": inputs, "answer": labels, "task_name": self.task_name}
+            if self.model_type == "enc-dec":
+                item["input"] = inputs
+                item["target"] = labels
+            else:
+                full_text = inputs + labels
+                item["input"] = full_text
+                item["target"] = full_text
+            items.append(item)
+        
         self.dataset = items
 
     def __getitem__(self, idx):
@@ -168,12 +172,16 @@ class SuperGLUEHuggingFaceDataset(TorchDataset):
             else:
                 labels = self.label_mappings[self.task_name][sample["label"]]
 
+            item = {"text": inputs, "answer": labels, "task_name": self.task_name}
             if self.model_type == "enc-dec":
-                items.append((inputs, labels))
+                item["input"] = inputs
+                item["target"] = labels
             else:
-                full_text = inputs + " " + labels
-                items.append((full_text, full_text))
-            
+                full_text = inputs + labels
+                item["input"] = full_text
+                item["target"] = full_text
+            items.append(item)
+
         self.dataset = items
 
     def __getitem__(self, idx):

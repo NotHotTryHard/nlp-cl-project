@@ -10,8 +10,8 @@ class CategoricalAccuracy_GLUEMetric(BaseMetric):
         self.compute_on_train = False
     
     def __call__(self, model, batch):
-        # if ('answer' not in batch) or ('lang' not in batch):
-            # return 0.0
+        if ('answer' not in batch) or ('task_name' not in batch):
+            return 0.0
         answers, predictions = batch['answer'], batch['preds']
         if self.model_type == "dec":
             predictions = [pred.split("answer:")[-1].strip() for pred in predictions]
@@ -27,8 +27,8 @@ class F1_GLUEMetric(BaseMetric):
         self.compute_on_train = False
     
     def __call__(self, model, batch):
-        # if ('answer' not in batch) or ('lang' not in batch):
-            # return 0.0
+        if ('answer' not in batch) or ('task_name' not in batch):
+            return 0.0
         answers, predictions, task_name = batch['answer'], batch['preds'], batch['task_name']
         if task_name not in ["qqp", "mrpc"]:
             return 0.0
