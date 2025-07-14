@@ -91,9 +91,14 @@ class WanDBWriter:
             self.tables[table_name] = self.wandb.Table(columns=columns, log_mode="MUTABLE")
 
         self.tables[table_name].add_data(*data)
-        # print(table_name)
-        # for ndx, row in self.tables[table_name].iterrows():
-        #     print(ndx, row)
+
+        print("-" * 50)
+        print("TABLE_NAME:", table_name)
+        for ndx, row in self.tables[table_name].iterrows():
+            print(f"ROW:", ndx)
+            for col_name, col_value in row.items():
+                print(f"  {col_name}: {col_value}")
+        print("-" * 50)
         
         self.wandb.log({
             table_name: self.tables[table_name]
