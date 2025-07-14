@@ -22,7 +22,7 @@ class ExactMatch_MLQAMetric(BaseMetric):
                 answer = [answer]
             exact_match += metric_max_over_ground_truths(exact_match_score, pred, answer, lang) 
         exact_match = exact_match / total
-        return exact_match
+        return 100 * exact_match
 
     def __call__(self, model, batch):
         if ('answer' not in batch) or ('lang' not in batch):
@@ -55,7 +55,7 @@ class F1_MLQAMetric(BaseMetric):
                 answer = [answer]
             f1 += metric_max_over_ground_truths(f1_score, pred, answer, lang)
         f1 = f1 / total
-        return f1
+        return 100 * f1
     
     def __call__(self, model, batch):
         if ('answer' not in batch) or ('lang' not in batch):

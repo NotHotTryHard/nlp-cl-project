@@ -24,8 +24,7 @@ def map_to_labels(string_labels, task_name):
         task: {v: k for k, v in label_mappings[task].items()}
         for task in label_mappings
     }
-
-    return [reverse_label_mappings[task_name][label] for label in string_labels]
+    return [reverse_label_mappings[task_name].get(label, -1) for label in string_labels]
 
 def f1_score_with_invalid(targets, predictions):
   targets, predictions = np.asarray(targets), np.asarray(predictions)
@@ -33,7 +32,7 @@ def f1_score_with_invalid(targets, predictions):
   invalid_idx_mask = np.logical_and(predictions != 0, predictions != 1)
   # For any prediction != 0 or 1, set it to the opposite of what the target is
   predictions[invalid_idx_mask] = 1 - targets[invalid_idx_mask]
-  return {"f1": f1_score(targets, predictions)}
+  return 100 * f1_score(targets, predictions)
 
 class CategoricalAccuracy_GLUEMetric(BaseMetric):
     def __init__(self, name=None, model_type="enc-dec", *args, **kwargs):
@@ -53,7 +52,6 @@ class CategoricalAccuracy_GLUEMetric(BaseMetric):
         answers = map_to_labels(answers, batch['task_name'][0])
         return accuracy_score(answers, predictions)
     
-
 class F1_GLUEMetric(BaseMetric):
     def __init__(self, name=None, model_type="enc-dec", *args, **kwargs):
         super().__init__(name, args, kwargs)
@@ -72,4 +70,4 @@ class F1_GLUEMetric(BaseMetric):
             predictions = [pred.split("answer:")[-1].strip() for pred in predictions]
         predictions = map_to_labels(predictions, batch['task_name'][0])
         answers = map_to_labels(answers, batch['task_name'][0])
-        return f1_score(answers, predictions, average='macro')
+        return f1_score_with_invalid(answers, predictions)
