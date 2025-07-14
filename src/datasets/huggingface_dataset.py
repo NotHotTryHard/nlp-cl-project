@@ -16,11 +16,23 @@ class HuggingFaceDataset(TorchDataset):
             ):
         super().__init__()
 
+        # Filter kwargs to only include arguments that load_dataset expects
+        valid_load_dataset_kwargs = {}
+        load_dataset_valid_args = [
+            'revision', 'token', 'use_auth_token', 'trust_remote_code', 
+            'storage_options', 'streaming', 'num_proc', 'download_config',
+            'download_mode', 'verification_mode', 'keep_in_memory', 'save_infos'
+        ]
+        
+        for key, value in kwargs.items():
+            if key in load_dataset_valid_args:
+                valid_load_dataset_kwargs[key] = value
+
         if max_samples is not None:
             assert not streaming
             assert split is not None
 
-            dataset = load_dataset(path, name=name, split=split, data_files=data_files, **kwargs)
+            dataset = load_dataset(path, name=name, split=split, data_files=data_files, **valid_load_dataset_kwargs)
             if shuffle:
                 if shuffle_seed is not None:
                     dataset = dataset.shuffle(shuffle_seed)
@@ -35,7 +47,7 @@ class HuggingFaceDataset(TorchDataset):
                 streaming=streaming,
                 split=split,
                 data_files=data_files,
-                **kwargs
+                **valid_load_dataset_kwargs
             )
         
         self.streaming=streaming
