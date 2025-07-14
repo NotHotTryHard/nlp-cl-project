@@ -19,7 +19,7 @@
         "args": {
           "name": "mlqa.en.en", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       },
@@ -28,7 +28,7 @@
         "args": {
           "name": "mlqa.de.de", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       },
@@ -37,7 +37,7 @@
         "args": {
           "name": "mlqa.es.es", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       },
@@ -46,7 +46,7 @@
         "args": {
           "name": "mlqa.ar.ar", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       },
@@ -55,7 +55,7 @@
         "args": {
           "name": "mlqa.zh.zh", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       },
@@ -64,7 +64,7 @@
         "args": {
           "name": "mlqa.vi.vi", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       },
@@ -73,7 +73,7 @@
         "args": {
           "name": "mlqa.hi.hi", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "train",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       }
@@ -89,7 +89,7 @@
         "args": {
           "name": "mlqa.en.en", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       }
@@ -105,7 +105,7 @@
         "args": {
           "name": "mlqa.de.de", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       }
@@ -121,7 +121,7 @@
         "args": {
           "name": "mlqa.es.es", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       }
@@ -137,7 +137,7 @@
         "args": {
           "name": "mlqa.ar.ar", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       }
@@ -153,7 +153,7 @@
         "args": {
           "name": "mlqa.zh.zh", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       }
@@ -169,7 +169,7 @@
         "args": {
           "name": "mlqa.vi.vi", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       }
@@ -185,7 +185,7 @@
         "args": {
           "name": "mlqa.hi.hi", "shuffle": true, "shuffle_seed": 52,
           "split_train_val_test": true, "split_random_state": 42, "split": "val",
-          "model_type": "enc-dec", "val_size": 0.2, "test_size": 0.0,
+          "model_type": "enc-dec", "val_size": 0.1, "test_size": 0.0,
           "filter_max_length": true, "max_length": 1024, "model_name": "google/mt5-base"
         }
       }

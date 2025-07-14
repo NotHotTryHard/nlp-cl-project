@@ -9,6 +9,7 @@ class GLUEHuggingFaceDataset(TorchDataset):
             split=None,
             shuffle=None,
             shuffle_seed=None,
+            max_samples=None,
             model_type="enc-dec",
             **kwargs
     ):
@@ -19,7 +20,8 @@ class GLUEHuggingFaceDataset(TorchDataset):
             streaming=streaming,
             split=split,
             shuffle=shuffle,
-            shuffle_seed=shuffle_seed
+            shuffle_seed=shuffle_seed,
+            max_samples=max_samples
         )
 
         self.task_name = name
@@ -44,7 +46,7 @@ class GLUEHuggingFaceDataset(TorchDataset):
         return len(self.dataset)
 
     def map_sample_input(self, sample, prefix):
-        if self.task_name in ["ax", "mnli", "mnli_matched", "mnli_mismatched", "rte"]:
+        if self.task_name in ["ax", "mnli", "mnli_matched", "mnli_mismatched"]:
             inp = prefix + sample["premise"] + " hypothesis: " + sample["hypothesis"]
         elif self.task_name in ["cola", "sst2"]:
             inp = prefix + sample["sentence"]
@@ -72,13 +74,17 @@ class GLUEHuggingFaceDataset(TorchDataset):
                 labels = str(sample["label"])
             else:
                 labels = self.label_mappings[self.task_name][sample["label"]]
-
-            if self.model_type == "enc-dec":
-                items.append((inputs, labels))
-            else:
-                full_text = inputs + " " + labels
-                items.append((full_text, full_text))
             
+            item = {"text": inputs, "answer": labels, "task_name": self.task_name}
+            if self.model_type == "enc-dec":
+                item["input"] = inputs
+                item["target"] = labels
+            else:
+                full_text = inputs + labels
+                item["input"] = full_text
+                item["target"] = full_text
+            items.append(item)
+        
         self.dataset = items
 
     def __getitem__(self, idx):
@@ -132,9 +138,9 @@ class SuperGLUEHuggingFaceDataset(TorchDataset):
             inp = prefix + sample["premise"] + " hypothesis: " + sample["hypothesis"]
         elif self.task_name == "copa":
             pr, c1, c2, q = sample["premise"], sample["choice1"], sample["choice2"], sample["question"]
+            inp = prefix + pr + " question: " + q + " choice1: " + c1 + " choice2: " + c2
         elif self.task_name == "boolq":
             inp = prefix + "passage: " + sample["passage"] + " question: " + sample["question"]
-            inp = prefix + pr + " question: " + q + " choice1: " + c1 + " choice2: " + c2
         elif self.task_name == "multirc":
             inp = prefix + "paragraph:" + sample["paragraph"] + " question: " + sample["question"]
         elif self.task_name == "record":
@@ -166,12 +172,16 @@ class SuperGLUEHuggingFaceDataset(TorchDataset):
             else:
                 labels = self.label_mappings[self.task_name][sample["label"]]
 
+            item = {"text": inputs, "answer": labels, "task_name": self.task_name}
             if self.model_type == "enc-dec":
-                items.append((inputs, labels))
+                item["input"] = inputs
+                item["target"] = labels
             else:
-                full_text = inputs + " " + labels
-                items.append((full_text, full_text))
-            
+                full_text = inputs + labels
+                item["input"] = full_text
+                item["target"] = full_text
+            items.append(item)
+
         self.dataset = items
 
     def __getitem__(self, idx):

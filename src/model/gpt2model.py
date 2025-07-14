@@ -3,7 +3,7 @@ import torch.nn as nn
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 class GPT2forGeneration(nn.Module):
-    def __init__(self, model_name, cache_dir, max_length, output_hidden_states=True):
+    def __init__(self, model_name, cache_dir, max_length, max_new_tokens=None, output_hidden_states=True):
         super(GPT2forGeneration, self).__init__()
         # model_name can be "gpt2" for gpt2-small, or "gpt2-medium"
         self.model = GPT2LMHeadModel.from_pretrained(model_name, cache_dir=cache_dir)
@@ -14,6 +14,7 @@ class GPT2forGeneration(nn.Module):
         self.model.config.pad_token_id = self.tokenizer.pad_token_id
 
         self.max_length = max_length
+        self.max_new_tokens = max_new_tokens
         self.output_hidden_states = output_hidden_states
 
     def forward(self, batch):
@@ -89,7 +90,8 @@ class GPT2forGeneration(nn.Module):
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
             use_cache=True,
-            max_length=self.max_length,
+            # max_length=self.max_length,
+            max_new_tokens=self.max_new_tokens,
             num_beams=2,
             repetition_penalty=2.5,
             length_penalty=1.0,
@@ -109,7 +111,8 @@ class GPT2forGeneration(nn.Module):
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
             use_cache=True,
-            max_length=self.max_length,
+            # max_length=self.max_length,
+            max_new_tokens=self.max_new_tokens,
             repetition_penalty=2.5,
             length_penalty=1.0,
             early_stopping=True,

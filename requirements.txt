@@ -1,6 +1,6 @@
-torch==2.0.1
-torchvision==0.15.2
-numpy==1.26.4
+torch
+torchvision
+numpy
 tqdm
 tensorboard
 matplotlib
@@ -9,7 +9,7 @@ pandas
 datasets
 editdistance
 wandb
-torchaudio~=2.0.1
+torchaudio
 pillow
 
 sentencepiece
@@ -24,5 +24,9 @@ jsonlines
 rouge_score
 
 transformers
+accelerate
 datasets
 evaluate
+
+librosa
+scikit-learn

@@ -100,6 +100,10 @@ if __name__ == "__main__":
         help="[optional] datasets config file path (default: None, data is taken from the main config)",
     )
     args.add_argument(
+        "--mod_config", default=None, type=str,
+        help="[optional] path to modification config to overwrite some of main one's fields (default: None)",
+    )
+    args.add_argument(
         "-r", "--resume", default=None, type=str,
         help="path to latest checkpoint (default: None)",
     )

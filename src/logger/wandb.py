@@ -72,7 +72,7 @@ class WanDBWriter:
             self._scalar_name(scalar_name): self.wandb.Html(text)
         }, step=self.step)
 
-    def add_histogram(self, scalar_name, hist, bins=None):
+    def add_histogram(self, scalar_name, hist, bins=100):
         hist = hist.detach().cpu().numpy()
         np_hist = np.histogram(hist, bins=bins)
         if np_hist[0].shape[0] > 512:
@@ -88,12 +88,21 @@ class WanDBWriter:
 
     def add_table(self, table_name, data, columns):
         if table_name not in self.tables:
-            self.tables[table_name] = self.wandb.Table(columns=columns)
+            self.tables[table_name] = self.wandb.Table(columns=columns, log_mode="MUTABLE")
 
         self.tables[table_name].add_data(*data)
-        print(table_name)
+
+        print("-" * 50)
+        print("TABLE_NAME:", table_name)
         for ndx, row in self.tables[table_name].iterrows():
-            print(ndx, row)
+            print(f"ROW:", ndx)
+            for col_name, col_value in row.items():
+                print(f"  {col_name}: {col_value}")
+        print("-" * 50)
+        
+        self.wandb.log({
+            table_name: self.tables[table_name]
+        }, step=self.step)
 
     def log_tables(self):
         for table_name, table in self.tables.items():

@@ -64,6 +64,12 @@ class Trainer(BaseTrainer):
         self.evaluation_dataloaders = {k: v for k, v in dataloaders.items() if k != "train"}
         self.log_step = 50
 
+        self.model, self.optimizer, self.train_dataloader, self.lr_scheduler = self.accelerator.prepare(
+            self.model, self.optimizer, self.train_dataloader, self.lr_scheduler
+        )
+        for key, eval_dataloader in self.evaluation_dataloaders.items():
+            self.evaluation_dataloaders[key] = self.accelerator.prepare(eval_dataloader) 
+
         self.train_metrics = MetricTracker(
             "loss", "extra_loss", 'total_loss', "grad norm",
             *[m.name for m in self.metrics if self._compute_on_train(m)],
@@ -85,7 +91,7 @@ class Trainer(BaseTrainer):
         self.inference_on_evaluation = inference_on_evaluation
         self.inference_indices = inference_indices
 
-        if self.inference_on_evaluation:
+        if self.inference_on_evaluation and self.inference_indices is not None:
             self.inference_batch = defaultdict(dict)
             self.inference_texts = defaultdict(list)
 
@@ -143,6 +149,7 @@ class Trainer(BaseTrainer):
             )
 
         if hasattr(self.model, "update_adapters"):
+            self.model = self.accelerator.unwrap_model(self.model)
             self.model.update_adapters(self.train_dataset.current_dataset)
 
             if changed_dataset:
@@ -150,6 +157,13 @@ class Trainer(BaseTrainer):
                 self.optimizer = self.config.init_obj(self.config["optimizer"], torch.optim, params)
                 self.lr_scheduler = self.config.init_obj(self.config["lr_scheduler"], torch.optim.lr_scheduler, self.optimizer)
                 print("Reinitialized optimizer and lr scheduler for new dataset!")
+                
+                self.model, self.optimizer, self.lr_scheduler = self.accelerator.prepare(
+                    self.model, self.optimizer, self.lr_scheduler
+                )
+            else:
+                self.model = self.accelerator.prepare(self.model)
+
 
         # move into update_adapters ?
         if self.config["model"].get("reinit_adapters", False) and hasattr(self.model, "reinit_adapters"):
@@ -269,14 +283,16 @@ class Trainer(BaseTrainer):
             self.writer.set_step(epoch * self.len_epoch, part)
             # self.writer.set_step((epoch * self.len_epoch) * self.train_dataloader.batch_size, part)
             self._log_scalars(self.evaluation_metrics)
+            if batch_idx == 0:
+                self._log_generations(batch, epoch, part)
         
-            if self.inference_on_evaluation and (part in self.inference_indices):
-                inference_predicts = self.model(self.inference_batch[part])
-                for ind, text, predict in zip (self.inference_indices[part], self.inference_texts, inference_predicts):
-                    self._log_inference_as_table(
-                        epoch, text, predict,
-                        name=f"sample_{ind}"
-                    )
+            # if self.inference_on_evaluation and (part in self.inference_indices):
+            #     inference_predicts = self.model(self.inference_batch[part])
+            #     for ind, text, predict in zip (self.inference_indices[part], self.inference_texts, inference_predicts):
+            #         self._log_inference_as_table(
+            #             epoch, text, predict,
+            #             name=f"sample_{ind}_{part}"
+            #         )
 
         # add histogram of model parameters to the tensorboard
         # for name, p in self.model.named_parameters():
@@ -284,6 +300,23 @@ class Trainer(BaseTrainer):
         
         return self.evaluation_metrics.result()
 
+    def _log_generations(self, batch, epoch, part):
+        inputs, targets, preds = batch["inputs"], batch["target"], batch["preds"]
+
+        full_text_inputs = False
+        if batch["input_ids"].shape == batch["labels"].shape:
+            full_text_inputs = (batch["input_ids"] == batch["labels"]).all()
+
+        for i, (input, target, pred) in enumerate(zip(inputs, targets, preds)):
+            text = input
+            if not full_text_inputs:
+                text = input + target
+                target = text
+
+            self._log_inference_as_table(
+                epoch, text, target, pred,
+                name=f"sample_{i}_{part}"
+            )
 
     def process_batch(self, batch, epoch=0, batch_idx=0, is_train=False, metrics_tracker: MetricTracker = None):
         # zero grad if made a step on previous batch
@@ -302,7 +335,7 @@ class Trainer(BaseTrainer):
             metrics_tracker.update("total_loss", batch["loss"].item())
 
         if is_train:
-            batch["loss"].backward()
+            self.accelerator.backward(batch["loss"])
             if self.grad_accum_steps == 1 or (batch_idx + 1) % self.grad_accum_steps == 0:
                 self._clip_grad_norm()
                 self.optimizer.step()
@@ -310,18 +343,6 @@ class Trainer(BaseTrainer):
         elif self.perform_generative_eval:
             inputs, targets, preds = self.model._generative_step(batch)
             batch["inputs"], batch["target"], batch["preds"] = inputs, targets, preds
-            if batch_idx == 0:
-                full_text_inputs = (batch["input_ids"] == batch["labels"]).all()
-
-                for i, (input, target, pred) in enumerate(zip(inputs, targets, preds)):
-                    text = input
-                    if not full_text_inputs:
-                        text = input + target
-
-                    self._log_inference_as_table(
-                        epoch, text, pred,
-                        name=f"sample_{i}"
-                    )
         
         for met in self.metrics:
             if (not is_train) or self._compute_on_train(met):
@@ -356,11 +377,11 @@ class Trainer(BaseTrainer):
     def _log_text(self, text, name="text"):
         self.writer.add_text(name, text)
     
-    def _log_inference_as_table(self, epoch, orig_text, predict, name):
+    def _log_inference_as_table(self, epoch, question, answer, predict, name):
         self.writer.add_table(
             table_name=name,
-            data=[epoch, orig_text, predict],
-            columns=["epoch", "target", "predict"]
+            data=[epoch, question, answer, predict],
+            columns=["epoch", "question", "answer", "predict"]
         )
 
     @torch.no_grad()
