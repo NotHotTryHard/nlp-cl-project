@@ -1,3 +1,4 @@
+import re
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset as TorchDataset
 from transformers import AutoTokenizer
@@ -38,9 +39,9 @@ class MLQAHuggingFaceDataset(TorchDataset):
         self.model_type = model_type
         self._preprocess()
 
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         if filter_max_length:
             self.max_length = max_length
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.filter_max_length(max_length)
 
         self.split = split
@@ -50,6 +51,14 @@ class MLQAHuggingFaceDataset(TorchDataset):
         self.test_size = test_size
         self._train_test_split()
         self.calc_max_lengths()
+
+    def _pad_punctuation(self, text):
+        text = re.sub(r'([^\w\s])', r' \1 ', text)
+        text = re.sub(r'\s+', ' ', text)
+        return text
+
+    def _string_join(self, lst):
+        return re.sub(r'\s+', ' ', ' '.join(lst))
 
     def calc_max_lengths(self):
         max_ques_len = 0
@@ -112,8 +121,10 @@ class MLQAHuggingFaceDataset(TorchDataset):
         items = []
 
         for sample in self.dataset:
-            inputs = f'{sample["context"]} question: {sample["question"]} answer: '
-            labels = sample["answers"]["text"][0]
+            context = self._pad_punctuation(sample["context"])
+            question = self._pad_punctuation(sample["question"])
+            inputs = self._string_join(['question:', question, 'context:', context, 'answer:'])
+            labels = self._pad_punctuation(sample["answers"]["text"][0])
 
             item = {"text": inputs, "answer": labels, "lang": self.lang}
             if self.model_type == "enc-dec":

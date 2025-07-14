@@ -64,7 +64,7 @@ class CollateClass:
                 return item["target"]
             return item["text"]
         return item[1]
-
+    
     def _update_batch_with_dataset_items(self, batch, dataset_items):
         batch.update({k: [item[k] for item in dataset_items] for k in dataset_items[0]})
         return batch
@@ -129,6 +129,8 @@ class CollateClass:
             decoder_start_token_id=self.decoder_start_token_id
         )
 
+        batch = mlm_data_collator(batch)
+
         # def pad_numpy_to_max_length(ids, max_length):
         #     pad_size = max_length - ids.shape[-1]
         #     pad_id = self.tokenizer.pad_token_id
@@ -137,15 +139,18 @@ class CollateClass:
         # if batch["input_ids"].shape[-1] < mlm_data_collator.input_length:
         #     batch["input_ids"] = pad_numpy_to_max_length(batch["input_ids"], mlm_data_collator.input_length)
 
-        batch = mlm_data_collator(batch)
+        batch_torch = {}
         for k, v in batch.items():
-            batch[k] = torch.tensor(v)
+            if isinstance(v, np.ndarray):
+                batch_torch[k] = torch.from_numpy(v)
+            else:
+                batch_torch[k] = v
 
-        batch["attention_mask"] = torch.full(batch["input_ids"].shape, True)
-        batch["decoder_attention_mask"] = torch.full(batch["labels"].shape, True)
+        batch_torch["attention_mask"] = (batch_torch["input_ids"] != self.tokenizer.pad_token_id).long()
+        batch_torch["decoder_attention_mask"] = (batch_torch["labels"] != self.tokenizer.pad_token_id).long()
 
-        batch = self._update_batch_with_dataset_items(batch, dataset_items)
-        return batch
+        batch_torch = self._update_batch_with_dataset_items(batch_torch, dataset_items)
+        return batch_torch
 
     def _gpt2_lm_call(self, dataset_items):
         """Handle datasets that return {'text': ...} format for GPT2 language modeling"""
@@ -179,7 +184,7 @@ class CollateClass:
             return self._gpt2_lm_call(dataset_items)
 
         inputs = [self._item_input(item) for item in dataset_items]
-        targets = [self._item_input(item) for item in dataset_items]
+        targets = [self._item_target(item) for item in dataset_items]
 
         input_encodings = self.tokenizer.batch_encode_plus(
             [sentence for sentence in inputs],

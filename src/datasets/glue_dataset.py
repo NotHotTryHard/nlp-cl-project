@@ -138,9 +138,9 @@ class SuperGLUEHuggingFaceDataset(TorchDataset):
             inp = prefix + sample["premise"] + " hypothesis: " + sample["hypothesis"]
         elif self.task_name == "copa":
             pr, c1, c2, q = sample["premise"], sample["choice1"], sample["choice2"], sample["question"]
+            inp = prefix + pr + " question: " + q + " choice1: " + c1 + " choice2: " + c2
         elif self.task_name == "boolq":
             inp = prefix + "passage: " + sample["passage"] + " question: " + sample["question"]
-            inp = prefix + pr + " question: " + q + " choice1: " + c1 + " choice2: " + c2
         elif self.task_name == "multirc":
             inp = prefix + "paragraph:" + sample["paragraph"] + " question: " + sample["question"]
         elif self.task_name == "record":
